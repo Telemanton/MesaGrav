@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AntonioMesaGravimetricaApplication<antonio_mesa_gravimetrica>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "antonio.mesa.antonio_mesa_gravimetrica.AntonioMesaGravimetricaApplication",
+            "projectName": "antonio_mesa_gravimetrica",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

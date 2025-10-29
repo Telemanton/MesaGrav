@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ADXL345 Monitor</title>
+</head>
+<body>
+    <h1>ADXL345 Datos en tiempo real</h1>
+    <div id="datos">
+        <p>X: <span id="x">0</span></p>
+        <p>Y: <span id="y">0</span></p>
+        <p>Z: <span id="z">0</span></p>
+        <p>Pitch: <span id="pitch">0</span></p>
+        <p>Roll: <span id="roll">0</span></p>
+    </div>
+
+    <script>
+        async function actualizarDatos() {
+            try {
+                const response = await fetch('/sensor');
+                const data = await response.json();
+                document.getElementById('x').textContent = data.x.toFixed(2);
+                document.getElementById('y').textContent = data.y.toFixed(2);
+                document.getElementById('z').textContent = data.z.toFixed(2);
+                document.getElementById('pitch').textContent = data.pitch.toFixed(2);
+                document.getElementById('roll').textContent = data.roll.toFixed(2);
+            } catch(err) {
+                console.error('Error al obtener datos:', err);
+            }
+        }
+
+        setInterval(actualizarDatos, 1000); // cada 1s
+        actualizarDatos();
+    </script>
+</body>
+</html>
