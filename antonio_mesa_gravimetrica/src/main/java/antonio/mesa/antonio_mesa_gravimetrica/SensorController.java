@@ -17,9 +17,15 @@ public class SensorController {
         return "Datos recibidos ✅";
     }
 
-    // GET para ver los datos en JSON
+    private final MqttListener mqttListener;
+
+    public SensorController(MqttListener mqttListener) {
+        this.mqttListener = mqttListener;
+    }
+
+     // Devuelve el último valor recibido por MQTT
     @GetMapping
-    public SensorData getData() {
-        return lastData.get();
+    public SensorData getLastData() {
+        return mqttListener.getLastData();
     }
 }
