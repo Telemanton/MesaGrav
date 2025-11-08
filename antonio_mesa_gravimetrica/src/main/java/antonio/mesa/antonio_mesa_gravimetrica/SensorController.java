@@ -1,21 +1,12 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
 import org.springframework.web.bind.annotation.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/sensor")
 public class SensorController {
-
-    // Últimos datos recibidos
-    private final AtomicReference<SensorData> lastData = new AtomicReference<>(new SensorData());
-
-    // POST desde ESP32
-    @PostMapping
-    public String receiveData(@RequestBody SensorData data) {
-        lastData.set(data);
-        return "Datos recibidos ✅";
-    }
 
     private final MqttListener mqttListener;
 
@@ -23,9 +14,12 @@ public class SensorController {
         this.mqttListener = mqttListener;
     }
 
-     // Devuelve el último valor recibido por MQTT
+    // Devuelve los últimos datos de ambos sensores
     @GetMapping
-    public SensorData getLastData() {
-        return mqttListener.getLastData();
+    public Map<String, Object> getLastData() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("adxl", mqttListener.getLastSensorData());
+        response.put("frecuencia", mqttListener.getLastSensor2Data());
+        return response;
     }
 }

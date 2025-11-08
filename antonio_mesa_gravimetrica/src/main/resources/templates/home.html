@@ -2,16 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>ADXL345 Monitor</title>
+    <title>Mesa gravimétrica</title>
 </head>
 <body>
-    <h1>ADXL345 Datos en tiempo real</h1>
+    <h1>ADXL345 y Frecuencia en tiempo real</h1>
     <div id="datos">
         <p>X: <span id="x">0</span></p>
         <p>Y: <span id="y">0</span></p>
         <p>Z: <span id="z">0</span></p>
         <p>Pitch: <span id="pitch">0</span></p>
         <p>Roll: <span id="roll">0</span></p>
+        <p>Frecuencia: <span id="frecuencia">0</span> Hz</p>
     </div>
 
     <script>
@@ -19,11 +20,19 @@
             try {
                 const response = await fetch('/sensor');
                 const data = await response.json();
-                document.getElementById('x').textContent = data.x.toFixed(2);
-                document.getElementById('y').textContent = data.y.toFixed(2);
-                document.getElementById('z').textContent = data.z.toFixed(2);
-                document.getElementById('pitch').textContent = data.pitch.toFixed(2);
-                document.getElementById('roll').textContent = data.roll.toFixed(2);
+
+                // Datos del sensor ADXL345
+                const adxl = data.adxl || {};
+                document.getElementById('x').textContent = (adxl.x ?? 0).toFixed(2);
+                document.getElementById('y').textContent = (adxl.y ?? 0).toFixed(2);
+                document.getElementById('z').textContent = (adxl.z ?? 0).toFixed(2);
+                document.getElementById('pitch').textContent = (adxl.pitch ?? 0).toFixed(2);
+                document.getElementById('roll').textContent = (adxl.roll ?? 0).toFixed(2);
+
+                // Datos del sensor de frecuencia
+                const freq = data.frecuencia || {};
+                document.getElementById('frecuencia').textContent = (freq.frecuencia ?? 0).toFixed(2);
+
             } catch(err) {
                 console.error('Error al obtener datos:', err);
             }

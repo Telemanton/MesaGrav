@@ -1,5 +1,11 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+// Sensor ADXL345
+
+//Ignora propiedades desconocidas en el JSON entrante, ya que son de otros sensores
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SensorData {
     private float x;
     private float y;

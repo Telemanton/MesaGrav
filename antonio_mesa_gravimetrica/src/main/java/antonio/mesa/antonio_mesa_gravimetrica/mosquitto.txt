@@ -1,0 +1,3 @@
+"C:\Program Files\mosquitto\mosquitto.exe" -c "C:\mosquitto\mosquitto.conf"
+
+netstat -ano | findstr 1883
