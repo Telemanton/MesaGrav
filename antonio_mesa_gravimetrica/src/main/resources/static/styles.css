@@ -1,0 +1,185 @@
+/* RESET & BASE */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Evita scroll horizontal por la caja extendida */
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f9f9f9;
+}
+
+#layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+.wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* HEADER */
+#header {
+    background: #fff;
+    padding: 15px 0;
+    border-bottom: 4px solid #ffcc00;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.v-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#logo img { height: 50px; }
+
+/* FORMULARIOS (PURE CSS SIMPLIFICADO) */
+.pure-form input[type="text"], 
+.pure-form input[type="password"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 250px;
+}
+
+.pure-form-aligned .pure-control-group {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.pure-form-aligned label {
+    margin-right: 15px;
+    font-weight: bold;
+    color: #444;
+    width: 150px;
+    text-align: right;
+}
+
+.pure-controls { margin-top: 20px; padding-left: 165px; text-align: left; }
+
+/* BOTONES */
+.pure-button {
+    padding: 10px 25px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    transition: 0.3s;
+}
+
+.pure-button-primary {
+    background-color: #004481;
+    color: white;
+}
+
+.pure-button-primary:hover { background-color: #002d56; }
+
+/* CAJA DE LOGIN */
+#flex-container-login {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.siduja-box {
+    background: white;
+    padding: 40px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.siduja_logo { height: 45px; margin-bottom: 30px; }
+
+/* CAJA EXTENDIDA (FULL WIDTH) */
+.full-width-info {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    
+    background-color: #00A651;
+    color: white;
+    padding: 60px 0;
+}
+
+.full-width-info h6 {
+    margin-top: 0;
+    color: #ffffff;
+    font-size: 1.8rem;
+}
+
+.full-width-info p {
+    line-height: 1.6;
+    font-size: 0.8rem;
+    max-width: 800px;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .pure-form-aligned .pure-control-group { flex-direction: column; align-items: flex-start; }
+    .pure-form-aligned label { text-align: left; margin-bottom: 5px; }
+    .pure-controls { padding-left: 0; text-align: center; }
+    .pure-form input[type="text"], .pure-form input[type="password"] { max-width: 100%; }
+}
+
+.footer-info {
+    /* Extensión de extremo a extremo */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+
+    /* Estilo visual */
+    background-color: #ffffff; /* Gris oscuro para contraste */
+    color: #ccc;
+    padding: 40px 0;
+    font-size: 0.9rem;
+    border-top: 4px solid #00a651; /* Detalle con el verde que me pasaste */
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-info p {
+    color: #00a651;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.footer-info a {
+    color: #00a651; /* El verde de tu imagen para los links */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer-info a:hover {
+    color: #ffcc00; /* Amarillo UJA al pasar el ratón */
+}
+
+/* Ajuste para móviles */
+@media (max-width: 600px) {
+    .footer-content {
+        text-align: center;
+        flex-direction: column;
+    }
+}
+

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Mesa Gravimétrica - UJA</title>
+    <link rel="stylesheet" href="styles-home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles-mesa.css">
+</head>
+<body>
+    <header>
+        <div class="menu-container">
+            <div class="logo">
+                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="home-logged.html"><i class="fas fa-arrow-left"></i> Volver al Panel</a></li>
+                    <li><a href="#">Reportes</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <section class="intro">
+            <h1>Mesa Gravimétrica #01</h1>
+            <p><i class="fas fa-circle status-on-vibrate"></i> Transmisión en vivo desde ADXL345</p>
+        </section>
+
+        <div class="dashboard-grid">
+            
+            <div class="sensor-main-card">
+                <div class="card-title">
+                    <i class="fas fa-compass"></i> Orientación y Ejes
+                </div>
+                <div class="axes-container">
+                    <div class="axis-item">
+                        <span class="axis-label">Eje X</span>
+                        <span class="axis-value" id="x">0.00</span>
+                    </div>
+                    <div class="axis-item">
+                        <span class="axis-label">Eje Y</span>
+                        <span class="axis-value" id="y">0.00</span>
+                    </div>
+                    <div class="axis-item">
+                        <span class="axis-label">Eje Z</span>
+                        <span class="axis-value" id="z">0.00</span>
+                    </div>
+                </div>
+                
+                <div class="angle-container">
+                    <div class="angle-box">
+                        <i class="fas fa-sync-alt"></i>
+                        <span class="angle-label">PITCH</span>
+                        <span class="angle-value" id="pitch">0.00</span>°
+                    </div>
+                    <div class="angle-box">
+                        <i class="fas fa-redo"></i>
+                        <span class="angle-label">ROLL</span>
+                        <span class="angle-value" id="roll">0.00</span>°
+                    </div>
+                </div>
+            </div>
+
+            <div class="sensor-side-card">
+                <div class="card-title">
+                    <i class="fas fa-wave-square"></i> Análisis de Vibración
+                </div>
+                <div class="freq-display">
+                    <span id="frecuencia" class="freq-value">0.00</span>
+                    <span class="freq-unit">Hz</span>
+                </div>
+                <p class="freq-status">Frecuencia de oscilación detectada</p>
+                <div class="vibration-bar-container">
+                    <div id="vibration-bar" class="vibration-bar"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="user-panel">
+            <h3><i class="fas fa-info-circle"></i> Información del Sensor</h3>
+            <div class="user-details">
+                <p><strong>Hardware:</strong> ADXL345 Digital</p>
+                <p><strong>Protocolo:</strong> I2C / JSON</p>
+                <p><strong>Actualización:</strong> 1.0s</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        async function actualizarDatos() {
+            try {
+                const response = await fetch('/sensor');
+                const data = await response.json();
+
+                // Datos del sensor ADXL345
+                const adxl = data.adxl || {};
+                document.getElementById('x').textContent = (adxl.x ?? 0).toFixed(2);
+                document.getElementById('y').textContent = (adxl.y ?? 0).toFixed(2);
+                document.getElementById('z').textContent = (adxl.z ?? 0).toFixed(2);
+                document.getElementById('pitch').textContent = (adxl.pitch ?? 0).toFixed(2);
+                document.getElementById('roll').textContent = (adxl.roll ?? 0).toFixed(2);
+
+                // Datos de frecuencia
+                const freqValue = (data.frecuencia?.frecuencia ?? 0);
+                document.getElementById('frecuencia').textContent = freqValue.toFixed(2);
+
+                // Animación simple de la barra de vibración (ejemplo visual)
+                const bar = document.getElementById('vibration-bar');
+                const intensity = Math.min(freqValue * 5, 100); 
+                bar.style.width = intensity + "%";
+
+            } catch(err) {
+                console.error('Error al obtener datos:', err);
+            }
+        }
+
+        setInterval(actualizarDatos, 1000);
+        actualizarDatos();
+    </script>
+</body>
+</html>

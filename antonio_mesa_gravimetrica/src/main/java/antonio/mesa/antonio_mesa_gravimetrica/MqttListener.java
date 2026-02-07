@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class MqttListener {
 
-    private static final String BROKER_URL = "tcp://192.168.1.128:1883";
+    private static final String BROKER_URL = "tcp://192.168.1.130:1883";
     private static final String CLIENT_ID = "spring-mqtt-server";
     private static final String TOPIC_ADXL = "sensor/adxl345";
     private static final String TOPIC_FRECUENCIA = "sensor/frecuencia";
