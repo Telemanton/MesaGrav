@@ -1,5 +1,7 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -12,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 import java.util.Optional;
+
 
 @Controller
 public class HomeController {
@@ -94,8 +97,66 @@ public String saveUser(@Valid @ModelAttribute("userForm") AppUser userForm,
     userRepository.save(userForm);
     
     redirectAttributes.addFlashAttribute("mensaje", "Usuario creado!");
-    return "redirect:/keyuser-home";
+    return "keyuser-home";
+
+    
+    
 }
+
+
+
+@GetMapping("/keyuser-home")
+public String keyuserHome(Model model, @RequestParam(required = false) String mensaje) {
+    model.addAttribute("mensaje", mensaje);
+    return "keyuser-home";
+}
+
+
+@GetMapping("/admin-users")
+public String adminUsersList(Model model) {
+    List<AppUser> allUsers = userRepository.findAll();
+    model.addAttribute("allUsers", allUsers);
+    return "admin-users-list";
+}
+
+@GetMapping("/create-admin")
+public String createAdminForm(Model model) {
+    model.addAttribute("adminForm", new AppUser());
+    return "create-admin";
+}
+
+@PostMapping("/save-admin")
+public String saveAdmin(@Valid @ModelAttribute("adminForm") AppUser adminForm, 
+                       BindingResult result, Model model,
+                       RedirectAttributes redirectAttributes) {
+    
+    if (result.hasErrors()) {
+        return "create-admin";
+    }
+    
+    if (userRepository.findByUsername(adminForm.getUsername()).isPresent()) {
+        model.addAttribute("error", "Admin ya existe");
+        return "create-admin";
+    }
+    
+    adminForm.setPasswordHash(passwordEncoder.encode(adminForm.getPassword()));
+    adminForm.setRole(Role.ADMIN);  // ← CLAVE: Role.ADMIN
+    adminForm.setCreatedAt(LocalDateTime.now());
+    
+    userRepository.save(adminForm);
+    redirectAttributes.addFlashAttribute("mensaje", "✅ Admin '" + adminForm.getUsername() + "' creado!");
+    return "redirect:/admin-home";
+}
+
+@GetMapping("/delete-user/{id}")
+public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    userRepository.deleteById(id);
+    redirectAttributes.addFlashAttribute("mensaje", "✅ Usuario eliminado correctamente");
+    return "redirect:/admin-users";
+}
+
+
+
 
 
 }

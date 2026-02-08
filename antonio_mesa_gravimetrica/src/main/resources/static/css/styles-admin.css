@@ -1,0 +1,52 @@
+.container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
+table.dataTable { margin-top: 2rem !important; }
+.btn-edit { color: #3b82f6; margin-right: 10px; }
+.btn-delete { color: #ef4444; }
+.role-ADMIN { background: #8b5cf6; color: white; }
+.role-KEYUSER { background: #ff6b35; color: white; }
+.role-USER { background: #10b981; color: white; }
+
+/* Botones Admin */
+.btn-edit {
+    color: #3b82f6;
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.btn-edit:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-delete {
+    color: #ef4444;
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.role-ADMIN { background: #8b5cf6; color: white; padding: 4px 8px; border-radius: 12px; }
+.role-KEYUSER { background: #ff6b35; color: white; padding: 4px 8px; border-radius: 12px; }
+.role-USER { background: #10b981; color: white; padding: 4px 8px; border-radius: 12px; }
+
+.btn-back {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #6b7280;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.btn-back:hover { background: #4b5563; }
+

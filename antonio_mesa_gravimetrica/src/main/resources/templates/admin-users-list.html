@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Usuarios - Admin UJA</title>
+    <link rel="stylesheet" th:href="@{/css/styles-admin.css}">
+    <link rel="stylesheet" th:href="@{/css/styles-list.css}">
+
+    <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-users"></i> Gestión Completa de Usuarios</h2>
+        
+        <!-- Mensajes -->
+        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"
+             style="margin: 20px 0; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px;">
+        </div>
+        
+        <table id="usersTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Fecha Creación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${allUsers}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.name + ' ' + user.surname}"></td>
+                    <td><strong th:text="${user.username}"></strong></td>
+                    <td th:text="${user.email}"></td>
+                    <td>
+                        <span th:text="${user.role}" 
+                              th:classappend="'role-' + ${user.role}"
+                              class="badge"></span>
+                    </td>
+                    <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                        <!-- EDITAR -->
+                        <a th:href="@{/edit-user/{id}(id=${user.id})}" 
+                           class="btn-edit" title="Editar">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <!-- BASURA - BORRAR -->
+                        <a th:href="@{/delete-user/{id}(id=${user.id})}" 
+                           class="btn-delete"
+                           onclick="return confirm('¿Eliminar usuario [[${user.username}]]? Esta acción no se puede deshacer.')"
+                           title="Eliminar">
+                            <i class="fas fa-trash"></i> Borrar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 20px;">
+            <a href="/admin-home" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver al Panel
+            </a>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#usersTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        pageLength: 25
+    });
+});
+
+</script>
+
+
+
+</body>
+</html>

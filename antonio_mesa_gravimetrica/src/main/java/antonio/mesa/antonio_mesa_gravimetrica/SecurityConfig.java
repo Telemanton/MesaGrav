@@ -23,10 +23,12 @@ SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/", "/user-logging", 
-                           "/create-user", "/save-user",      // ← GET + POST
-                           "/keyuser-home", "/user-home", "/admin-home",
-                           "/mesa-gravimetrica",
-                           "/css/**", "/js/**", "/webjars/**").permitAll()
+                "/create-user", "/save-user",     
+                "/create-admin", "/save-admin",    
+                "/admin-home", "/admin-users", 
+                "/edit-user/**", "/delete-user/**",
+                "/mesa-gravimetrica",
+                "/css/**", "/js/**", "/webjars/**").permitAll()
             .anyRequest().authenticated()
         )
         .csrf(csrf -> csrf.disable())
