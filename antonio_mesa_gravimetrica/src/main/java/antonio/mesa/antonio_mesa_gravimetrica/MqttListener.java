@@ -19,6 +19,7 @@ public class MqttListener {
     private final AtomicReference<SensorData> lastSensorData = new AtomicReference<>(new SensorData());
     private final AtomicReference<Sensor2Data> lastSensor2Data = new AtomicReference<>(new Sensor2Data());
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private MqttClient client;
 
     public SensorData getLastSensorData() { return lastSensorData.get(); }
     public Sensor2Data getLastSensor2Data() { return lastSensor2Data.get(); }
@@ -26,7 +27,7 @@ public class MqttListener {
     @PostConstruct
     public void init() {
         try {
-            MqttClient client = new MqttClient(BROKER_URL, CLIENT_ID, null);
+            client = new MqttClient(BROKER_URL, CLIENT_ID, null);
             MqttConnectOptions options = new MqttConnectOptions();
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);

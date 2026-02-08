@@ -1,0 +1,30 @@
+
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: explotacion_minas_db
+    environment:
+      POSTGRES_DB: antonio_explotacion_de_minas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 3xpl0t4c10nD3M1n4sT3l3m4t1c4
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql  # ← Script de inicialización
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_explotacion
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ujaen.es
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres-db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
