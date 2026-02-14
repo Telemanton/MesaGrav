@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDA - Panel de Alta Jerárquica</title>
+    <link rel="stylesheet" href="/css/styles-keyuser.css">
+    <link rel="stylesheet" href="/css/styles-admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+<body>
+    <header class="pro-header">
+        <div class="menu-container">
+            <div class="logo">
+                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo" style="filter: brightness(0) invert(1);">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/admin-home" style="color: white;"><i class="fas fa-shield-halved"></i> Gestión IT</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <section class="intro">
+            <h1><i class="fas fa-user-shield"></i> Alta de Administrador</h1>
+            <p>Se otorgarán privilegios totales sobre el sistema. Proceda con cautela.</p>
+        </section>
+
+        <section class="form-section">
+            <form action="/save-user" method="post" class="user-form">
+                
+                <input type="hidden" name="role" value="ADMIN">
+
+                <div class="form-group">
+                    <label><i class="fas fa-address-card"></i> Identidad del Administrador</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" name="name" required placeholder="Nombre" style="flex: 1;">
+                        <input type="text" name="surname" required placeholder="Apellidos" style="flex: 1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-at"></i> Correo Institucional</label>
+                    <input type="email" name="email" required placeholder="admin-it@ujaen.es">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-fingerprint"></i> ID de Acceso Interno</label>
+                    <input type="text" name="username" required placeholder="Nombre de usuario único" minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Clave Maestra</label>
+                    <input type="password" name="password" required placeholder="Defina una contraseña robusta" minlength="8">
+                    <small style="color: #666;">Mínimo 8 caracteres, incluir símbolos.</small>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <button type="submit" class="btn-admin">
+                        <i class="fas fa-unlock-alt"></i> Autorizar y Crear Cuenta
+                    </button>
+                    <a href="/admin-home" class="btn-secondary">
+                        <i class="fas fa-ban"></i> Abortar
+                    </a>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        document.querySelector('.user-form').addEventListener('submit', function(e) {
+            if (!confirm('ATENCIÓN: Está a punto de crear una cuenta con acceso total. ¿Confirmar autorización?')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

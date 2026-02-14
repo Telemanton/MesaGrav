@@ -50,3 +50,52 @@ table.dataTable { margin-top: 2rem !important; }
 
 .btn-back:hover { background: #4b5563; }
 
+:root { 
+    --admin-gold: #c5a059; 
+    --admin-dark: #1a1a1a; 
+    --admin-blue: #2c3e50;
+}
+
+.pro-header { 
+    background: var(--admin-dark); 
+    border-bottom: 3px solid var(--admin-gold); 
+    padding: 10px 0;
+}
+
+.pro-header .logo img {
+    filter: brightness(0) invert(1); /* Pone el logo en blanco */
+}
+
+.intro h1 { 
+    color: var(--admin-blue); 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    font-weight: 800;
+}
+
+.btn-admin { 
+    background: var(--admin-blue); 
+    color: white; 
+    border: none; 
+    padding: 12px 25px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: all 0.3s; 
+    font-weight: bold; 
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-admin:hover { 
+    background: #1a252f; 
+    transform: translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+}
+
+.readonly-input {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    border: 1px solid #d1d5db;
+}
+

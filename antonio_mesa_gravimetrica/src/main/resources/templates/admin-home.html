@@ -16,7 +16,6 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="/admin-home">Inicio</a></li>
                     <li><a href="#">Históricos</a></li>
                     <li class="dropdown-container">
                             <a href="#" id="userDropdown">
@@ -37,9 +36,10 @@
                                 method="post" style="display: none;">
                             </form>
                             <!--¿Por qué hacerlo así?
-                            Seguridad: El estándar de Spring Security recomienda que el logout sea una petición POST. Si usas un simple enlace (GET), 
+                            Seguridad: El estándar de Spring Security recomienda que el logout sea una petición POST. Si se usa un simple enlace (GET), 
                             cualquier sitio malicioso podría cerrar la sesión del usuario sin su permiso simplemente cargando una imagen con la URL de logout.
-                            Redirección: Al usar th:action="@{/logout}", Spring procesará la salida y, por defecto, te enviará a /login?logout.-->
+
+                            Redirección: Al usar th:action="@{/logout}", Spring procesará la salida y por defecto enviará a /login?logout.-->
                         </li>
                 </ul>
             </nav>
@@ -106,7 +106,9 @@
                 <p>Monitor de separación de minerales.</p>
                 <div class="card-footer">
                     <span class="badge online">En línea</span>
-                    <button class="btn-enter">Entrar</button>
+                    <a href="/mesa-gravimetrica" class="btn-enter">
+                        <i class="fas fa-arrow-right"></i> Entrar
+                    </a>
                 </div>
             </div>
         </section>

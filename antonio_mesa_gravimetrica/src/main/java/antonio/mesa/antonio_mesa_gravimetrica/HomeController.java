@@ -20,7 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
+
+
 
 @Controller
 public class HomeController {
@@ -128,9 +129,9 @@ public class HomeController {
     }
 
     @PostMapping("/save-user")
-    public String saveUser(@Valid @ModelAttribute("userForm") AppUser userForm,
+    public String saveUser(@ModelAttribute("userForm") AppUser userForm,
             BindingResult result, Model model,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes, HttpSession session) {
         if (result.hasErrors()) {
             return "create-user";
         }
@@ -146,13 +147,17 @@ public class HomeController {
 
         redirectAttributes.addFlashAttribute("mensaje", "¡Usuario '" + userForm.getUsername() + "' creado con éxito!");
 
-        // Redirigir según quién lo haya creado o a una página común
-        if (userForm.getRole() == Role.ADMIN) {
-            return "redirect:/admin-home"; // check
-        } else if (userForm.getRole() == Role.KEYUSER) {
-            return "redirect:/keyuser-home"; // check
-        }
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser != null) {
+            if (currentUser.getRole() == Role.ADMIN) {
+                return "redirect:/admin-users";
+            } else if (currentUser.getRole() == Role.KEYUSER) {
+                return "redirect:/keyuser-home";
+            }
+        } 
+
         return "redirect:/";
+        
     }
 
     @GetMapping("/admin-users")
@@ -256,10 +261,27 @@ public class HomeController {
                 return "redirect:/admin-home";
             } else if (currentUser.getRole() == Role.KEYUSER) {
                 return "redirect:/keyuser-home";
+            } else if (currentUser.getRole() == Role.USER) {
+                return "redirect:/user-home";
             }
         }
 
         return "redirect:/";
     }
+
+    @GetMapping("/create-admin")
+public String createAdmin(Model model, HttpSession session) {
+    // 1. Verificación de seguridad (opcional pero recomendada)
+    AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+    if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+        return "redirect:/";
+    }
+
+    // 2. Si usas th:object en el HTML, necesitas mandar un objeto vacío
+    model.addAttribute("userForm", new AppUser());
+
+    return "create-admin";
+}
+    
 
 }

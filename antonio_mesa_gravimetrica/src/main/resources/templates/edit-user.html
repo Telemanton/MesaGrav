@@ -1,37 +1,86 @@
-<form th:action="@{/update-user}" th:object="${userForm}" method="post">
-    <input type="hidden" th:field="*{id}" />
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuario - UJA Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="menu-container">
+            <div class="logo">
+                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/admin-users}"><i class="fas fa-arrow-left"></i> Volver</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-    <div class="form-group">
-        <label>Username:</label>
-        <input type="text" th:field="*{username}" readonly class="readonly-input" />
+    <div class="main-wrapper">
+        <section class="intro">
+            <h1><i class="fas fa-user-edit"></i> Editar Usuario</h1>
+            <p>Modifique los datos del usuario seleccionado.</p>
+        </section>
+
+        <section class="form-section">
+            <form th:action="@{/update-user}" th:object="${userForm}" method="post" class="user-form">
+                
+                <input type="hidden" th:field="*{id}" />
+
+                <div class="form-group">
+                    <label><i class="fas fa-id-badge"></i> Nombre de Usuario (No editable)</label>
+                    <input type="text" th:field="*{username}" readonly class="readonly-input" 
+                           style="background-color: #f4f4f4; cursor: not-allowed;" />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nombre</label>
+                    <input type="text" th:field="*{name}" required placeholder="Nombre" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Apellidos</label>
+                    <input type="text" th:field="*{surname}" required placeholder="Apellidos" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" th:field="*{email}" required placeholder="usuario@ujaen.es" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-users-cog"></i> Rol del Sistema</label>
+                    <select th:field="*{role}" required class="form-select">
+                        <option value="USER">Usuario Normal (USER)</option>
+                        <option value="KEYUSER">Key User</option>
+                        <option value="ADMIN">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a th:href="@{/admin-users}" class="btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </section>
     </div>
 
-    <div class="form-group">
-        <label>Nombre:</label>
-        <input type="text" th:field="*{name}" required />
-    </div>
-
-    <div class="form-group">
-        <label>Apellidos:</label>
-        <input type="text" th:field="*{surname}" required />
-    </div>
-
-    <div class="form-group">
-        <label>Email:</label>
-        <input type="email" th:field="*{email}" required />
-    </div>
-
-    <div class="form-group">
-        <label>Rol:</label>
-        <select th:field="*{role}">
-            <option th:value="USER">USER</option>
-            <option th:value="KEYUSER">KEYUSER</option>
-            <option th:value="ADMIN">ADMIN</option>
-        </select>
-    </div>
-
-    <div class="actions">
-        <button type="submit" class="btn-save">Guardar Cambios</button>
-        <a href="/admin-users" class="btn-cancel">Cancelar</a>
-    </div>
-</form>
+    <script>
+        // Confirmación antes de actualizar
+        document.querySelector('.user-form').addEventListener('submit', function(e) {
+            if (!confirm('¿Desea guardar los cambios realizados en este usuario?')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
