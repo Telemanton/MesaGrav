@@ -21,14 +21,28 @@
                     <li><a href="/user-home">Inicio</a></li>
                     <li><a href="#">Históricos</a></li>
                     <li class="dropdown-container">
-                        <a href="#" id="userDropdown">
-                            <i class="fas fa-user-circle"></i> <span>Key User</span>
-                        </a>
-                        <ul id="dropdownMenu" class="dropdown-content">
-                            <li><a href="#">Mi Perfil</a></li>
-                            <li><a href="#" onclick="event.preventDefault(); window.location.href='/close';">Cerrar sesión</a></li>
-                        </ul>
-                    </li>
+                            <a href="#" id="userDropdown">
+                                <i class="fas fa-user-circle"></i>
+                                <span
+                                    th:text="${currentUser.username}">Usuario</span>
+                            </a>
+                            <ul id="dropdownMenu" class="dropdown-content">
+                                <li><a href="#">Mi Perfil</a></li>
+                                <li>
+                                    <a href="#"
+                                        onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                                        Cerrar sesión
+                                    </a>
+                                </li>
+                            </ul>
+                            <form id="logoutForm" th:action="@{/logout}"
+                                method="post" style="display: none;">
+                            </form>
+                            <!--¿Por qué hacerlo así?
+                            Seguridad: El estándar de Spring Security recomienda que el logout sea una petición POST. Si usas un simple enlace (GET), 
+                            cualquier sitio malicioso podría cerrar la sesión del usuario sin su permiso simplemente cargando una imagen con la URL de logout.
+                            Redirección: Al usar th:action="@{/logout}", Spring procesará la salida y, por defecto, te enviará a /login?logout.-->
+                        </li>
                 </ul>
             </nav>
         </div>

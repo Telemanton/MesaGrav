@@ -32,10 +32,18 @@ SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .anyRequest().authenticated()
         )
         .csrf(csrf -> csrf.disable())
-        .formLogin(form -> form.disable());
+        .formLogin(form -> form.disable())
+
+        .logout(logout -> logout
+            .logoutUrl("/logout") // La URL que dispara el proceso
+            .logoutSuccessUrl("/") // ¡AQUÍ indicas a dónde ir al terminar!
+            .invalidateHttpSession(true)
+            .deleteCookies("JSESSIONID")
+        );
     
     return http.build();
 }
+
 
 }
 
