@@ -20,6 +20,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -79,7 +82,7 @@ public class HomeController {
     @GetMapping("/user-home")
     public String userHome(HttpSession session, Model model) {
         AppUser user = (AppUser) session.getAttribute("currentUser");
-        if (user == null)
+        if (user == null || (user.getRole() == Role.ADMIN) || (user.getRole() == Role.KEYUSER))
             return "redirect:/";
         model.addAttribute("currentUser", user);
         return "user-home";
@@ -87,28 +90,29 @@ public class HomeController {
 
     @GetMapping("/admin-home")
     public String adminHome(HttpSession session, Model model) {
-        AppUser user = (AppUser) session.getAttribute("currentUser");
-        if (user == null)
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
             return "redirect:/";
-        model.addAttribute("currentUser", user);
+        model.addAttribute("currentUser", currentUser);
         return "admin-home";
     }
 
     @GetMapping("/keyuser-home")
     public String keyuserHome(HttpSession session, Model model) {
-        AppUser user = (AppUser) session.getAttribute("currentUser");
-        if (user == null)
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.KEYUSER) 
             return "redirect:/";
-        model.addAttribute("currentUser", user);
+        model.addAttribute("currentUser", currentUser);
         return "keyuser-home";
     }
 
     @GetMapping("/mesa-gravimetrica")
     public String mesa(HttpSession session, Model model) {
-        AppUser user = (AppUser) session.getAttribute("currentUser");
-        if (user == null)
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (session.getAttribute("currentUser") == null) {
             return "redirect:/";
-        model.addAttribute("currentUser", user);
+        }
+        model.addAttribute("currentUser", currentUser);
         return "mesa-gravimetrica";
     }
 
@@ -116,13 +120,11 @@ public class HomeController {
 
     @GetMapping("/create-user")
     public String createUserForm(Model model, HttpSession session) {
-        // 1. Verificación de seguridad simple
-        if (session.getAttribute("currentUser") == null) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (session.getAttribute("currentUser") == null || currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.KEYUSER) {
             return "redirect:/";
         }
 
-        // 2. Forzamos un objeto nuevo y limpio
-        // Importante: Asegúrate de que el nombre "userForm" coincide con th:object
         model.addAttribute("userForm", new AppUser());
 
         return "create-user";
@@ -132,6 +134,11 @@ public class HomeController {
     public String saveUser(@ModelAttribute("userForm") AppUser userForm,
             BindingResult result, Model model,
             RedirectAttributes redirectAttributes, HttpSession session) {
+        AppUser user = (AppUser) session.getAttribute("currentUser");
+        
+        if (session.getAttribute("currentUser") == null || user.getRole() != Role.ADMIN && user.getRole() != Role.KEYUSER) {
+            return "redirect:/";
+        }
         if (result.hasErrors()) {
             return "create-user";
         }
@@ -141,7 +148,7 @@ public class HomeController {
             return "create-user";
         }
 
-        // Hashear la contraseña antes de guardar
+        // Hashes password and saves the user with hased password to the database
         userForm.setPasswordHash(passwordEncoder.encode(userForm.getPassword()));
         userRepository.save(userForm);
 
@@ -163,8 +170,9 @@ public class HomeController {
     @GetMapping("/admin-users")
     public String adminUsersList(Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null)
+        if (session.getAttribute("currentUser") == null || currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.KEYUSER) {
             return "redirect:/";
+        }
 
         List<AppUser> allUsers = userRepository.findAll();
         model.addAttribute("allUsers", allUsers);
@@ -190,7 +198,7 @@ public class HomeController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        // Seguridad: Verificar que es ADMIN
+        
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
         if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
@@ -209,39 +217,45 @@ public class HomeController {
     @GetMapping("/edit-user/{id}")
     public String editUserForm(@PathVariable Long id, Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        // Seguridad: El administrador debe estar logueado para editar usuarios
-        if (currentUser == null)
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
             return "redirect:/";
 
         Optional<AppUser> userToEdit = userRepository.findById(id);
         if (userToEdit.isPresent()) {
-            // Pasamos el usuario encontrado al formulario
+            
             model.addAttribute("userForm", userToEdit.get());
-            return "edit-user"; // <--- Nueva vista
+            return "edit-user"; 
         }
 
         return "redirect:/admin-users";
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /* UPDATE USER String updateUser(): This method handles the POST request for updating an existing user's information. 
+    // It checks if the current user has ADMIN privileges, then retrieves the existing user from the database using the ID provided in the form. 
+    // If the user exists, it updates only the allowed fields (name, surname, email, role) while keeping the username and passwordHash unchanged to avoid errors. **/
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @PostMapping("/update-user")
     public String updateUser(@ModelAttribute("userForm") AppUser userForm,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        // Recuperamos el usuario original de la BD para no perder datos que no están en
-        // el form
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
+            return "redirect:/";
+        
         Optional<AppUser> existingUserOpt = userRepository.findById(userForm.getId());
 
         if (existingUserOpt.isPresent()) {
             AppUser userDB = existingUserOpt.get();
 
-            // Actualizamos solo los campos permitidos
             userDB.setName(userForm.getName());
             userDB.setSurname(userForm.getSurname());
             userDB.setEmail(userForm.getEmail());
             userDB.setRole(userForm.getRole());
 
-            // El username y el passwordHash NO se tocan aquí para evitar errores
             userRepository.save(userDB);
 
             redirectAttributes.addFlashAttribute("mensaje", "Usuario '" + userDB.getUsername() + "' actualizado.");
@@ -250,7 +264,12 @@ public class HomeController {
         return "redirect:/admin-users";
 
     }
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /* CANCEL OPERATION cancel(): The cancel() method is a GET endpoint that allow user to cancel their current action.
+    Depending on its roles returns to an appropriate home page. */
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @GetMapping("/cancel")
     public String cancel(HttpSession session) {
 
@@ -271,13 +290,11 @@ public class HomeController {
 
     @GetMapping("/create-admin")
 public String createAdmin(Model model, HttpSession session) {
-    // 1. Verificación de seguridad (opcional pero recomendada)
     AppUser currentUser = (AppUser) session.getAttribute("currentUser");
     if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
         return "redirect:/";
     }
 
-    // 2. Si usas th:object en el HTML, necesitas mandar un objeto vacío
     model.addAttribute("userForm", new AppUser());
 
     return "create-admin";

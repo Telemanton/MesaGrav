@@ -8,40 +8,73 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+/////////////////////////////////////////////////////
+//////////////////////////////////////////////////
+        // SecurityConfig class documentation //
+//////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+/**
+ * The SecurityConfig class is responsible for configuring the security settings of the application.
+ * It defines the password encoding mechanism and the security filter chain that controls access to different endpoints.
+ * 
+ * The password encoder used is BCryptPasswordEncoder, which provides a one way hashing algorithm for storing passwords securely, ofuscating view even for administrators.
+ * 
+ * The security filter chain is configured to allow access to specific endpoints related to user logging.
+ * All other requests require authentication.
+ * 
+ * The logout configuration specifies that when a user logs out, they will be redirected to the home page ("/"), their session will be invalidated, and the JSESSIONID cookie will be deleted to ensure a clean logout process.
+ */
 
-@Configuration
-@EnableWebSecurity
+/////////////////////////////////////////////////////
+@Configuration // Indicates that this class contains Spring configuration
+@EnableWebSecurity // Enables Spring Security for the application
+/////////////////////////////////////////////////////
 public class SecurityConfig {
 
-    @Bean
+    @Bean 
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configures the security filter chain for the application to control access to different endpoints
+     * based on authentication and authorization rules.
+     *
+     * <p>Security Configuration Details:
+     * <ul>
+     *   <li>Public endpoints (permitAll): Authorization page and URL for login process</li>
+     *   <li>All other endpoints require authentication</li>
+     *   <li>CSRF protection is disabled (not recommended for production)</li>
+     *   <li>Default form login is disabled to allow custom login handling</li>
+     *   <li>Logout functionality redirects to home page and invalidates session</li>
+     * </ul>
+     *
+     * @param http the {@link HttpSecurity} object used to configure security settings
+     * @return a configured {@link SecurityFilterChain} object
+     * @throws Exception if an error occurs during configuration
+     *
+     * @note form.disable() does NOT disable logout on page revisit. It disables Spring's automatic login form page.
+     *       After logout, the user's session is invalidated and cookies are deleted, so they cannot access
+     *       protected resources without re-authenticating. The disable() only removes the default /login page.
+     */
     @Bean
 SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/", "/user-logging", 
-                "/create-user", "/save-user",     
-                "/create-admin", "/save-admin",    
-                "/admin-home", "/admin-users", 
-                "/edit-user/**", "/delete-user/**",
-                "/mesa-gravimetrica",
-                "/css/**", "/js/**", "/webjars/**").permitAll()
+    http // HTTP Protocol configuration
+        .authorizeHttpRequests(auth -> auth // Authorization configuration
+            .requestMatchers("/", "/user-logging", "/css/**", "/js/**", "/webjars/**").permitAll()
             .anyRequest().authenticated()
         )
-        .csrf(csrf -> csrf.disable())
-        .formLogin(form -> form.disable())
+        .csrf(csrf -> csrf.disable()) // Disable CSRF protection for simplicity (not recommended for production)
+        .formLogin(form -> form.disable()) // Disable default form login (In order to handle it manually)
 
         .logout(logout -> logout
-            .logoutUrl("/logout") // La URL que dispara el proceso
-            .logoutSuccessUrl("/") // ¡AQUÍ indicas a dónde ir al terminar!
+            .logoutUrl("/logout") // URL trigger for logout
+            .logoutSuccessUrl("/") // Here indicates that after logout, the user will be redirected to the home page ("/")
             .invalidateHttpSession(true)
-            .deleteCookies("JSESSIONID")
+            .deleteCookies("JSESSIONID") // Ensure that the session is invalidated and cookies are deleted upon logout
         );
     
-    return http.build();
+    return http.build(); 
 }
 
 
