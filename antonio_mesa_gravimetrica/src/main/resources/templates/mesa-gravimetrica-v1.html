@@ -12,16 +12,16 @@
         <p>Z: <span id="z">0</span></p>
         <p>Pitch: <span id="pitch">0</span></p>
         <p>Roll: <span id="roll">0</span></p>
-        <p>Frecuencia: <span id="frecuencia">0</span> Hz</p>
+        <p>Frecuencia: <span id="frecuency">0</span> Hz</p>
     </div>
 
     <script>
-        async function actualizarDatos() {
+        async function updateData() {
             try {
-                const response = await fetch('/sensor');
+                const response = await fetch('/sensor'); 
                 const data = await response.json();
 
-                // Datos del sensor ADXL345
+                //ADXL345 data
                 const adxl = data.adxl || {};
                 document.getElementById('x').textContent = (adxl.x ?? 0).toFixed(2);
                 document.getElementById('y').textContent = (adxl.y ?? 0).toFixed(2);
@@ -29,17 +29,17 @@
                 document.getElementById('pitch').textContent = (adxl.pitch ?? 0).toFixed(2);
                 document.getElementById('roll').textContent = (adxl.roll ?? 0).toFixed(2);
 
-                // Datos del sensor de frecuencia
-                const freq = data.frecuencia || {};
-                document.getElementById('frecuencia').textContent = (freq.frecuencia ?? 0).toFixed(2);
+                //Frecuency data
+                const freq = data["frecuency sensor"] || {};
+                document.getElementById('frecuency').textContent = (freq.frecuencia ?? 0).toFixed(2);
 
             } catch(err) {
                 console.error('Error al obtener datos:', err);
             }
         }
 
-        setInterval(actualizarDatos, 1000); // cada 1s
-        actualizarDatos();
+        setInterval(updateData, 1000); // Adjust the interval as needed (e.g., setInterval(actualizarDatos, 1000) for every 1 second)
+        updateData(); // Initial call to populate data immediately on page load
     </script>
 </body>
 </html>

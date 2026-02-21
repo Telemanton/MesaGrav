@@ -2,10 +2,18 @@ package antonio.mesa.antonio_mesa_gravimetrica;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-// Sensor ADXL345
+// SensorData class documentation
+/**
+ * The SensorData class represents the data structure for the first sensor, which measures table orientation.
+ * 
+ * The SensorData class is used to encapsulate the orientation data collected from the first sensor in the application.
+ */
 
-//Ignora propiedades desconocidas en el JSON entrante, ya que son de otros sensores
-@JsonIgnoreProperties(ignoreUnknown = true)
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+//Ignores any unknown properties in the JSON payload to prevent errors during deserialization if the payload contains extra fields that are not defined in this class.
+                @JsonIgnoreProperties(ignoreUnknown = true)
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+
 public class SensorData {
     private float x;
     private float y;
@@ -23,7 +31,7 @@ public class SensorData {
         this.roll = roll;
     }
 
-    // Getters y setters
+    // Getters and setters
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }
     public float getY() { return y; }

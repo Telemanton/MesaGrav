@@ -20,8 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -35,12 +33,42 @@ public class HomeController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // --- ACCESO PÚBLICO (LOGIN) ---
+    // --- PUBLIC ACCESS VIEW (LOGIN) ---
     @RequestMapping("/")
     public String home() {
         return "loginview";
     }
 
+    /**
+     * Handles user login authentication and session management.
+     * 
+     * This method authenticates a user by verifying their username and password against
+     * the database. In case of successful authentication, it creates a Spring Security context
+     * with the appropriate role-based authority, stores the authenticated user in the session,
+     * and redirects the user to their role-specific home page.
+     * 
+     * @param username the username provided by the user for authentication
+     * @param password the plain-text password provided by the user for authentication
+     * @param request the HTTP request object (may be used for additional processing)
+     * @param session the HTTP session object used to store authentication context and user information
+     * 
+     * @return a redirect URL based on the authentication result:
+     *         - "redirect:/admin-home" if the user has ADMIN role
+     *         - "redirect:/keyuser-home" if the user has KEYUSER role
+     *         - "redirect:/user-home" for all other roles
+     *         - "redirect:/?error=true" if authentication fails (user not found or password mismatch)
+     * 
+     * @implNote This method performs the following steps:
+     *           1. Queries the database for a user matching the provided username
+     *           2. If found, verifies the password using a PasswordEncoder
+     *           3. Creates a UsernamePasswordAuthenticationToken with the user's role prefixed as "ROLE_"
+     *           4. Stores the authentication token in the Spring Security context
+     *           5. Persists the security context and current user in the HTTP session
+     *           6. Redirects to the appropriate page based on user role
+     * 
+     * @see org.springframework.security.core.context.SecurityContext
+     * @see org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+     */
     @PostMapping("/user-logging")
     public String login(@RequestParam String username,
             @RequestParam String password,
@@ -53,8 +81,15 @@ public class HomeController {
             AppUser user = userOpt.get();
 
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
-                // Autenticación manual para Spring Security
+                /**
+                 * Constructs a role name by prefixing the user's role with "ROLE_" and converting it to uppercase.
+                 * This practice follows the standard Spring Security role naming convention where roles are prefixed with "ROLE_".
+                 * 
+                 * Example: If user.getRole().name() returns "ADMIN", the resulting roleName will be "ROLE_ADMIN".
+                 */
                 String roleName = "ROLE_" + user.getRole().name();
+
+                
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                         user.getUsername(), null, AuthorityUtils.createAuthorityList(roleName));
 
@@ -77,7 +112,7 @@ public class HomeController {
         return "redirect:/?error=true";
     }
 
-    // --- RUTAS DE VISTAS (GET) ---
+    // --- HOME PAGE FOR USER (GET) ---
 
     @GetMapping("/user-home")
     public String userHome(HttpSession session, Model model) {
@@ -116,7 +151,7 @@ public class HomeController {
         return "mesa-gravimetrica";
     }
 
-    // --- GESTIÓN DE USUARIOS (CREACIÓN Y LISTADO) ---
+    // --- USER MANAGEMENT VIEW ---
 
     @GetMapping("/create-user")
     public String createUserForm(Model model, HttpSession session) {
@@ -192,7 +227,7 @@ public class HomeController {
         return "redirect:/?logout=true";
     }
 
-    // --- ELIMINAR USUARIO ---
+    // --- DELETE USER VIEW ---
     @GetMapping("/delete-user/{id}")
     public String deleteUser(@PathVariable Long id,
             HttpSession session,
@@ -229,13 +264,11 @@ public class HomeController {
 
         return "redirect:/admin-users";
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     /* UPDATE USER String updateUser(): This method handles the POST request for updating an existing user's information. 
-    // It checks if the current user has ADMIN privileges, then retrieves the existing user from the database using the ID provided in the form. 
-    // If the user exists, it updates only the allowed fields (name, surname, email, role) while keeping the username and passwordHash unchanged to avoid errors. **/
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    It checks if the current user has ADMIN privileges, then retrieves the existing user from the database using the ID provided in the form. 
+    If the user exists, it updates only the allowed fields (name, surname, email, role) while keeping the username and passwordHash unchanged to avoid errors. **/
+    //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 
     @PostMapping("/update-user")
     public String updateUser(@ModelAttribute("userForm") AppUser userForm,
@@ -264,12 +297,10 @@ public class HomeController {
         return "redirect:/admin-users";
 
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     /* CANCEL OPERATION cancel(): The cancel() method is a GET endpoint that allow user to cancel their current action.
     Depending on its roles returns to an appropriate home page. */
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     @GetMapping("/cancel")
     public String cancel(HttpSession session) {
 

@@ -8,11 +8,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-/////////////////////////////////////////////////////
-//////////////////////////////////////////////////
-        // SecurityConfig class documentation //
-//////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+//                                           SecurityConfig class documentation 
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 /**
  * The SecurityConfig class is responsible for configuring the security settings of the application.
  * It defines the password encoding mechanism and the security filter chain that controls access to different endpoints.
@@ -25,10 +23,12 @@ import org.springframework.security.web.SecurityFilterChain;
  * The logout configuration specifies that when a user logs out, they will be redirected to the home page ("/"), their session will be invalidated, and the JSESSIONID cookie will be deleted to ensure a clean logout process.
  */
 
-/////////////////////////////////////////////////////
-@Configuration // Indicates that this class contains Spring configuration
-@EnableWebSecurity // Enables Spring Security for the application
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+     
+                        @Configuration // Indicates that this class contains Spring configuration
+                        @EnableWebSecurity // Enables Spring Security for the application
+                
+//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 public class SecurityConfig {
 
     @Bean 
@@ -44,14 +44,12 @@ public class SecurityConfig {
      * <ul>
      *   <li>Public endpoints (permitAll): Authorization page and URL for login process</li>
      *   <li>All other endpoints require authentication</li>
-     *   <li>CSRF protection is disabled (not recommended for production)</li>
+     *   <li>CSRF protection is disabled</li>
      *   <li>Default form login is disabled to allow custom login handling</li>
      *   <li>Logout functionality redirects to home page and invalidates session</li>
      * </ul>
      *
      * @param http the {@link HttpSecurity} object used to configure security settings
-     * @return a configured {@link SecurityFilterChain} object
-     * @throws Exception if an error occurs during configuration
      *
      * @note form.disable() does NOT disable logout on page revisit. It disables Spring's automatic login form page.
      *       After logout, the user's session is invalidated and cookies are deleted, so they cannot access
@@ -60,7 +58,7 @@ public class SecurityConfig {
     @Bean
 SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http // HTTP Protocol configuration
-        .authorizeHttpRequests(auth -> auth // Authorization configuration
+        .authorizeHttpRequests(auth -> auth // auth section means that we are configuring authorization rules for HTTP requests
             .requestMatchers("/", "/user-logging", "/css/**", "/js/**", "/webjars/**").permitAll()
             .anyRequest().authenticated()
         )

@@ -39,10 +39,11 @@
                             <form id="logoutForm" th:action="@{/logout}"
                                 method="post" style="display: none;">
                             </form>
-                            <!--¿Por qué hacerlo así?
-                            Seguridad: El estándar de Spring Security recomienda que el logout sea una petición POST. Si usas un simple enlace (GET), 
-                            cualquier sitio malicioso podría cerrar la sesión del usuario sin su permiso simplemente cargando una imagen con la URL de logout.
-                            Redirección: Al usar th:action="@{/logout}", Spring procesará la salida y, por defecto, te enviará a /login?logout.-->
+                            <!--Why do it this way?
+                            Security: Spring Security standard recommends that logout must be a POST request. If you use a simple link (GET), 
+                            any malicious site could close the user's session without permission by simply loading the logout URL.
+                            
+                            Redirect: By using th:action="@{/logout}", Spring will process the logout and, by default, send you to /login?logout.-->
                         </li>
                     </ul>
                 </nav>
