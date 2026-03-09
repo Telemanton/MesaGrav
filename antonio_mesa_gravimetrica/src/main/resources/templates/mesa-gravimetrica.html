@@ -1,125 +1,145 @@
 <!DOCTYPE html>
-<html lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Mesa Gravimétrica - UJA</title>
-    <link rel="stylesheet" th:href="@{/css/styles-home.css}">
+    <title>Panel de Control - Mesa Gravimétrica</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles-mesagrav.css}">
 </head>
 <body>
+
+<div class="container">
     <header>
-        <div class="menu-container">
-            <div class="logo">
-                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="/cancel"><i class="fas fa-arrow-left"></i> Volver al Panel</a></li>
-                    <li><a href="#">Reportes</a></li>
-                </ul>
-            </nav>
+        <div class="header-title">
+            <h1><i class="fas fa-microchip"></i> Telemetría en Tiempo Real</h1>
+        </div>
+        <div class="user-info">
+            <span th:text="${currentUser.name + ' ' + currentUser.surname}">Usuario</span>
+            <form th:action="@{/logout}" method="post" style="display:inline; margin-left:15px;">
+                <button type="submit" class="btn-link" style="background:none; border:none; color:var(--danger); cursor:pointer;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </form>
         </div>
     </header>
 
-    <div class="main-wrapper">
-        <section class="intro">
-            <h1>Mesa Gravimétrica #01</h1>
-            <p><i class="fas fa-circle status-on-vibrate"></i> Transmisión en vivo desde ADXL345</p>
-        </section>
-
-        <div class="dashboard-grid">
-            
-            <div class="sensor-main-card">
-                <div class="card-title">
-                    <i class="fas fa-compass"></i> Orientación y Ejes
+    <div class="main-grid">
+        <div class="col-left">
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-compass"></i> ADXL345 - Orientación</div>
+                <div class="data-row">
+                    <div class="data-item"><span id="val-pitch" class="data-value">0.0</span><span class="data-label">Pitch</span></div>
+                    <div class="data-item"><span id="val-roll" class="data-value">0.0</span><span class="data-label">Roll</span></div>
                 </div>
-                <div class="axes-container">
-                    <div class="axis-item">
-                        <span class="axis-label">Eje X</span>
-                        <span class="axis-value" id="x">0.00</span>
-                    </div>
-                    <div class="axis-item">
-                        <span class="axis-label">Eje Y</span>
-                        <span class="axis-value" id="y">0.00</span>
-                    </div>
-                    <div class="axis-item">
-                        <span class="axis-label">Eje Z</span>
-                        <span class="axis-value" id="z">0.00</span>
-                    </div>
-                </div>
-                
-                <div class="angle-container">
-                    <div class="angle-box">
-                        <i class="fas fa-sync-alt"></i>
-                        <span class="angle-label">PITCH</span>
-                        <span class="angle-value" id="pitch">0.00</span>°
-                    </div>
-                    <div class="angle-box">
-                        <i class="fas fa-redo"></i>
-                        <span class="angle-label">ROLL</span>
-                        <span class="angle-value" id="roll">0.00</span>°
-                    </div>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                <div class="data-row">
+                    <div class="data-item"><span id="val-x" class="data-value">0.0</span><span class="data-label">X</span></div>
+                    <div class="data-item"><span id="val-y" class="data-value">0.0</span><span class="data-label">Y</span></div>
+                    <div class="data-item"><span id="val-z" class="data-value">0.0</span><span class="data-label">Z</span></div>
                 </div>
             </div>
 
-            <div class="sensor-side-card">
-                <div class="card-title">
-                    <i class="fas fa-wave-square"></i> Análisis de Vibración
-                </div>
-                <div class="freq-display">
-                    <span id="frecuencia" class="freq-value">0.00</span>
-                    <span class="freq-unit">Hz</span>
-                </div>
-                <p class="freq-status">Frecuencia de oscilación detectada</p>
-                <div class="vibration-bar-container">
-                    <div id="vibration-bar" class="vibration-bar"></div>
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-wave-square"></i> Análisis Vibración</div>
+                <div style="text-align: center;">
+                    <span id="val-freq" style="font-size: 3rem; font-weight: 800; color: var(--uja-gold);">0.0</span>
+                    <span style="font-size: 1.2rem; color: #888;">Hz</span>
                 </div>
             </div>
 
+            <div class="recording-panel">
+                <h3><i class="fas fa-file-csv"></i> Adquisición de Datos</h3>
+                <button id="btnStart" onclick="startRecording()" class="btn btn-start">
+                    <i class="fas fa-play"></i> Grabar Ensayo
+                </button>
+                <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
+                    <i class="fas fa-download"></i> Parar y Descargar
+                </button>
+                <div id="recordStatus" class="status-rec">
+                    <i class="fas fa-circle blink"></i> GRABANDO DATOS...
+                </div>
+            </div>
         </div>
 
-        <section class="user-panel">
-            <h3><i class="fas fa-info-circle"></i> Información del Sensor</h3>
-            <div class="user-details">
-                <p><strong>Hardware:</strong> ADXL345 Digital</p>
-                <p><strong>Protocolo:</strong> I2C / JSON</p>
-                <p><strong>Actualización:</strong> 1.0s</p>
+        <div class="col-right">
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-tint"></i> Red de Caudalímetros (L/min)</div>
+                <div class="flow-grid">
+                    <div th:each="i : ${#numbers.sequence(1, 12)}" class="mini-card">
+                        <span class="mini-id">Sensor <span th:text="${i}"></span></span>
+                        <span th:id="'flow-' + ${i}" class="mini-value">0.00</span>
+                        <span class="mini-unit">L/min</span>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
     </div>
+</div>
 
-    <script>
-        async function actualizarDatos() {
-            try {
-                const response = await fetch('/sensor');
-                const data = await response.json();
+<script>
+    // 1. Actualización Automática cada segundo
+    async function updateDashboard() {
+        try {
+            const response = await fetch('/sensor');
+            const data = await response.json();
 
-                // Datos del sensor ADXL345
-                const adxl = data.adxl || {};
-                document.getElementById('x').textContent = (adxl.x ?? 0).toFixed(2);
-                document.getElementById('y').textContent = (adxl.y ?? 0).toFixed(2);
-                document.getElementById('z').textContent = (adxl.z ?? 0).toFixed(2);
-                document.getElementById('pitch').textContent = (adxl.pitch ?? 0).toFixed(2);
-                document.getElementById('roll').textContent = (adxl.roll ?? 0).toFixed(2);
-
-                // Datos de frecuencia
-                const freqValue = (data.frecuencia?.frecuencia ?? 0);
-                document.getElementById('frecuencia').textContent = freqValue.toFixed(2);
-
-                // Animación simple de la barra de vibración (ejemplo visual)
-                const bar = document.getElementById('vibration-bar');
-                const intensity = Math.min(freqValue * 5, 100); 
-                bar.style.width = intensity + "%";
-
-            } catch(err) {
-                console.error('Error al obtener datos:', err);
+            // Mapear ADXL
+            if (data.adxl) {
+                document.getElementById('val-x').innerText = data.adxl.x.toFixed(2);
+                document.getElementById('val-y').innerText = data.adxl.y.toFixed(2);
+                document.getElementById('val-z').innerText = data.adxl.z.toFixed(2);
+                document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
+                document.getElementById('val-roll').innerText = data.adxl.roll.toFixed(1) + '°';
             }
-        }
 
-        setInterval(actualizarDatos, 1000);
-        actualizarDatos();
-    </script>
+            // Mapear Frecuencia
+            if (data.frecuencia) {
+                document.getElementById('val-freq').innerText = data.frecuencia.frecuencia.toFixed(2);
+            }
+
+            // Mapear 12 Caudales
+            if (data.caudales) {
+                for (let i = 1; i <= 12; i++) {
+                    const sensor = data.caudales[i];
+                    const element = document.getElementById('flow-' + i);
+                    if (element) {
+                        element.innerText = sensor ? sensor.flowRate.toFixed(2) : "0.00";
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error al obtener datos:", error);
+        }
+    }
+
+    // 2. Control de Grabación (DataExportController)
+    function startRecording() {
+        fetch('/export/start', { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    document.getElementById('btnStart').disabled = true;
+                    document.getElementById('btnStop').disabled = false;
+                    document.getElementById('recordStatus').style.display = 'block';
+                }
+            });
+    }
+
+    function stopRecording() {
+        // Redirigir al endpoint de descarga
+        window.location.href = '/export/download';
+
+        // Resetear botones tras un pequeño delay
+        setTimeout(() => {
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+            document.getElementById('recordStatus').style.display = 'none';
+        }, 1500);
+    }
+
+    // Iniciar bucle de refresco
+    setInterval(updateDashboard, 1000);
+</script>
+
 </body>
 </html>

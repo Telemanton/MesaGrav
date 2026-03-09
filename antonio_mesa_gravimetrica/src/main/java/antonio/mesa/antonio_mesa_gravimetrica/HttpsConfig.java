@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * This is the necessary HttpsConfig for configuring the application in order to use HTTPS for secure communication.
  * It sets up a servlet container that listens on both HTTP and HTTPS ports, and redirects all HTTP traffic to HTTPS.
- * Whit the propose of ensuring that data transmitted between the client and server will be encrypted and secure.
+ * With the purpose of ensuring that data transmitted between the client and server will be encrypted and secure.
  * The configuration includes:
  * - A servlet container factory that creates a Tomcat server with the necessary security constraints to enforce HTTPS.
  * - An additional connector that listens on the standard HTTP port (80) and redirects traffic to the HTTPS port (443).
@@ -38,7 +38,7 @@ public class HttpsConfig {
              * 
              * @param context the Tomcat Context object to which the security constraint will be applied
              * 
-             * @note Tomcat is the embedded servlet container used by Spring Boot, and this method allows to customize its configuration to enforce HTTPS for the entire application.
+             * @note Tomcat is the embedded servlet container used by Spring Boot, and this method allows customizing its configuration to enforce HTTPS for the entire application.
              */
             @Override
             protected void postProcessContext(Context context) {
@@ -64,17 +64,17 @@ public class HttpsConfig {
      * This method creates a new Connector instance with the following settings:
      * - Scheme: "http" (indicating that this connector will handle HTTP traffic)
      * - Port: 80 (the standard port for HTTP)
-     * - Secure: false (indicating that this connector does not handle secure traffic)
+     * - Secure: false (indicating that this connector does not handle secure traffic, just redirects it)
      * - Redirect Port: 443 (the standard port for HTTPS, where traffic will be redirected)
      * 
-     * @return a Connector object configured for HTTP to HTTPS redirection
+     * @return Connector object configured for HTTP to HTTPS redirection
      */
     private Connector getHttpConnector() {
         Connector connector = new Connector(); 
         connector.setScheme("http");
-        connector.setPort(80); // Escucha en el 80 normal
-        connector.setSecure(false);
-        connector.setRedirectPort(443); // Lo manda al 443 seguro
+        connector.setPort(80); 
+        connector.setSecure(false); 
+        connector.setRedirectPort(443); 
         return connector;
     }
 }

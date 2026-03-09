@@ -56,6 +56,7 @@ public class SensorController {
         // Retrieve the latest data from the MqttListener and put it in the response map
         response.put("adxl", mqttListener.getLastSensorData());
         response.put("frecuency sensor", mqttListener.getLastSensor2Data());
+        response.put("caudales", mqttListener.getAllFlowData());
         // Put the new topics in the response map here, for example:
         // response.put("new topic name", mqttListener.getLastNewTopicData()); 
         // *

@@ -27,11 +27,16 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class HomeController {
 
+
     @Autowired
     private AppUserDAO userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          PUBLIC ACCESS SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // --- PUBLIC ACCESS VIEW (LOGIN) ---
     @RequestMapping("/")
@@ -40,10 +45,10 @@ public class HomeController {
     }
 
     /**
-     * Handles user login authentication and session management.
+     * USER LOGIN AUTHENTICATION login(): This method handles the POST request for user login authentication.
      * 
-     * This method authenticates a user by verifying their username and password against
-     * the database. In case of successful authentication, it creates a Spring Security context
+     * This method authenticates a user depending on its username and password against the database.
+     * In case of successful authentication, it creates a Spring Security context
      * with the appropriate role-based authority, stores the authenticated user in the session,
      * and redirects the user to their role-specific home page.
      * 
@@ -52,16 +57,16 @@ public class HomeController {
      * @param request the HTTP request object (may be used for additional processing)
      * @param session the HTTP session object used to store authentication context and user information
      * 
-     * @return a redirect URL based on the authentication result:
+     * @return a redirect URL based on the result:
      *         - "redirect:/admin-home" if the user has ADMIN role
      *         - "redirect:/keyuser-home" if the user has KEYUSER role
-     *         - "redirect:/user-home" for all other roles
+     *         - "redirect:/user-home" for all other roles, in this case USER role. May be expanded in the future if new roles are added.
      *         - "redirect:/?error=true" if authentication fails (user not found or password mismatch)
      * 
      * @implNote This method performs the following steps:
      *           1. Queries the database for a user matching the provided username
      *           2. If found, verifies the password using a PasswordEncoder
-     *           3. Creates a UsernamePasswordAuthenticationToken with the user's role prefixed as "ROLE_"
+     *           3. Creates a UsernamePasswordAuthenticationToken with the user's role prefixed as "ROLE_" according to Spring Security conventions
      *           4. Stores the authentication token in the Spring Security context
      *           5. Persists the security context and current user in the HTTP session
      *           6. Redirects to the appropriate page based on user role
@@ -112,6 +117,10 @@ public class HomeController {
         return "redirect:/?error=true";
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          BASIC USER PROPIETARY SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // --- HOME PAGE FOR USER (GET) ---
 
     @GetMapping("/user-home")
@@ -123,6 +132,25 @@ public class HomeController {
         return "user-home";
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          KEY USER PROPIETARY SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    @GetMapping("/keyuser-home")
+    public String keyuserHome(HttpSession session, Model model) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null || currentUser.getRole() != Role.KEYUSER) 
+            return "redirect:/";
+        model.addAttribute("currentUser", currentUser);
+        return "keyuser-home";
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          ADMIN USER PROPIETARY SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // --- HOME PAGE FOR ADMIN (GET) ---
+
     @GetMapping("/admin-home")
     public String adminHome(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
@@ -132,26 +160,39 @@ public class HomeController {
         return "admin-home";
     }
 
-    @GetMapping("/keyuser-home")
-    public String keyuserHome(HttpSession session, Model model) {
+    
+    @GetMapping("/create-admin")
+    public String createAdmin(Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null || currentUser.getRole() != Role.KEYUSER) 
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
-        model.addAttribute("currentUser", currentUser);
-        return "keyuser-home";
     }
 
-    @GetMapping("/mesa-gravimetrica")
-    public String mesa(HttpSession session, Model model) {
+        model.addAttribute("userForm", new AppUser());
+
+        return "create-admin";
+    }
+
+    // --- ADMIN USER LIST PAGE (GET) ---
+
+    @GetMapping("/admin-users")
+    public String adminUsersList(Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (session.getAttribute("currentUser") == null) {
+        if (session.getAttribute("currentUser") == null || currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.KEYUSER) {
             return "redirect:/";
         }
+
+        List<AppUser> allUsers = userRepository.findAll();
+        model.addAttribute("allUsers", allUsers);
         model.addAttribute("currentUser", currentUser);
-        return "mesa-gravimetrica";
+        return "admin-users-list";
     }
 
-    // --- USER MANAGEMENT VIEW ---
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          CRUD METHODS FOR ADMIN AND KEYUSER
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // --- USER MANAGEMENT VIEW (GET) ---
 
     @GetMapping("/create-user")
     public String createUserForm(Model model, HttpSession session) {
@@ -165,7 +206,7 @@ public class HomeController {
         return "create-user";
     }
 
-    @PostMapping("/save-user")
+     @PostMapping("/save-user")
     public String saveUser(@ModelAttribute("userForm") AppUser userForm,
             BindingResult result, Model model,
             RedirectAttributes redirectAttributes, HttpSession session) {
@@ -183,7 +224,7 @@ public class HomeController {
             return "create-user";
         }
 
-        // Hashes password and saves the user with hased password to the database
+        // Next 2 lines hashes the password and saves the user with hased password inside the database
         userForm.setPasswordHash(passwordEncoder.encode(userForm.getPassword()));
         userRepository.save(userForm);
 
@@ -202,32 +243,7 @@ public class HomeController {
         
     }
 
-    @GetMapping("/admin-users")
-    public String adminUsersList(Model model, HttpSession session) {
-        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (session.getAttribute("currentUser") == null || currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.KEYUSER) {
-            return "redirect:/";
-        }
-
-        List<AppUser> allUsers = userRepository.findAll();
-        model.addAttribute("allUsers", allUsers);
-        model.addAttribute("currentUser", currentUser);
-        return "admin-users-list";
-    }
-
-    // --- LOGOUT ---
-
-    @PostMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-        }
-        session.invalidate();
-        return "redirect:/?logout=true";
-    }
-
-    // --- DELETE USER VIEW ---
+     // --- DELETE USER VIEW ---
     @GetMapping("/delete-user/{id}")
     public String deleteUser(@PathVariable Long id,
             HttpSession session,
@@ -264,12 +280,10 @@ public class HomeController {
 
         return "redirect:/admin-users";
     }
-   //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+
     /* UPDATE USER String updateUser(): This method handles the POST request for updating an existing user's information. 
     It checks if the current user has ADMIN privileges, then retrieves the existing user from the database using the ID provided in the form. 
     If the user exists, it updates only the allowed fields (name, surname, email, role) while keeping the username and passwordHash unchanged to avoid errors. **/
-    //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
-
     @PostMapping("/update-user")
     public String updateUser(@ModelAttribute("userForm") AppUser userForm,
             HttpSession session,
@@ -297,10 +311,51 @@ public class HomeController {
         return "redirect:/admin-users";
 
     }
-    //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          MACHINERY VIEW SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /* This section contains the controller method for the machinery view,
+     which is accessible to all authenticated users regardless of their role. 
+     The methodS shall checks if a user is logged in by verifying the presence of "currentUser" in the session. If no user is logged in, it redirects to the login page. 
+     If a user is logged in, it adds the current user information to the model and returns the "mesa-gravimetrica" view, which is the machinery interface.
+    *
+    *
+    * In case of future expansion, additional machinery views can be added here with similar access control logic.
+    */
+    // --- MESA GRAVIMETRICA VIEW (GET) ---
+
+    @GetMapping("/mesa-gravimetrica")
+    public String mesa(HttpSession session, Model model) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (session.getAttribute("currentUser") == null) {
+            return "redirect:/";
+        }
+        model.addAttribute("currentUser", currentUser);
+        return "mesa-gravimetrica";
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
+    //                                          AUXILIAR METHODS SECTION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // --- LOGOUT ---
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        session.invalidate();
+        return "redirect:/?logout=true";
+    }
+
+   
     /* CANCEL OPERATION cancel(): The cancel() method is a GET endpoint that allow user to cancel their current action.
     Depending on its roles returns to an appropriate home page. */
-   //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     @GetMapping("/cancel")
     public String cancel(HttpSession session) {
 
@@ -319,17 +374,6 @@ public class HomeController {
         return "redirect:/";
     }
 
-    @GetMapping("/create-admin")
-public String createAdmin(Model model, HttpSession session) {
-    AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-    if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
-        return "redirect:/";
-    }
-
-    model.addAttribute("userForm", new AppUser());
-
-    return "create-admin";
-}
     
 
 }

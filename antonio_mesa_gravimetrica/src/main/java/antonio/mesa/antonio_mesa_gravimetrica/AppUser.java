@@ -13,24 +13,24 @@ public class AppUser {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
-    @NotBlank 
+    @NotBlank // This annotation ensures that the username field cannot be null or empty, and it must be unique in the database.
     @Size(min = 3, max = 50)
     private String username;
 
     @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;  // ← SOLO esto va a PostgreSQL
+    private String passwordHash;
 
-    @Transient  // ← NO VA A BBDD, solo formulario
+    @Transient  // ← DOES NOT GO TO DATABASE, USED ONLY FOR FORM INPUT
     @Size(min = 6)
-    private String password;  // ← Temporal para crear usuarios
+    private String password;  
 
     @Column(nullable = false, length = 100)
-    @NotBlank 
+    @NotBlank // Mandatory
     @Size(max = 100)
     private String name;
 
     @Column(nullable = false, length = 100)
-    @NotBlank 
+    @NotBlank // Mandatory
     @Size(max = 100)
     private String surname;
 
