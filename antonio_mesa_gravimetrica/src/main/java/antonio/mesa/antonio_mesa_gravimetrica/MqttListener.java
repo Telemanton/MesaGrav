@@ -21,15 +21,16 @@ public class MqttListener {
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 /// MQTT Topics
     private static final String TOPIC_ADXL = "sensor/adxl345";
-    private static final String TOPIC_FRECUENCIA = "sensor/frecuencia";
+    private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
+    private static final String TOPIC_ENGINE_GAUGE = "sensor/engine_gauge";
     // Add more topics here as needed, for example:
     // private static final String TOPIC_NEW = "sensor/newtopic";
    
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     private final AtomicReference<SensorData> lastSensorData = new AtomicReference<>(new SensorData());
     private final AtomicReference<Sensor2Data> lastSensor2Data = new AtomicReference<>(new Sensor2Data());
-
+    private final AtomicReference<Sensor4Data> lastSensor4Data = new AtomicReference<>(new Sensor4Data());
 
     // Add more AtomicReferences for new topics here, for example:
     // private final AtomicReference<NewTopicData> lastNewTopicData = new AtomicReference
@@ -44,6 +45,7 @@ public class MqttListener {
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     public SensorData getLastSensorData() { return lastSensorData.get(); }
     public Sensor2Data getLastSensor2Data() { return lastSensor2Data.get(); }
+    public Sensor4Data getLastSensor4Data() { return lastSensor4Data.get(); }
     public Sensor3Data getFlowDataById(Integer id) { return flowSensorsMap.get(id); }
     
     
@@ -89,6 +91,20 @@ public class MqttListener {
                     lastSensor2Data.set(data);
                 } catch (Exception e) {
                     System.err.println("Error parseando Frecuencia: " + e.getMessage());
+                }
+            });
+
+            // Engine gauge sensor data suscription
+            client.subscribe(TOPIC_ENGINE_GAUGE, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("Gauge recibido: " + payload);
+                try {
+                Double valor = Double.parseDouble(payload.trim());
+                Sensor4Data data = new Sensor4Data();
+                data.setGaugeValue(valor);
+                lastSensor4Data.set(data);
+                } catch (Exception e) {
+                    System.err.println("Error parseando Gauge: " + e.getMessage());
                 }
             });
 

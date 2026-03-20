@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Control - Mesa Gravimétrica</title>
+    <title>Control Panel - Gravimetric Table</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/styles-mesagrav.css}">
@@ -12,13 +12,13 @@
 <div class="container">
     <header>
         <div class="header-title">
-            <h1><i class="fas fa-microchip"></i> Telemetría en Tiempo Real</h1>
+            <h1><i class="fas fa-microchip"></i> Real-Time Telemetry</h1>
         </div>
         <div class="user-info">
-            <span th:text="${currentUser.name + ' ' + currentUser.surname}">Usuario</span>
+            <span th:text="${currentUser.name + ' ' + currentUser.surname}">User</span>
             <form th:action="@{/logout}" method="post" style="display:inline; margin-left:15px;">
                 <button type="submit" class="btn-link" style="background:none; border:none; color:var(--danger); cursor:pointer;">
-                    <i class="fas fa-sign-out-alt"></i> Salir
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </form>
         </div>
@@ -26,47 +26,67 @@
 
     <div class="main-grid">
         <div class="col-left">
+            
             <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-compass"></i> ADXL345 - Orientación</div>
+                <div class="card-header"><i class="fas fa-compass"></i> ADXL345 - Orientation</div>
                 <div class="data-row">
                     <div class="data-item"><span id="val-pitch" class="data-value">0.0</span><span class="data-label">Pitch</span></div>
                     <div class="data-item"><span id="val-roll" class="data-value">0.0</span><span class="data-label">Roll</span></div>
                 </div>
                 <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
                 <div class="data-row">
-                    <div class="data-item"><span id="val-x" class="data-value">0.0</span><span class="data-label">X</span></div>
-                    <div class="data-item"><span id="val-y" class="data-value">0.0</span><span class="data-label">Y</span></div>
-                    <div class="data-item"><span id="val-z" class="data-value">0.0</span><span class="data-label">Z</span></div>
+                    <div class="data-item"><span id="val-x" class="data-value">0.0</span><span class="data-label">X Axis</span></div>
+                    <div class="data-item"><span id="val-y" class="data-value">0.0</span><span class="data-label">Y Axis</span></div>
+                    <div class="data-item"><span id="val-z" class="data-value">0.0</span><span class="data-label">Z Axis</span></div>
                 </div>
             </div>
 
             <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-wave-square"></i> Análisis Vibración</div>
+                <div class="card-header"><i class="fas fa-wave-square"></i> Vibration Analysis</div>
                 <div style="text-align: center;">
-                    <span id="val-freq" style="font-size: 3rem; font-weight: 800; color: var(--uja-gold);">0.0</span>
+                    <span id="val-freq" style="font-size: 3rem; font-weight: 800; color: #c5a059;">0.0</span>
                     <span style="font-size: 1.2rem; color: #888;">Hz</span>
                 </div>
             </div>
 
-            <div class="recording-panel">
-                <h3><i class="fas fa-file-csv"></i> Adquisición de Datos</h3>
+            <div class="sensor-card" style="min-height: 220px;">
+                <div class="card-header"><i class="fas fa-tachometer-alt"></i> Engine Power</div>
+                
+                <div class="gauge-main-container" style="width: 200px; height: 120px; margin: 20px auto; position: relative;">
+                    <div class="gauge-arc-visual" style="position: absolute; width: 200px; height: 100px; overflow: hidden; top: 0; left: 0;">
+                        <div style="width: 200px; height: 200px; border-radius: 50%; border: 15px solid #e0e0e0; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); box-sizing: border-box;"></div>
+                    </div>
+                    
+                    <div id="gauge-needle" style="position: absolute; bottom: 20px; left: 50%; width: 4px; height: 75px; background: #ff0000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 0.5s ease; z-index: 10; border-radius: 2px;"></div>
+                    
+                    <div style="position: absolute; bottom: 15px; left: 50%; width: 12px; height: 12px; background: #333; border-radius: 50%; transform: translateX(-50%); z-index: 11;"></div>
+
+                    <div style="position: absolute; bottom: -30px; width: 100%; text-align: center;">
+                        <div id="gauge-text" style="font-size: 2rem; font-weight: 800; color: #005aab;">0%</div>
+                        <div style="font-size: 0.7rem; color: #999; font-weight: bold; letter-spacing: 1px;">LOAD</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recording-panel" style="margin-top: 50px;">
+                <h3><i class="fas fa-file-csv"></i> Data Acquisition</h3>
                 <button id="btnStart" onclick="startRecording()" class="btn btn-start">
-                    <i class="fas fa-play"></i> Grabar Ensayo
+                    <i class="fas fa-play"></i> Start Recording
                 </button>
                 <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
-                    <i class="fas fa-download"></i> Parar y Descargar
+                    <i class="fas fa-download"></i> Stop & Download
                 </button>
                 <div id="recordStatus" class="status-rec">
-                    <i class="fas fa-circle blink"></i> GRABANDO DATOS...
+                    <i class="fas fa-circle blink"></i> RECORDING DATA...
                 </div>
             </div>
         </div>
 
         <div class="col-right">
             <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-tint"></i> Red de Caudalímetros (L/min)</div>
+                <div class="card-header"><i class="fas fa-tint"></i> Flow Meter Network (L/min)</div>
                 <div class="flow-grid">
-                    <div th:each="i : ${#numbers.sequence(1, 12)}" class="mini-card">
+                    <div th:each="i : ${#numbers.sequence(1, 3)}" class="mini-card">
                         <span class="mini-id">Sensor <span th:text="${i}"></span></span>
                         <span th:id="'flow-' + ${i}" class="mini-value">0.00</span>
                         <span class="mini-unit">L/min</span>
@@ -78,29 +98,42 @@
 </div>
 
 <script>
-    // 1. Actualización Automática cada segundo
     async function updateDashboard() {
         try {
             const response = await fetch('/sensor');
             const data = await response.json();
 
-            // Mapear ADXL
+            // ADXL
             if (data.adxl) {
+                document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
+                document.getElementById('val-roll').innerText = data.adxl.roll.toFixed(1) + '°';
                 document.getElementById('val-x').innerText = data.adxl.x.toFixed(2);
                 document.getElementById('val-y').innerText = data.adxl.y.toFixed(2);
                 document.getElementById('val-z').innerText = data.adxl.z.toFixed(2);
-                document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
-                document.getElementById('val-roll').innerText = data.adxl.roll.toFixed(1) + '°';
             }
 
-            // Mapear Frecuencia
-            if (data.frecuencia) {
-                document.getElementById('val-freq').innerText = data.frecuencia.frecuencia.toFixed(2);
+            // Vibración
+            if (data.frecuency_sensor) {
+                document.getElementById('val-freq').innerText = data.frecuency_sensor.frecuency.toFixed(1);
             }
 
-            // Mapear 12 Caudales
+            // --- GAUGE UPDATE ---
+            if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
+                const val = parseFloat(data.engine_gauge.gaugeValue);
+                const textEl = document.getElementById('gauge-text');
+                const needleEl = document.getElementById('gauge-needle');
+
+                if(textEl) textEl.innerText = Math.round(val) + "%";
+                if(needleEl) {
+                    // 0% -> -90deg, 100% -> 90deg
+                    const degrees = (val * 1.8) - 90;
+                    needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+                }
+            }
+
+            // Caudales
             if (data.caudales) {
-                for (let i = 1; i <= 12; i++) {
+                for (let i = 1; i <= 3; i++) {
                     const sensor = data.caudales[i];
                     const element = document.getElementById('flow-' + i);
                     if (element) {
@@ -108,28 +141,21 @@
                     }
                 }
             }
-        } catch (error) {
-            console.error("Error al obtener datos:", error);
-        }
+        } catch (error) { console.error("Error fetching sensor data:", error); }
     }
 
-    // 2. Control de Grabación (DataExportController)
     function startRecording() {
-        fetch('/export/start', { method: 'POST' })
-            .then(res => {
-                if (res.ok) {
-                    document.getElementById('btnStart').disabled = true;
-                    document.getElementById('btnStop').disabled = false;
-                    document.getElementById('recordStatus').style.display = 'block';
-                }
-            });
+        fetch('/export/start', { method: 'POST' }).then(res => {
+            if (res.ok) {
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = false;
+                document.getElementById('recordStatus').style.display = 'block';
+            }
+        });
     }
 
     function stopRecording() {
-        // Redirigir al endpoint de descarga
         window.location.href = '/export/download';
-
-        // Resetear botones tras un pequeño delay
         setTimeout(() => {
             document.getElementById('btnStart').disabled = false;
             document.getElementById('btnStop').disabled = true;
@@ -137,8 +163,7 @@
         }, 1500);
     }
 
-    // Iniciar bucle de refresco
-    setInterval(updateDashboard, 1000);
+    setInterval(updateDashboard, 250);
 </script>
 
 </body>

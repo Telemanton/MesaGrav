@@ -8,7 +8,7 @@ import math
 BROKER = "192.168.1.14"
 PORT = 1883
 TOPIC_ADXL = "sensor/adxl345"
-TOPIC_FRECUENCIA = "sensor/frecuencia"
+TOPIC_FRECUENCIA = "sensor/frecuency"
 TOPIC_FLOW = "sensor/flow"
 
 client = mqtt.Client()
