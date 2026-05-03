@@ -1,7 +1,5 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-// Final de carrera sensor de frecuencia
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 // Sensor2Data class documentation

@@ -1,21 +1,25 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.paho.client.mqttv3.*;
-import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class MqttListener {
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 /// MQTT Broker configuration
-    private static final String BROKER_URL = "tcp://192.168.1.14:1883";
+    private static final String BROKER_URL = "tcp://localhost:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
@@ -24,6 +28,9 @@ public class MqttListener {
     private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
     private static final String TOPIC_ENGINE_GAUGE = "sensor/engine_gauge";
+    private static final String TOPIC_DROPPER_GAUGE = "sensor/dropper_gauge";
+    private static final String TOPIC_WEIGHT = "sensor/weight";
+    private static final String TOPIC_SPEED = "sensor/speed"; 
     // Add more topics here as needed, for example:
     // private static final String TOPIC_NEW = "sensor/newtopic";
    
@@ -31,7 +38,9 @@ public class MqttListener {
     private final AtomicReference<SensorData> lastSensorData = new AtomicReference<>(new SensorData());
     private final AtomicReference<Sensor2Data> lastSensor2Data = new AtomicReference<>(new Sensor2Data());
     private final AtomicReference<Sensor4Data> lastSensor4Data = new AtomicReference<>(new Sensor4Data());
-
+    private final AtomicReference<Sensor5Data> lastSensor5Data = new AtomicReference<>(new Sensor5Data());
+    private final AtomicReference<Sensor6Data> lastSensor6Data = new AtomicReference<>(new Sensor6Data());
+    private final AtomicReference<Sensor7Data> lastSensor7Data = new AtomicReference<>(new Sensor7Data());
     // Add more AtomicReferences for new topics here, for example:
     // private final AtomicReference<NewTopicData> lastNewTopicData = new AtomicReference
   
@@ -46,6 +55,9 @@ public class MqttListener {
     public SensorData getLastSensorData() { return lastSensorData.get(); }
     public Sensor2Data getLastSensor2Data() { return lastSensor2Data.get(); }
     public Sensor4Data getLastSensor4Data() { return lastSensor4Data.get(); }
+    public Sensor5Data getLastSensor5Data() { return lastSensor5Data.get(); }
+    public Sensor6Data getLastSensor6Data() { return lastSensor6Data.get(); }
+    public Sensor7Data getLastSensor7Data() { return lastSensor7Data.get(); }
     public Sensor3Data getFlowDataById(Integer id) { return flowSensorsMap.get(id); }
     
     
@@ -108,13 +120,53 @@ public class MqttListener {
                 }
             });
 
+            // Dropper gauge sensor data suscription
+            client.subscribe(TOPIC_DROPPER_GAUGE, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("Gauge recibido: " + payload);
+                try {
+                Double valor = Double.parseDouble(payload.trim());
+                Sensor5Data data = new Sensor5Data();
+                data.setDropperValue(valor);
+                lastSensor5Data.set(data);
+                } catch (Exception e) {
+                    System.err.println("Error parseando Gauge: " + e.getMessage());
+                }
+            });
+
+            // Weight sensor data suscription
+            client.subscribe(TOPIC_WEIGHT, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("Weight recibido: " + payload);
+                try {
+                Double valor = Double.parseDouble(payload.trim());
+                Sensor6Data data = new Sensor6Data();
+                data.setWeightValue(valor);
+                lastSensor6Data.set(data);
+                } catch (Exception e) {
+                    System.err.println("Error parseando Weight: " + e.getMessage());
+                }
+            });
+
+            // Speed sensor data suscription
+            client.subscribe(TOPIC_SPEED, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("Speed recibido: " + payload);
+                try {
+                Double valor = Double.parseDouble(payload.trim());
+                Sensor7Data data = new Sensor7Data();
+                data.setSpeedValue(valor);
+                lastSensor7Data.set(data);
+                } catch (Exception e) {
+                    System.err.println("Error parseando Speed: " + e.getMessage());
+                }
+            });
+
             // Flow sensor data suscription
             client.subscribe(TOPIC_FLOW, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 try {
-                    // EXPERIMENTAL : Convertimos el JSON completo al objeto Wrapper
                     FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
-                    // EXPERIMENTAL : Iteramos la lista de sensores y los metemos en el ConcurrentHashMap
                     if (wrapper.getSensores() != null) {
                         for (Sensor3Data sensor : wrapper.getSensores()) {
                         flowSensorsMap.put(sensor.getId(), sensor);

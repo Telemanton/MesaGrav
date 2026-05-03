@@ -1,8 +1,11 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 //                                          SensorController class documentation
@@ -58,6 +61,9 @@ public class SensorController {
         response.put("frecuency_sensor", mqttListener.getLastSensor2Data());
         response.put("engine_gauge", mqttListener.getLastSensor4Data());
         response.put("caudales", mqttListener.getAllFlowData());
+        response.put("dropper_gauge", mqttListener.getLastSensor5Data());
+        response.put("weight", mqttListener.getLastSensor6Data());
+        response.put("speed", mqttListener.getLastSensor7Data());
         // Put the new topics in the response map here, for example:
         // response.put("new topic name", mqttListener.getLastNewTopicData()); 
         // *

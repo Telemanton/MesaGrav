@@ -3,57 +3,82 @@ import json
 import time
 import random
 import math
+import sys
 
-# Configuración del Broker
-BROKER = "192.168.1.14"
+# --- CONFIGURACIÓN DEL BROKER ---
+BROKER = "localhost"  
 PORT = 1883
+
+# Tópicos (Deben coincidir exactamente con MqttListener.java)
 TOPIC_ADXL = "sensor/adxl345"
-TOPIC_FRECUENCIA = "sensor/frecuency"
 TOPIC_FLOW = "sensor/flow"
+TOPIC_WEIGHT = "sensor/weight"
+TOPIC_SPEED = "sensor/speed"
+TOPIC_ENGINE_GAUGE = "sensor/engine_gauge"
+TOPIC_DROPPER_GAUGE = "sensor/dropper_gauge"
+TOPIC_FRECUENCIA = "sensor/frecuency"
 
 client = mqtt.Client()
 
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print(f"Simulador conectado y adaptado a MqttListener.java")
+    else:
+        print(f"Error de conexión, rc={rc}")
+        sys.exit(1)
+
+client.on_connect = on_connect
+client.connect(BROKER, PORT, 60)
+client.loop_start()
+
 try:
-    client.connect(BROKER, PORT, 60)
-    print(f"Simulador conectado al broker {BROKER}")
-except Exception as e:
-    print(f"Error conectando al broker: {e}")
-    exit(1)
+    t = 0.0
+    while True:
+        t += 0.1
+        
+        # 1. ADXL345: Java usa objectMapper -> ENVIAR JSON
+        adxl_data = {
+            "x": round(math.sin(t) * 0.5, 2),
+            "y": round(math.cos(t) * 0.3, 2),
+            "z": round(9.8 + random.uniform(-0.1, 0.1), 2),
+            "pitch": round(math.sin(t) * 10, 2),
+            "roll": round(math.cos(t) * 5, 2)
+        }
+        client.publish(TOPIC_ADXL, json.dumps(adxl_data))
 
-t = 0
-while True:
-    t += 0.1
-    
-    # 1. Simular ADXL345 (Oscilaciones suaves)
-    adxl_data = {
-        "x": round(math.sin(t) * 0.5, 2),
-        "y": round(math.cos(t) * 0.3, 2),
-        "z": round(9.8 + random.uniform(-0.1, 0.1), 2),
-        "pitch": round(math.sin(t) * 10, 2),
-        "roll": round(math.cos(t) * 5, 2)
-    }
-    client.publish(TOPIC_ADXL, json.dumps(adxl_data))
+        # 2. FLOW: Java usa objectMapper con FlowWrapper -> ENVIAR JSON
+        caudales_lista = []
+        for i in range(1, 13):
+            caudales_lista.append({
+                "id": i, 
+                "flowRate": round(random.uniform(1.5, 12.0), 2)
+            })
+        client.publish(TOPIC_FLOW, json.dumps({"sensores": caudales_lista}))
 
-    # 2. Simular Frecuencia (Vibración)
-    freq_data = {
-        "frecuencia": round(50.0 + random.uniform(-2.0, 2.0), 2)
-    }
-    client.publish(TOPIC_FRECUENCIA, json.dumps(freq_data))
+        # 3. FRECUENCIA: Java usa objectMapper -> ENVIAR JSON
+        freq_data = {"frecuencia": round(50.0 + random.uniform(-2.0, 2.0), 2)}
+        client.publish(TOPIC_FRECUENCIA, json.dumps(freq_data))
 
-    # 3. Simular 12 Sensores de Caudal (Estructura FlowWrapper)
-    # Generamos una lista de 12 sensores con IDs del 1 al 12
-    caudales_lista = []
-    for i in range(1, 13):
-        caudales_lista.append({
-            "id": i,
-            "flowRate": round(random.uniform(1.5, 12.0), 2)
-        })
-    
-    # El JSON debe llevar la clave "sensores" para que FlowWrapper.java lo entienda
-    flow_wrapper = {
-        "sensores": caudales_lista
-    }
-    client.publish(TOPIC_FLOW, json.dumps(flow_wrapper))
+        # 4. PESO, VELOCIDAD Y GAUGES: 
+        # Java usa Double.parseDouble(payload.trim()) -> ENVIAR SOLO EL NÚMERO (STRING)
+        
+        peso = round(random.uniform(0, 500), 2)
+        client.publish(TOPIC_WEIGHT, str(peso)) # Envía "123.45"
 
-    print(f"[{time.strftime('%H:%M:%S')}] Datos enviados a los topics...")
-    time.sleep(1) # Envío cada segundo
+        velocidad = round(random.uniform(0, 100), 2)
+        client.publish(TOPIC_SPEED, str(velocidad))
+
+        engine_gauge = round(random.uniform(0, 100), 2)
+        client.publish(TOPIC_ENGINE_GAUGE, str(engine_gauge))
+
+        dropper_gauge = round(random.uniform(0, 100), 2)
+        client.publish(TOPIC_DROPPER_GAUGE, str(dropper_gauge))
+
+        print(f"[{time.strftime('%H:%M:%S')}] Telemetría enviada (Mix JSON/Texto)")
+        time.sleep(0.5)
+
+except KeyboardInterrupt:
+    print("\nSimulación detenida.")
+finally:
+    client.loop_stop()
+    client.disconnect()

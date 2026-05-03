@@ -49,8 +49,35 @@
                 </div>
             </div>
 
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-wave-square"></i> Speed</div>
+                <div style="text-align: center;">
+                    <span id="val-speed" style="font-size: 3rem; font-weight: 800; color: #c5a059;">0.0</span>
+                    <span style="font-size: 1.2rem; color: #888;">km/h</span>
+                </div>
+            </div>
+
             <div class="sensor-card" style="min-height: 220px;">
                 <div class="card-header"><i class="fas fa-tachometer-alt"></i> Engine Power</div>
+                
+                <div class="gauge-main-container" style="width: 200px; height: 120px; margin: 20px auto; position: relative;">
+                    <div class="gauge-arc-visual" style="position: absolute; width: 200px; height: 100px; overflow: hidden; top: 0; left: 0;">
+                        <div style="width: 200px; height: 200px; border-radius: 50%; border: 15px solid #e0e0e0; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); box-sizing: border-box;"></div>
+                    </div>
+                    
+                    <div id="gauge-needle" style="position: absolute; bottom: 20px; left: 50%; width: 4px; height: 75px; background: #ff0000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 0.5s ease; z-index: 10; border-radius: 2px;"></div>
+                    
+                    <div style="position: absolute; bottom: 15px; left: 50%; width: 12px; height: 12px; background: #333; border-radius: 50%; transform: translateX(-50%); z-index: 11;"></div>
+
+                    <div style="position: absolute; bottom: -30px; width: 100%; text-align: center;">
+                        <div id="gauge-text" style="font-size: 2rem; font-weight: 800; color: #005aab;">0%</div>
+                        <div style="font-size: 0.7rem; color: #999; font-weight: bold; letter-spacing: 1px;">LOAD</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sensor-card" style="min-height: 220px;">
+                <div class="card-header"><i class="fas fa-tachometer-alt"></i> Dropper Power</div>
                 
                 <div class="gauge-main-container" style="width: 200px; height: 120px; margin: 20px auto; position: relative;">
                     <div class="gauge-arc-visual" style="position: absolute; width: 200px; height: 100px; overflow: hidden; top: 0; left: 0;">
@@ -77,7 +104,7 @@
                     <i class="fas fa-download"></i> Stop & Download
                 </button>
                 <div id="recordStatus" class="status-rec">
-                    <i class="fas fa-circle blink"></i> RECORDING DATA...
+                    <i class="fas fa-circle blink"></i> PRESS START TO BEGIN...
                 </div>
             </div>
         </div>
@@ -117,9 +144,28 @@
                 document.getElementById('val-freq').innerText = data.frecuency_sensor.frecuency.toFixed(1);
             }
 
+            // Speed
+            if (data.speed) {
+                document.getElementById('val-speed').innerText = data.speed.speedValue.toFixed(1);
+            }
+
             // --- GAUGE UPDATE ---
             if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
                 const val = parseFloat(data.engine_gauge.gaugeValue);
+                const textEl = document.getElementById('gauge-text');
+                const needleEl = document.getElementById('gauge-needle');
+
+                if(textEl) textEl.innerText = Math.round(val) + "%";
+                if(needleEl) {
+                    // 0% -> -90deg, 100% -> 90deg
+                    const degrees = (val * 1.8) - 90;
+                    needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+                }
+            }
+
+            // --- DROPPER GAUGE UPDATE ---
+            if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
+                const val = parseFloat(data.dropper_gauge.dropperValue);
                 const textEl = document.getElementById('gauge-text');
                 const needleEl = document.getElementById('gauge-needle');
 

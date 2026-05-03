@@ -1,17 +1,22 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter; // IMPORTANTE: Nuevo import
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/export")
@@ -20,9 +25,10 @@ public class DataExportController {
     private final MqttListener mqttListener;
     private boolean isRecording = false;
     private final List<String[]> recordedData = Collections.synchronizedList(new ArrayList<>());
-    
-    // Definimos el formato: Año-Mes-Día Hora:Min:Seg.Milisegundos
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    
+    // Intervalo de tiempo coincide con Thread.sleep(250) -> 0.25 segundos
+    private final double DELTA_T = 0.25;
 
     public DataExportController(MqttListener mqttListener) {
         this.mqttListener = mqttListener;
@@ -42,7 +48,7 @@ public class DataExportController {
                 while (isRecording) {
                     captureSnapshot();
                     try { 
-                        Thread.sleep(250); // Muestreo cada 0.25s (4Hz)
+                        Thread.sleep(250); 
                     } catch (InterruptedException e) { 
                         Thread.currentThread().interrupt(); 
                         break; 
@@ -58,25 +64,51 @@ public class DataExportController {
         Sensor2Data freq = mqttListener.getLastSensor2Data();
         Map<Integer, Sensor3Data> flows = mqttListener.getAllFlowData();
         Sensor4Data engine = mqttListener.getLastSensor4Data();
+        Sensor5Data dropper = mqttListener.getLastSensor5Data();
+        Sensor6Data weight = mqttListener.getLastSensor6Data();
+        Sensor7Data speed = mqttListener.getLastSensor7Data();
 
-        String[] row = new String[11]; 
+        String[] row = new String[12]; 
         
-        // --- CAMBIO AQUÍ: Tiempo legible con milisegundos ---
         row[0] = LocalDateTime.now().format(timeFormatter);
+        row[1] = formatDecimal(adxl.getPitch());
+        row[2] = formatDecimal(adxl.getRoll());
+        row[3] = formatDecimal(freq.getFrecuency());
+        row[4] = formatDecimal(engine.getGaugeValue());
+        row[5] = formatDecimal(dropper.getDropperValue());
+        row[6] = formatDecimal(weight.getWeightValue());
         
-        row[1] = formatDecimal(adxl.getX());
-        row[2] = formatDecimal(adxl.getY());
-        row[3] = formatDecimal(adxl.getZ());
-        row[4] = formatDecimal(adxl.getPitch());
-        row[5] = formatDecimal(adxl.getRoll());
-        row[6] = formatDecimal(freq.getFrecuency());
-        row[7] = formatDecimal(engine.getGaugeValue());
+        double currentSpeed = (speed.getSpeedValue() != null) ? speed.getSpeedValue() : 0.0;
+        row[7] = formatDecimal(currentSpeed);
         
+        // --- CÁLCULO DE ACELERACIÓN ---
+        row[8] = formatDecimal(calculateAcceleration(currentSpeed));
+
         for (int i = 1; i <= 3; i++) {
             Sensor3Data f = flows.get(i);
-            row[7 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
+            row[8 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
         }
+        
         recordedData.add(row);
+    }
+
+    private double calculateAcceleration(double currentSpeed) {
+        synchronized (recordedData) {
+            if (recordedData.isEmpty()) {
+                return 0.0; // En el primer punto la aceleración es 0
+            }
+            
+            try {
+                // Obtenemos la velocidad del registro anterior (índice 7 del array de strings)
+                String lastRow[] = recordedData.get(recordedData.size() - 1);
+                double lastSpeed = Double.parseDouble(lastRow[7].replace(',', '.'));
+                
+                // Aceleración = (V_final - V_inicial) / Tiempo
+                return (currentSpeed - lastSpeed) / DELTA_T;
+            } catch (Exception e) {
+                return 0.0;
+            }
+        }
     }
 
     private String formatDecimal(Object value) {
@@ -87,14 +119,11 @@ public class DataExportController {
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {
         isRecording = false;
-        
-        if (session.getAttribute("currentUser") == null) {
-            return ResponseEntity.status(403).build();
-        }
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(403).build();
 
         StringBuilder csv = new StringBuilder();
-        // Cabecera clara
-        csv.append("Fecha_Hora_MS;Eje_X;Eje_Y;Eje_Z;Pitch;Roll;Vibracion_Hz;Motor_Load;Caudal_1;Caudal_2;Caudal_3\n");
+        // Cabecera actualizada con Aceleración
+        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Motor_Load;Dropper_Load;Peso_Kg;Velocidad_RPM;Aceleracion_RPM_s2;Caudal_1;Caudal_2;Caudal_3\n");
         
         synchronized (recordedData) {
             for (String[] row : recordedData) {
@@ -103,9 +132,8 @@ public class DataExportController {
         }
 
         byte[] bytes = csv.toString().getBytes(StandardCharsets.UTF_8);
-        
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_mesa_" + System.currentTimeMillis() + ".csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_aceleracion_" + System.currentTimeMillis() + ".csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(bytes);
     }
