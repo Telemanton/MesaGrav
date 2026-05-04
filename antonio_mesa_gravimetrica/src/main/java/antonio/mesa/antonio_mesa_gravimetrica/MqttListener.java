@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +21,7 @@ public class MqttListener {
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 /// MQTT Broker configuration
-    private static final String BROKER_URL = "tcp://localhost:1883";
+    private static final String BROKER_URL = "tcp://10.3.141.75:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
@@ -47,6 +49,10 @@ public class MqttListener {
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<Integer, Sensor3Data> flowSensorsMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private MqttClient client;
 
     public Map<Integer, Sensor3Data> getAllFlowData() { return flowSensorsMap; }
@@ -169,8 +175,11 @@ public class MqttListener {
                     FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
                     if (wrapper.getSensores() != null) {
                         for (Sensor3Data sensor : wrapper.getSensores()) {
-                        flowSensorsMap.put(sensor.getId(), sensor);
+                            flowSensorsMap.put(sensor.getId(), sensor);
                         }
+
+                        // Envía el objeto completo al canal que escuchará el HTML
+                        messagingTemplate.convertAndSend("/topic/flow", wrapper);
                     }
 
                     System.out.println("Actualizados " + wrapper.getSensores().size() + " sensores de caudal.");

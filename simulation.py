@@ -6,7 +6,7 @@ import math
 import sys
 
 # --- CONFIGURACIÓN DEL BROKER ---
-BROKER = "localhost"  
+BROKER = "10.3.141.1"  
 PORT = 1883
 
 # Tópicos (Deben coincidir exactamente con MqttListener.java)

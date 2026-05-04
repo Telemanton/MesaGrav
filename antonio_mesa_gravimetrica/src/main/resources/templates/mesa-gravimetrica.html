@@ -124,8 +124,46 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
 <script>
-    async function updateDashboard() {
+    let stompClient = null;
+
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // Suscribirse al tópico de caudales
+            stompClient.subscribe('/topic/flow', function (message) {
+                const flowData = JSON.parse(message.body);
+                updateFlowSensors(flowData);
+            });
+
+            // Mantener el polling para otros sensores por ahora
+            setInterval(updateOtherSensors, 1000);
+        }, function (error) {
+            console.log('Error: ' + error);
+            setTimeout(connect, 5000);
+        });
+    }
+
+    function updateFlowSensors(flowData) {
+        if (flowData.sensores) {
+            for (let i = 0; i < flowData.sensores.length; i++) {
+                const sensor = flowData.sensores[i];
+                const element = document.getElementById('flow-' + sensor.id);
+                if (element) {
+                    element.innerText = sensor.flowRate.toFixed(2);
+                }
+            }
+        }
+    }
+
+    async function updateOtherSensors() {
         try {
             const response = await fetch('/sensor');
             const data = await response.json();
@@ -149,7 +187,7 @@
                 document.getElementById('val-speed').innerText = data.speed.speedValue.toFixed(1);
             }
 
-            // --- GAUGE UPDATE ---
+            // Engine gauge
             if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
                 const val = parseFloat(data.engine_gauge.gaugeValue);
                 const textEl = document.getElementById('gauge-text');
@@ -157,37 +195,40 @@
 
                 if(textEl) textEl.innerText = Math.round(val) + "%";
                 if(needleEl) {
-                    // 0% -> -90deg, 100% -> 90deg
                     const degrees = (val * 1.8) - 90;
                     needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
                 }
             }
 
-            // --- DROPPER GAUGE UPDATE ---
+            // Dropper gauge
             if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
                 const val = parseFloat(data.dropper_gauge.dropperValue);
+                // Note: This will update the same gauge as engine_gauge
+                // You might want to create separate gauge elements
                 const textEl = document.getElementById('gauge-text');
                 const needleEl = document.getElementById('gauge-needle');
 
                 if(textEl) textEl.innerText = Math.round(val) + "%";
                 if(needleEl) {
-                    // 0% -> -90deg, 100% -> 90deg
                     const degrees = (val * 1.8) - 90;
                     needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
                 }
             }
 
-            // Caudales
+            // Caudales fallback desde el endpoint REST
             if (data.caudales) {
-                for (let i = 1; i <= 3; i++) {
-                    const sensor = data.caudales[i];
-                    const element = document.getElementById('flow-' + i);
-                    if (element) {
-                        element.innerText = sensor ? sensor.flowRate.toFixed(2) : "0.00";
+                Object.keys(data.caudales).forEach(key => {
+                    const sensorId = parseInt(key);
+                    const sensor = data.caudales[key];
+                    const element = document.getElementById('flow-' + sensorId);
+                    if (element && sensor && sensor.flowRate !== undefined) {
+                        element.innerText = sensor.flowRate.toFixed(2);
                     }
-                }
+                });
             }
-        } catch (error) { console.error("Error fetching sensor data:", error); }
+        } catch (error) {
+            console.error("Error fetching sensor data:", error);
+        }
     }
 
     function startRecording() {
@@ -209,7 +250,11 @@
         }, 1500);
     }
 
-    setInterval(updateDashboard, 250);
+    // Conectar WebSocket al cargar la página
+    window.onload = function() {
+        updateOtherSensors();
+        connect();
+    };
 </script>
 
 </body>
