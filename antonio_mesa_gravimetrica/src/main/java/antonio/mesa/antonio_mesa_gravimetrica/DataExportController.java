@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +19,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 
+// congelado
 @RestController
 @RequestMapping("/export")
 public class DataExportController {
 
     private final MqttListener mqttListener;
+    
+    // 1. Inyectamos el servicio de registro para la BBDD
+    @Autowired
+    private RegistroService registroService;
+
     private boolean isRecording = false;
     private final List<String[]> recordedData = Collections.synchronizedList(new ArrayList<>());
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     
-    // Intervalo de tiempo coincide con Thread.sleep(250) -> 0.25 segundos
     private final double DELTA_T = 0.25;
 
     public DataExportController(MqttListener mqttListener) {
@@ -44,6 +50,8 @@ public class DataExportController {
             recordedData.clear();
             isRecording = true;
             
+            // Every 250ms, captures a snapshot which contains the actual data in the MqttListener and stores it in the "recordedData" list within the RAM.
+            // This process continues until the user stops the recording.
             new Thread(() -> {
                 while (isRecording) {
                     captureSnapshot();
@@ -80,8 +88,6 @@ public class DataExportController {
         
         double currentSpeed = (speed.getSpeedValue() != null) ? speed.getSpeedValue() : 0.0;
         row[7] = formatDecimal(currentSpeed);
-        
-        // --- CÁLCULO DE ACELERACIÓN ---
         row[8] = formatDecimal(calculateAcceleration(currentSpeed));
 
         for (int i = 1; i <= 3; i++) {
@@ -94,16 +100,10 @@ public class DataExportController {
 
     private double calculateAcceleration(double currentSpeed) {
         synchronized (recordedData) {
-            if (recordedData.isEmpty()) {
-                return 0.0; // En el primer punto la aceleración es 0
-            }
-            
+            if (recordedData.isEmpty()) return 0.0;
             try {
-                // Obtenemos la velocidad del registro anterior (índice 7 del array de strings)
                 String lastRow[] = recordedData.get(recordedData.size() - 1);
                 double lastSpeed = Double.parseDouble(lastRow[7].replace(',', '.'));
-                
-                // Aceleración = (V_final - V_inicial) / Tiempo
                 return (currentSpeed - lastSpeed) / DELTA_T;
             } catch (Exception e) {
                 return 0.0;
@@ -116,24 +116,42 @@ public class DataExportController {
         return String.valueOf(value).replace('.', ',');
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////// de aquí hasta arriba congelado
+
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {
+        // 1. Detenemos la grabación inmediatamente
         isRecording = false;
+        
         if (session.getAttribute("currentUser") == null) return ResponseEntity.status(403).build();
 
+        // 2. Generamos el contenido del CSV primero
         StringBuilder csv = new StringBuilder();
-        // Cabecera actualizada con Aceleración
         csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Motor_Load;Dropper_Load;Peso_Kg;Velocidad_RPM;Aceleracion_RPM_s2;Caudal_1;Caudal_2;Caudal_3\n");
         
+        String csvFinal;
         synchronized (recordedData) {
             for (String[] row : recordedData) {
                 csv.append(String.join(";", row)).append("\n");
             }
+            csvFinal = csv.toString();
+            // Limpiamos los datos después de generar el String para el siguiente ensayo
+            recordedData.clear();
         }
 
-        byte[] bytes = csv.toString().getBytes(StandardCharsets.UTF_8);
+        // 3. Guardamos EXACTAMENTE lo mismo que se descarga en la BBDD
+        try {
+            // Pasamos el csvFinal al servicio para asegurar integridad absoluta
+            registroService.guardarEnHistorico(csvFinal);
+            System.out.println("✅ Histórico blindado en BBDD correctamente.");
+        } catch (Exception e) {
+            System.err.println("❌ Error al guardar histórico en BBDD: " + e.getMessage());
+        }
+
+        // 4. Enviamos el archivo al usuario
+        byte[] bytes = csvFinal.getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_aceleracion_" + System.currentTimeMillis() + ".csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_mesa_" + System.currentTimeMillis() + ".csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(bytes);
     }

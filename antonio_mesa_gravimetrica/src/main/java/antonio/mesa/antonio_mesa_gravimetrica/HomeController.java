@@ -1,9 +1,14 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -17,9 +22,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 
 
@@ -29,10 +40,20 @@ public class HomeController {
 
 
     @Autowired
+    private HistoricoRepository historicoRepository;
+
+    @Autowired
     private AppUserDAO userRepository;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RegistroService registroService;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          PUBLIC ACCESS SECTION
@@ -340,7 +361,7 @@ public class HomeController {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          AUXILIAR METHODS SECTION
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    
     // --- LOGOUT ---
 
     @PostMapping("/logout")
@@ -372,8 +393,76 @@ public class HomeController {
         }
 
         return "redirect:/";
+
+    
+        
     }
+
+  
+    @GetMapping("/historicos")
+    public String listarHistoricos(Model model) {
+        // Obtenemos todos los registros ordenados por fecha descendente
+        model.addAttribute("registros", historicoRepository.findAll());
+        return "historicos"; // Nombre del nuevo HTML
+    }
+
+    @GetMapping("/descargar/{id}")
+public ResponseEntity<byte[]> descargarArchivo(@PathVariable Long id) {
+    try {
+        Historico h = historicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No encontrado"));
+
+        // 1. Decodificamos el Base64
+        byte[] comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
+
+        // 2. Descomprimimos usando el método moderno de Java (readAllBytes)
+        byte[] descomprimido;
+        try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
+            descomprimido = gis.readAllBytes(); 
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_recuperado_" + id + ".csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(descomprimido);
+
+    } catch (Exception e) {
+        // Esto imprimirá en tu consola de IntelliJ/Eclipse qué está fallando exactamente
+        e.printStackTrace(); 
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
+/* 
+private String descompactar(String datosBase64) throws Exception {
+    byte[] comprimido = Base64.getDecoder().decode(datosBase64);
+    try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
+        byte[] descompuesto = gis.readAllBytes(); 
+        return new String(descompuesto, StandardCharsets.UTF_8);
+    }
+}
+
+// Función para transformar el objeto recuperado en filas de CSV
+private String convertirPayloadACSV(SessionPayload p) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Variable;Valor\n");
+    sb.append("Dispositivo;Mesa de concentración gravimétrica\n");
+    sb.append("Pitch;").append(p.adxl.getPitch()).append("\n");
+    sb.append("Roll;").append(p.adxl.getRoll()).append("\n");
+    sb.append("Frecuencia;").append(p.frecuencia.getFrecuency()).append("\n");
+    sb.append("Peso;").append(p.weight.getWeightValue()).append("\n");
+    // Añade aquí todas las variables que capturaste en SessionPayload
+    return sb.toString();
+}*/
+
+}
+
+
 
     
 
-}
+    
+
+    
+
+    
+
