@@ -40,14 +40,12 @@ public class SecurityConfig {
      * Configures the security filter chain for the application to control access to different endpoints
      * based on authentication and authorization rules.
      *
-     * <p>Security Configuration Details:
-     * <ul>
-     *   <li>Public endpoints (permitAll): Authorization page and URL for login process</li>
-     *   <li>All other endpoints require authentication</li>
-     *   <li>CSRF protection is disabled</li>
-     *   <li>Default form login is disabled to allow custom login handling</li>
-     *   <li>Logout functionality redirects to home page and invalidates session</li>
-     * </ul>
+     * Security Configuration Details:
+     *   - Public endpoints (permitAll): Authorization page and URL for login process
+     *   - All other endpoints require authentication
+     *   - CSRF protection is disabled in order to simplify the implementation (not recommended for production)
+     *   - Default form login is disabled to allow custom login handling
+     *   - Logout functionality redirects to home page and invalidates session
      *
      * @param http the {@link HttpSecurity} object used to configure security settings
      *

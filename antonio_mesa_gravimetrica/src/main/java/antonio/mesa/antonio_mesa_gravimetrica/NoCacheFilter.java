@@ -23,10 +23,10 @@ import jakarta.servlet.http.HttpServletResponse;
  * - Expires: 0
  * 
  * This ensures that after logout, when a user presses the back button,
- * the browser will request a fresh copy from the server (which will
- * redirect them to login since their session is invalidated).
+ * the browser will request which will
+ * redirect them to login since their session is invalidated.
  */
-@Component
+@Component // Marks this class as a Spring component by allowing it the implementation in the class
 public class NoCacheFilter extends OncePerRequestFilter {
 
     @Override
@@ -36,6 +36,7 @@ public class NoCacheFilter extends OncePerRequestFilter {
         // Add no-cache headers to prevent browser caching
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private, max-age=0");
         response.setHeader("Pragma", "no-cache");
+        // Set Expires to a past date to ensure the content is considered expired
         response.setHeader("Expires", "0");
         
         // Continue with the filter chain

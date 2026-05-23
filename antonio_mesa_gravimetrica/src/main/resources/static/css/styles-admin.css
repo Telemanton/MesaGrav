@@ -13,6 +13,7 @@ table.dataTable { margin-top: 2rem !important; }
     text-decoration: none;
     margin-right: 8px;
     font-size: 14px;
+    user-select: none;
 }
 
 .btn-edit:hover {
@@ -26,6 +27,7 @@ table.dataTable { margin-top: 2rem !important; }
     border-radius: 2px;
     text-decoration: none;
     font-size: 14px;
+    user-select: none;
 }
 
 .btn-delete:hover {
@@ -45,6 +47,7 @@ table.dataTable { margin-top: 2rem !important; }
     color: white;
     text-decoration: none;
     border-radius: 6px;
+    user-select: none;
 }
 
 .btn-back:hover { background: #4b5563; }
@@ -70,6 +73,7 @@ table.dataTable { margin-top: 2rem !important; }
     text-transform: uppercase; 
     letter-spacing: 2px; 
     font-weight: 800;
+    user-select: none;
 }
 
 .btn-admin { 
@@ -84,6 +88,7 @@ table.dataTable { margin-top: 2rem !important; }
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    user-select: none;
 }
 
 .btn-admin:hover { 

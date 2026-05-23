@@ -14,7 +14,7 @@
             transition: transform 0.2s, border-color 0.2s;
             border: 2px solid transparent;
             text-align: left;
-
+            user-select: none;
         }
         .history-card:hover {
             transform: translateY(-15px);

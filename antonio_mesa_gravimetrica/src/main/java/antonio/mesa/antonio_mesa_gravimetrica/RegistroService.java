@@ -9,15 +9,14 @@ public class RegistroService {
     @Autowired
     private HistoricoRepository historicoRepository;
 
-    // Ahora acepta el contenido del CSV como parámetro
     public void guardarEnHistorico(String contenidoCsv) throws Exception {
-        // 1. Compactamos el contenido recibido
+        // Compacts the CSV content using GZIP and encodes it in Base64 to save space in the database
         String datosCompactados = compactar(contenidoCsv);
         
-        // 2. Calculamos el Checksum del contenido original
+        // Calculates a checksum of the original CSV content to ensure data integrity and allow verification of the stored data in the future. This checksum can be used to detect any corruption or tampering with the data when it is retrieved from the database. By comparing the checksum of the retrieved data with the original checksum, we can confirm that the data has not been altered and is intact. This adds an extra layer of security and reliability to our data storage process.
         String checksum = generarChecksum(contenidoCsv);
         
-        // 3. Creamos la entidad y guardamos
+        // Creates a new Historico entity with the compacted data and its checksum, and saves it to the database using the HistoricoRepository.
         Historico registro = new Historico(datosCompactados, checksum);
         historicoRepository.save(registro);
     }

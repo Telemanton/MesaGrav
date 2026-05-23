@@ -73,7 +73,7 @@ public class HttpsConfig {
         Connector connector = new Connector(); 
         connector.setScheme("http");
         connector.setPort(80); 
-        connector.setSecure(false); 
+        connector.setSecure(false); // This is necessary to indicate that this connector is not secure, it will just redirect to the secure port
         connector.setRedirectPort(443); 
         return connector;
     }

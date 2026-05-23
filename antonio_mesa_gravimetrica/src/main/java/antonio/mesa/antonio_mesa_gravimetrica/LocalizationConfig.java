@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -36,9 +35,8 @@ public class LocalizationConfig implements WebMvcConfigurer {
     @Bean
     public ResourceBundleMessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("i18n/messages");
+        messageSource.setBasename("i18n/messages"); // Base name for message properties files (e.g., messages_en.properties, messages_es.properties)
         messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setCacheSeconds(3600); // Cache messages for 1 hour
         return messageSource;
     }
 
@@ -49,10 +47,8 @@ public class LocalizationConfig implements WebMvcConfigurer {
      */
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver resolver = new CookieLocaleResolver();
-        resolver.setDefaultLocale(new Locale("es")); // Default language: Spanish
-        resolver.setCookieName("app_language");
-        resolver.setCookieMaxAge(365 * 24 * 60 * 60); // Persist for 1 year
+        CookieLocaleResolver resolver = new CookieLocaleResolver("app_language");
+        resolver.setDefaultLocale(Locale.of("es")); // Default language: Spanish
         return resolver;
     }
 
@@ -68,15 +64,5 @@ public class LocalizationConfig implements WebMvcConfigurer {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
         interceptor.setParamName("lang"); // URL parameter name for language change
         return interceptor;
-    }
-
-    /**
-     * Registers the LocaleChangeInterceptor to intercept all requests.
-     * 
-     * @param registry the InterceptorRegistry to add the interceptor to
-     */
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
     }
 }

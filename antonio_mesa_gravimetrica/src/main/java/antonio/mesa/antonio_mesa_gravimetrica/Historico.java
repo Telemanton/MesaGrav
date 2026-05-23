@@ -1,7 +1,13 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "historico")
@@ -15,7 +21,7 @@ public class Historico {
     private LocalDateTime fechaRegistro;
 
     @Column(name = "dispositivo_id")
-    private String dispositivoId = "Mesa de concentración gravimétrica";
+    private String dispositivoId = "Mesa de concentración gravimétrica"; // to be changed in future implementations 
 
     @Column(name = "datos_compactados", columnDefinition = "TEXT")
     private String datosCompactados;
@@ -23,19 +29,15 @@ public class Historico {
     @Column(name = "checksum", length = 64)
     private String checksum;
 
-    // Constructor vacío (Obligatorio para JPA)
     public Historico() {
     }
 
-    // Constructor para guardar nuevos registros
     public Historico(String datosCompactados, String checksum) {
         this.datosCompactados = datosCompactados;
         this.checksum = checksum;
-        this.dispositivoId = "Mesa de concentración gravimétrica";
+        this.dispositivoId = "Mesa de concentración gravimétrica"; // to be changed in future implementations
         this.fechaRegistro = LocalDateTime.now(); // Asignamos la fecha al crear el objeto
     }
-
-    // --- GETTERS Y SETTERS (Indispensables para Thymeleaf) ---
 
     public Long getId() {
         return id;

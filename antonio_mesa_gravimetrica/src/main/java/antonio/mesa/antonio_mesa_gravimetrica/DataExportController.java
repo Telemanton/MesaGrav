@@ -19,14 +19,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 
-// congelado
 @RestController
 @RequestMapping("/export")
 public class DataExportController {
 
     private final MqttListener mqttListener;
     
-    // 1. Inyectamos el servicio de registro para la BBDD
+    //////////////////////////////////////////////////////////////////////////////////////////// 
+    /// DataExportController class documentation
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    /// The DataExportController class is responsible for handling the recording and exporting of sensor data in CSV format.
+    /// It provides two main endpoints:
+    /// - POST /export/start: Starts the recording of sensor data. It captures snapshots of the current sensor data every 250 milliseconds and stores them in memory until the recording is stopped.
+    /// - GET /export/download: Stops the recording and generates a CSV file with the recorded
+    /// data. The CSV file is then sent to the user as a downloadable response. Additionally, the same CSV content is saved in the database for historical records.
+    ///
     @Autowired
     private RegistroService registroService;
 
@@ -116,7 +123,7 @@ public class DataExportController {
         return String.valueOf(value).replace('.', ',');
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////// de aquí hasta arriba congelado
+    //////////////////////////////////////////////////////////////////////////////////////////// 
 
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {

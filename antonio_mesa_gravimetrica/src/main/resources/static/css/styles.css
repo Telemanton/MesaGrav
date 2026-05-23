@@ -6,6 +6,12 @@ html, body {
     overflow-x: hidden; /* Evita scroll horizontal por la caja extendida */
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: #f9f9f9;
+    user-select: none;
+}
+
+/* Permitir selección solo en inputs, textareas y áreas de contenido */
+input, textarea, [contenteditable="true"] {
+    user-select: text;
 }
 
 #layout { display: flex; flex-direction: column; min-height: 100vh; }
