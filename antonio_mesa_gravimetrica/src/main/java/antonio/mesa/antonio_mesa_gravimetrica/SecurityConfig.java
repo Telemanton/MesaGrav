@@ -65,6 +65,10 @@ SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .csrf(csrf -> csrf.disable()) // Disable CSRF protection for simplicity (not recommended for production)
         .formLogin(form -> form.disable()) // Disable default form login (In order to handle it manually)
 
+        .headers(headers -> headers
+            .cacheControl(cache -> cache.disable()) // Disable default cache control to use custom headers
+        )
+
         .logout(logout -> logout
             .logoutUrl("/logout") // URL trigger for logout
             .logoutSuccessUrl("/") // Here indicates that after logout, the user will be redirected to the home page ("/")

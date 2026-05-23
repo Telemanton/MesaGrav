@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Ensayos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles-mesagrav.css}">
+    <link rel="stylesheet" th:href="@{/css/styles-historicos.css}">
+    
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1><i class="fas fa-archive"></i> Registro mesa de concentración gravimétrica</h1>
+        <a th:href="@{/mesa-gravimetrica}" class="btn-link" style="color: white; text-decoration: none;">
+            <i class="fas fa-arrow-left"></i> Volver al Panel
+        </a>
+    </header>
+
+    <div class="history-grid">
+        <div th:each="reg : ${registros}" 
+             class="history-card" 
+             th:onclick="'window.location.href=\'/descargar/' + ${reg.id} + '\''">
+            
+            <i class="fas fa-file-invoice"></i>
+            <span class="history-date" th:text="${#temporals.format(reg.fechaRegistro, 'dd/MM/yyyy HH:mm:ss')}">Fecha</span>
+            <span class="history-id" th:text="${reg.dispositivoId}">Dispositivo</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

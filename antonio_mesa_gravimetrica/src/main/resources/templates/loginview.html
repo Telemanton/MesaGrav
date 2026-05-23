@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="es" dir="ltr">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="robots" content="noindex, nofollow">
     
-    <title id="page-title">Indique su nombre de usuario y clave de acceso</title>
+    <title th:text="#{login.title}">Indique su nombre de usuario y clave de acceso</title>
 
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="icon" href="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/favicon.ico?tag=06950">
@@ -24,8 +24,8 @@
                 <div class="language-selection">
                     <form class="pure-form">
                         <select aria-label="Language" id="language-selector">
-                            <option value="es" selected>🌐 Español</option>
-                            <option value="en">🌐 English</option>
+                            <option value="es" th:selected="${#locale.language == 'es'}">🌐 Español</option>
+                            <option value="en" th:selected="${#locale.language == 'en'}">🌐 English</option>
                         </select>
                     </form>
                 </div>
@@ -43,17 +43,17 @@
                                 <input type="hidden" name="authsource">
                                 
                                 <div class="pure-control-group">
-                                    <label id="label-user" for="username">Nombre de usuario</label>
+                                    <label id="label-user" for="username" th:text="#{login.username}">Nombre de usuario</label>
                                     <input id="username" type="text" name="username" required>
                                 </div>
 
                                 <div class="pure-control-group">
-                                    <label id="label-pass" for="password">Clave de acceso</label>
+                                    <label id="label-pass" for="password" th:text="#{login.password}">Clave de acceso</label>
                                     <input id="password" type="password" name="password" required>
                                 </div>
 
                                 <div class="pure-controls">
-                                    <button type="submit" id="btn-login" class="pure-button pure-button-primary">Acceder</button>
+                                    <button type="submit" id="btn-login" class="pure-button pure-button-primary" th:text="#{login.button}">Acceder</button>
                                 </div>
                             </form>
                         </div>
@@ -62,18 +62,18 @@
 
                 <div class="full-width-info">
                     <div class="wrap">
-                        <h6 id="info-title">Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén</h6>
-                        <p id="info-p1">Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.</p>
-                        <p id="info-p2">Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web.</p>
+                        <h6 id="info-title" th:text="#{login.welcome}">Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén</h6>
+                        <p id="info-p1" th:text="#{login.description1}">Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.</p>
+                        <p id="info-p2" th:text="#{login.description2}">Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web.</p>
                     </div>
                 </div>
 
                 <footer class="footer-info">
                     <div class="wrap">
-                        <p><strong>Explotación de Minas - Universidad de Jaén</strong></p>
-                        <p>Carretera de Madrid, s/n 23071 Jaén</p>
-                        <p>Teléfono de Información: XXXXXXXXX</p>
-                        <p>Email: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
+                        <p><strong th:text="#{login.contact}">Explotación de Minas - Universidad de Jaén</strong></p>
+                        <p th:text="#{login.address}">Carretera de Madrid, s/n 23071 Jaén</p>
+                        <p th:text="#{login.phone}">Teléfono de Información: XXXXXXXXX</p>
+                        <p><span th:text="#{login.email}">Email</span>: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
                     </div>
                 </footer>
             </div>
@@ -82,36 +82,25 @@
 
     <script>
         const selector = document.getElementById('language-selector');
-        const texts = {
-            es: {
-                user: "Nombre de usuario",
-                pass: "Clave de acceso",
-                btn: "Acceder",
-                title: "Indique su nombre de usuario y clave de acceso",
-                h2: "Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén",
-                p1: "Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.",
-                p2: "Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web."
-            },
-            en: {
-                user: "Username",
-                pass: "Password",
-                btn: "Sign in",
-                title: "Please enter your username and password",
-                h2: "Welcome to the University of Jaén Industrial Equipment Monitoring Service",
-                p1: "This portal provides real-time data access for machinery within the Mining Operations Department. Log in with your University of Jaén account to view data and set up personalized alerts.",
-                p2: "If you experience any issues logging in, please contact the university's technical support or visit the help section on our website."
-            }
-        };
-
+        
         selector.addEventListener('change', (e) => {
             const lang = e.target.value;
-            document.getElementById('label-user').textContent = texts[lang].user;
-            document.getElementById('label-pass').textContent = texts[lang].pass;
-            document.getElementById('btn-login').textContent = texts[lang].btn;
-            document.getElementById('info-title').textContent = texts[lang].h2;
-            document.getElementById('info-p1').textContent = texts[lang].p1;
-            document.getElementById('info-p2').textContent = texts[lang].p2;
-            document.title = texts[lang].title;
+            // Use fetch to change language via AJAX without creating new history entry
+            fetch('?lang=' + lang, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                // Replace current history entry instead of creating a new one
+                // This way when user clicks back, they go to previous page (not previous language)
+                const url = new URL(window.location);
+                url.searchParams.set('lang', lang);
+                window.history.replaceState({lang: lang}, '', url.toString());
+                
+                // Reload page to apply new language
+                window.location.reload();
+            })
+            .catch(error => console.error('Error changing language:', error));
         });
     </script>
 </body>

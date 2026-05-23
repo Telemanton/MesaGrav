@@ -2,13 +2,13 @@
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Una parte grande y una pequeña */
+    grid-template-columns: 2fr 1fr;
     gap: 25px;
     margin-top: 20px;
 }
 
 .sensor-main-card, .sensor-side-card {
-    background: white;
+    background: #00a651;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -25,7 +25,6 @@
     gap: 10px;
 }
 
-/* Ejes X Y Z */
 .axes-container {
     display: flex;
     justify-content: space-around;
@@ -49,7 +48,6 @@
     color: #333;
 }
 
-/* Pitch & Roll */
 .angle-container {
     display: flex;
     gap: 20px;
@@ -74,10 +72,10 @@
 .angle-value {
     font-size: 1.8rem;
     font-weight: bold;
-    color: #00a651; /* Verde UJA */
+    color: #00a651; 
 }
 
-/* Frecuencia */
+
 .freq-display {
     text-align: center;
     padding: 20px 0;
@@ -100,7 +98,6 @@
     font-size: 0.9rem;
 }
 
-/* Barra de vibración */
 .vibration-bar-container {
     background: #eee;
     height: 10px;
@@ -116,7 +113,6 @@
     transition: width 0.5s ease;
 }
 
-/* Icono de estado parpadeante */
 .status-on-vibrate {
     color: #28a745;
     font-size: 0.8rem;
@@ -129,7 +125,6 @@
     100% { opacity: 1; }
 }
 
-/* Responsive para el grid */
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;

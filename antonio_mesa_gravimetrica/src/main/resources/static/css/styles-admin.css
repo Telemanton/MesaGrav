@@ -6,11 +6,10 @@ table.dataTable { margin-top: 2rem !important; }
 .role-KEYUSER { background: #ff6b35; color: white; }
 .role-USER { background: #10b981; color: white; }
 
-/* Botones Admin */
 .btn-edit {
     color: #3b82f6;
-    padding: 8px 12px;
-    border-radius: 4px;
+    padding: 8px 8px;
+    border-radius: 2px;
     text-decoration: none;
     margin-right: 8px;
     font-size: 14px;
@@ -23,8 +22,8 @@ table.dataTable { margin-top: 2rem !important; }
 
 .btn-delete {
     color: #ef4444;
-    padding: 8px 12px;
-    border-radius: 4px;
+    padding: 8px 8px;
+    border-radius: 2px;
     text-decoration: none;
     font-size: 14px;
 }
