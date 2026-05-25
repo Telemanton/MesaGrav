@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{admin.title}">Panel Admin - UJA</title>
+    <title th:text="#{admin.home}"></title>
     <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
     <link rel="stylesheet" th:href="@{/css/styles-admin.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -16,18 +16,18 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="#" th:text="#{nav.history}">Históricos</a></li>
+                    <li><a href="#" th:text="#{nav.history}"></a></li>
                             <li class="dropdown-container">
                             <a href="#" id="userDropdown">
                                 <i class="fas fa-user-circle"></i>
-                                <span th:text="${currentUser.username}">Usuario</span>
+                                <span th:text="${currentUser.username}"></span>
                             </a>
                             <ul id="dropdownMenu" class="dropdown-content">
-                                <li><a href="#" th:text="#{user.title}">Mi Perfil</a></li>
+                                <li><a href="#" th:text="#{user.title}"></a></li>
                                 <li>
                                     <a href="#"
                                         onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
-                                        th:text="#{nav.logout}">Cerrar sesión</a>
+                                        th:text="#{nav.logout}"></a>
                                 </li>
                             </ul>
                             <form id="logoutForm" th:action="@{/logout}"
@@ -142,5 +142,33 @@
             }
         }
     </script>
+    <script>
+    // 1. Envío del formulario de Logout
+    function submitLogout(event) {
+        event.preventDefault();
+        const form = document.getElementById('logoutForm');
+        if (form) form.submit();
+    }
+
+    // 2. Control del desplegable de usuario (Con funciones seguras)
+    const userBtn = document.getElementById('userDropdown');
+    const userMenu = document.getElementById('dropdownMenu');
+
+    if (userBtn && userMenu) {
+        userBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Evita que el clic se propague y se cierre solo
+            userMenu.classList.toggle('show');
+        };
+    }
+
+    // 3. Cerrar el menú si se hace clic fuera del contenedor
+    window.onclick = function(event) {
+        const menu = document.getElementById('dropdownMenu');
+        if (menu && !event.target.closest('.dropdown-container')) {
+            menu.classList.remove('show');
+        }
+    };
+</script>
 </body>
 </html>

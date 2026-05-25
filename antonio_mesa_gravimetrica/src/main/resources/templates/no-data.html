@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sin datos</title>
+  <title th:text="#{no.data.title}"></title>
   
 </head>
 <body>
   <div class="container">
-    <h1>No hay datos aún</h1>
-    <p>Aún no hay datos en el histórico.</p>
+    <h1 th:text="#{no.data}"></h1>
+    <p th:text="#{no.data.message}"></p>
   </div>
 </body>
 </html>

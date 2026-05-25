@@ -4,29 +4,168 @@
     <meta charset="UTF-8">
     <title>Historial de Ensayos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/styles-mesagrav.css}">
     <link rel="stylesheet" th:href="@{/css/styles-historicos.css}">
-    
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1><i class="fas fa-archive"></i> Registro mesa de concentración gravimétrica</h1>
-        <a th:href="@{/mesa-gravimetrica}" class="btn-link" style="color: white; text-decoration: none;">
-            <i class="fas fa-arrow-left"></i> Volver al Panel
-        </a>
-    </header>
 
-    <div class="history-grid">
-        <div th:each="reg : ${registros}" 
-             class="history-card" 
-             th:onclick="'window.location.href=\'/descargar/' + ${reg.id} + '\''">
-            
-            <i class="fas fa-file-invoice"></i>
-            <span class="history-date" th:text="${#temporals.format(reg.fechaRegistro, 'dd/MM/yyyy HH:mm:ss')}">Fecha</span>
-            <span class="history-id" th:text="${reg.dispositivoId}">Dispositivo</span>
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+        <h2>Eliminar registro</h2>
+        <p>¿Seguro que quieres eliminar este ensayo?<br><strong>Esta acción no se puede deshacer.</strong></p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn">
+                <i class="fas fa-trash-alt"></i> Sí, eliminar
+            </button>
+            <button class="modal-btn modal-btn-cancel" id="cancelDeleteBtn">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
         </div>
     </div>
 </div>
+
+<div class="container">
+    <header>
+        <h1><i class="fas fa-archive"></i> Registro mesa de concentración gravimétrica</h1>
+        <a th:href="@{/mesa-gravimetrica}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver al panel
+        </a>
+    </header>
+
+    <!-- Sin registros -->
+    <div th:if="${#lists.isEmpty(registros)}" class="table-wrap">
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            No hay ensayos registrados todavía.
+        </div>
+    </div>
+
+    <!-- Tabla con registros -->
+    <div th:if="${!#lists.isEmpty(registros)}" class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fecha y hora</th>
+                    <th>Dispositivo</th>
+                    <th class="th-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="reg, iterStat : ${registros}">
+                    <td class="td-id">
+                        <span class="row-num" th:text="${iterStat.count}">1</span>
+                    </td>
+                    <td class="td-date">
+                        <i class="fas fa-calendar-alt" style="color:#c5a059;margin-right:6px;font-size:0.75rem;"></i>
+                        <span th:text="${#temporals.format(reg.fechaRegistro, 'dd/MM/yyyy HH:mm:ss')}">Fecha</span>
+                    </td>
+                    <td class="td-device">
+                        <span class="device-badge">
+                            <i class="fas fa-microchip" style="font-size:0.7rem;"></i>
+                            <span th:text="${reg.dispositivoId}">Dispositivo</span>
+                        </span>
+                    </td>
+                    <td class="td-actions">
+                        <a th:href="@{'/descargar/' + ${reg.id}}" class="btn-action btn-download">
+                            <i class="fas fa-download"></i> Descargar
+                        </a>
+                        <button class="btn-action btn-delete"
+                                th:data-id="${reg.id}"
+                                th:data-fecha="${#temporals.format(reg.fechaRegistro, 'dd/MM/yyyy HH:mm')}"
+                                onclick="askDelete(this)">
+                            <i class="fas fa-trash-alt"></i> Borrar
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let deleteTargetId = null;
+
+    function askDelete(btn) {
+        deleteTargetId = btn.getAttribute('data-id');
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (!deleteTargetId) return;
+        document.getElementById('deleteModal').classList.remove('active');
+        fetch('/borrar/' + deleteTargetId, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    // elimina la fila visualmente sin recargar
+                    const btn = document.querySelector('[data-id="' + deleteTargetId + '"]');
+                    if (btn) {
+                        const row = btn.closest('tr');
+                        row.style.transition = 'opacity 0.3s, transform 0.3s';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(20px)';
+                        setTimeout(() => row.remove(), 320);
+                    }
+                } else {
+                    alert('Error al eliminar el registro. Inténtalo de nuevo.');
+                }
+                deleteTargetId = null;
+            })
+            .catch(() => {
+                alert('Error de conexión al intentar borrar.');
+                deleteTargetId = null;
+            });
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+        document.getElementById('deleteModal').classList.remove('active');
+        deleteTargetId = null;
+    });
+
+    
+</script>
+<script>
+    // Esta función reemplaza la navegación directa de la tarjeta
+    function descargarEnsayo(id) {
+        fetch('/descargar/' + id)
+            .then(response => {
+                // Si el servidor responde con un error (como el 400 Bad Request que configuramos)
+                if (!response.ok) {
+                    // Leemos el encabezado personalizado que enviamos desde Java
+                    const mensaje = response.headers.get('X-Alerta-Mensaje') 
+                        || "AVISO DE SEGURIDAD: Consulte de inmediato al administrador.";
+                    
+                    // Mostramos la alerta en la pantalla del usuario
+                    alert(mensaje);
+                    throw new Error("Descarga bloqueada por integridad de datos.");
+                }
+                // Si la respuesta es correcta, procesamos el archivo como un Blob (binario)
+                return response.blob();
+            })
+            .then(blob => {
+                // Truco estándar de JS para forzar la descarga del archivo CSV limpiamente
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ensayo_recuperado_' + id + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch(error => console.error("Proceso de descarga abortado:", error.message));
+    }
+
+    // Tu función de borrar que ya tenías
+    function eliminarRegistro(event, boton) {
+        event.stopPropagation(); 
+        const registroId = boton.getAttribute('data-id');
+        if (confirm("¿Está seguro de que desea eliminar permanentemente este registro?")) {
+            document.getElementById('deleteInputId').value = registroId;
+            document.getElementById('deleteForm').submit();
+        }
+    }
+</script>
 </body>
 </html>

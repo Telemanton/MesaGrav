@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDA - Panel de Alta Jerárquica</title>
+    <title th:text="#{create.admin.header}"></title>
     <link rel="stylesheet" href="/css/styles-keyuser.css">
     <link rel="stylesheet" href="/css/styles-admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
 <body>
     <header class="pro-header">
         <div class="menu-container">
@@ -16,7 +15,7 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="/admin-home" style="color: white;"><i class="fas fa-shield-halved"></i> Gestión IT</a></li>
+                    <li><a href="/admin-home" style="color: white;"><i class="fas fa-arrow-left"></i></a></li>
                 </ul>
             </nav>
         </div>
@@ -24,7 +23,7 @@
 
     <div class="main-wrapper">
         <section class="intro">
-            <h1><i class="fas fa-user-shield"><span th:text="#{create.admin.title}"></span></i> Alta de Administrador</h1>
+            <h1><i class="fas fa-user-shield"><span th:text="#{create.admin.title}"></span></i></h1>
             <p ><span th:text="#{create.admin.description}"></span></p>
         </section>
 

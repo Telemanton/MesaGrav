@@ -30,4 +30,192 @@
         .history-date { font-weight: bold; color: #333; display: block; margin-bottom: 5px; }
         .history-id { color: #888; font-size: 0.9rem; }
 
+        
+        /* ── MODAL BORRAR ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,14,22,0.72);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #f5f6f7;
+            border-radius: 12px;
+            border-top: 4px solid #c0392b;
+            padding: 32px 36px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+        .modal-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: rgba(192,57,43,0.12);
+            border: 2px solid rgba(192,57,43,0.35);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 20px; color: #c0392b;
+        }
+        .modal-box h2 { font-size: 1rem; font-weight: 700; color: #1a2233; margin-bottom: 8px; }
+        .modal-box p  { font-size: 0.86rem; color: #4a5568; line-height: 1.6; margin-bottom: 22px; }
+        .modal-box p strong { color: #c0392b; }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+        .modal-btn {
+            padding: 9px 22px; border-radius: 7px; font-weight: 700;
+            font-size: 0.84rem; cursor: pointer; border: none;
+            font-family: inherit; transition: opacity 0.15s, transform 0.1s;
+        }
+        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn-delete { background: #c0392b; color: #fff; }
+        .modal-btn-delete:hover { background: #a52e24; }
+        .modal-btn-cancel { background: #eef0f2; color: #1a2233; border: 1px solid #d0d5dd; }
+        .modal-btn-cancel:hover { background: #e2e5e9; }
+
+        /* ── PAGE ── */
+        body { font-family: 'Roboto', 'Segoe UI', sans-serif; background: #dde0e4; color: #1a2233; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f5f6f7;
+            border: 1px solid #d0d5dd;
+            border-left: 4px solid #005aab;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+        }
+        header h1 { font-size: 1rem; font-weight: 700; color: #005aab; text-transform: uppercase; letter-spacing: 0.04em; }
+        header h1 i { color: #c5a059; margin-right: 8px; }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #eef0f2; border: 1px solid #d0d5dd;
+            border-radius: 7px; padding: 8px 16px;
+            font-size: 0.83rem; font-weight: 700;
+            color: #4a5568; text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn-back:hover { background: #e2e5e9; color: #1a2233; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: #8896a8; font-size: 0.95rem;
+        }
+        .empty-state i { font-size: 2.5rem; color: #d0d5dd; display: block; margin-bottom: 14px; }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: #f5f6f7;
+            border: 1px solid #d0d5dd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr {
+            background: #eef0f2;
+            border-bottom: 2px solid #d0d5dd;
+        }
+        thead th {
+            padding: 12px 18px;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8896a8;
+            white-space: nowrap;
+        }
+        thead th.th-center { text-align: center; }
+
+        tbody tr {
+            border-bottom: 1px solid #eef0f2;
+            transition: background 0.12s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f0f2f4; }
+
+        td {
+            padding: 13px 18px;
+            font-size: 0.88rem;
+            color: #1a2233;
+            vertical-align: middle;
+        }
+
+        .td-id {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #8896a8;
+            width: 60px;
+        }
+
+        .td-date {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #005aab;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .td-device {
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+        .device-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,90,171,0.08);
+            border: 1px solid rgba(0,90,171,0.18);
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #005aab;
+        }
+
+        .td-actions { text-align: right; white-space: nowrap; width: 140px; }
+
+        .btn-action {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            text-decoration: none;
+            transition: opacity 0.15s, transform 0.1s;
+            margin-left: 6px;
+        }
+        .btn-action:active { transform: scale(0.96); }
+
+        .btn-download {
+            background: rgba(26,122,69,0.12);
+            border: 1px solid rgba(26,122,69,0.3);
+            color: #1a7a45;
+        }
+        .btn-download:hover { background: rgba(26,122,69,0.22); }
+
+        .btn-delete {
+            background: rgba(192,57,43,0.10);
+            border: 1px solid rgba(192,57,43,0.28);
+            color: #c0392b;
+        }
+        .btn-delete:hover { background: rgba(192,57,43,0.2); }
+
+        /* row counter */
+        .row-num {
+            font-size: 0.75rem;
+            color: #b8bfc9;
+            font-family: 'Courier New', monospace;
+        }
+    
+
 

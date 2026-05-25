@@ -1,14 +1,15 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
 import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,8 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -49,14 +48,9 @@ public class HomeController {
     private AppUserDAO userRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RegistroService registroService;
+    
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          PUBLIC ACCESS SECTION
@@ -414,31 +408,72 @@ public class HomeController {
         
     }
 
-    @GetMapping("/descargar/{id}")
-public ResponseEntity<byte[]> descargarArchivo(@PathVariable Long id) {
+@GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
+public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
     try {
+        // 1. Buscamos el registro en la base de datos
         Historico h = historicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No encontrado"));
+        
+        // 2. Intentamos decodificar el Base64 de forma segura
+        byte[] comprimido;
+        try {
+            comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
+        } catch (IllegalArgumentException e) {
+            System.err.println("[INTEGRIDAD] Base64 corrupto en ID " + id);
+            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+        }
 
-        // 1. Decodificamos el Base64
-        byte[] comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
-
-        // 2. Descomprimimos usando el método moderno de Java (readAllBytes)
+        // 3. Intentamos descomprimir el GZIP
         byte[] descomprimido;
         try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
             descomprimido = gis.readAllBytes(); 
+        } catch (ZipException e) {
+            System.err.println("🚨 [INTEGRIDAD] GZIP corrupto/manipulado en ID " + id);
+            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
         }
 
+        // 4. Comprobación del Checksum SHA-256
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashCalculadoBytes = digest.digest(descomprimido);
+        
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashCalculadoBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        String checksumCalculado = sb.toString();
+
+        if (!checksumCalculado.equals(h.getChecksum())) {
+            System.err.println("🚨 [SEGURIDAD] El ensayo " + id + " no coincide con su Checksum original.");
+            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+        }
+
+        // 5. Si todo es legal, enviamos el archivo CSV para descarga automática
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_recuperado_" + id + ".csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(descomprimido);
 
     } catch (Exception e) {
-        // Esto imprimirá en tu consola de IntelliJ/Eclipse qué está fallando exactamente
+        // Captura cualquier otro imprevisto del servidor
+        System.err.println("❌ Fallo general al descargar el registro " + id);
         e.printStackTrace(); 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
     }
+}
+
+/**
+ * Fuerza al navegador a mantenerse en la página actual y mostrar la alerta flotante.
+ */
+private ResponseEntity<String> crearRespuestaConAlertaPantalla() {
+    String scriptAlerta = "<script type='text/javascript'>"
+            + "alert('⚠️ ¡AVISO DE SEGURIDAD CRÍTICO!\\n\\nLos datos de este ensayo han sido manipulados o están corruptos.\\nPor favor, consulte de inmediato al administrador del sistema.');"
+            + "window.location.href = window.location.href;" // Recarga la página actual de históricos de forma limpia
+            + "</script>";
+
+    return ResponseEntity.ok() // Devolvemos HTTP 200 para obligar al navegador a procesar el script
+            .contentType(MediaType.TEXT_HTML)
+            .body(scriptAlerta);
 }
 /* 
 private String descompactar(String datosBase64) throws Exception {

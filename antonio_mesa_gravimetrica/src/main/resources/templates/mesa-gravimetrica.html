@@ -5,9 +5,26 @@
     <title th:text="#{mesa.title}">Control Panel - Gravimetric Table</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/styles-mesagrav.css}">
+    <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
 </head>
 <body>
+
+<!-- ═══ EXIT MODAL ═══ -->
+<div class="modal-overlay" id="exitModal">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <h2>Ensayo en curso</h2>
+        <p>Hay una grabación activa. Si sales ahora, <strong>los datos se guardarán automáticamente</strong> igual que si hubieras pulsado "Stop &amp; Download".<br><br>¿Deseas detener el ensayo y salir?</p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">
+                <i class="fas fa-download"></i> Guardar y salir
+            </button>
+            <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">
+                <i class="fas fa-arrow-left"></i> Volver al ensayo
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="container">
     <header>
@@ -16,104 +33,130 @@
         </div>
         <div class="user-info">
             <span th:text="${currentUser.name + ' ' + currentUser.surname}">User</span>
-            <form th:action="@{/logout}" method="post" style="display:inline; margin-left:15px;">
-                <button type="submit" class="btn-link">
+            <form th:action="@{/logout}" method="post" style="display:inline; margin-left:15px;" id="logoutForm">
+                <button type="button" class="btn-link" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> [[#{nav.logout}]]
                 </button>
             </form>
-                    <div style="margin-top: 20px;">
-                        <a th:href="@{/historicos-mesagrav}" class="btn" style="background-color: #333; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; display: inline-block;">
-                            <i class="fas fa-history"></i> [[#{mesa.history}]]
-                        </a>
-                    </div>
+            <div style="margin-top: 8px;">
+                <a th:href="@{/historicos-mesagrav}" class="btn-history" id="historyLink">
+                    <i class="fas fa-history"></i> [[#{mesa.history}]]
+                </a>
+            </div>
         </div>
     </header>
 
     <div class="main-grid">
+        <!-- ── LEFT COLUMN ── -->
         <div class="col-left">
-            
+
+            <!-- ADXL345 -->
             <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-compass"></i> ADXL345 - Orientation</div>
+                <div class="card-header"><i class="fas fa-compass"></i> ADXL345 — Orientation</div>
                 <div class="data-row">
-                    <div class="data-item"><span id="val-pitch" class="data-value">0.0</span><span class="data-label">Pitch</span></div>
-                    <div class="data-item"><span id="val-roll" class="data-value">0.0</span><span class="data-label">Roll</span></div>
-                </div>
-                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-                <div class="data-row">
-                    <div class="data-item"><span id="val-x" class="data-value">0.0</span><span class="data-label">X Axis</span></div>
-                    <div class="data-item"><span id="val-y" class="data-value">0.0</span><span class="data-label">Y Axis</span></div>
-                    <div class="data-item"><span id="val-z" class="data-value">0.0</span><span class="data-label">Z Axis</span></div>
-                </div>
-            </div>
-
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-wave-square"></i> Vibration Analysis</div>
-                <div style="text-align: center;">
-                    <span id="val-freq" style="font-size: 3rem; font-weight: 800; color: #c5a059;">0.0</span>
-                    <span style="font-size: 1.2rem; color: #888;">Hz</span>
-                </div>
-            </div>
-
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-wave-square"></i> Speed</div>
-                <div style="text-align: center;">
-                    <span id="val-speed" style="font-size: 3rem; font-weight: 800; color: #c5a059;">0.0</span>
-                    <span style="font-size: 1.2rem; color: #888;">km/h</span>
-                </div>
-            </div>
-
-            <div class="sensor-card" style="min-height: 220px;">
-                <div class="card-header"><i class="fas fa-tachometer-alt"></i> Engine Power</div>
-                
-                <div class="gauge-main-container" style="width: 200px; height: 120px; margin: 20px auto; position: relative;">
-                    <div class="gauge-arc-visual" style="position: absolute; width: 200px; height: 100px; overflow: hidden; top: 0; left: 0;">
-                        <div style="width: 200px; height: 200px; border-radius: 50%; border: 15px solid #e0e0e0; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); box-sizing: border-box;"></div>
+                    <div class="data-item">
+                        <span id="val-pitch" class="data-value">0.0</span>
+                        <span class="data-label">Pitch</span>
                     </div>
-                    
-                    <div id="gauge-needle" style="position: absolute; bottom: 20px; left: 50%; width: 4px; height: 75px; background: #ff0000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 0.5s ease; z-index: 10; border-radius: 2px;"></div>
-                    
-                    <div style="position: absolute; bottom: 15px; left: 50%; width: 12px; height: 12px; background: #333; border-radius: 50%; transform: translateX(-50%); z-index: 11;"></div>
-
-                    <div style="position: absolute; bottom: -30px; width: 100%; text-align: center;">
-                        <div id="gauge-text" style="font-size: 2rem; font-weight: 800; color: #005aab;">0%</div>
-                        <div style="font-size: 0.7rem; color: #999; font-weight: bold; letter-spacing: 1px;">LOAD</div>
+                    <div class="data-item">
+                        <span id="val-roll" class="data-value">0.0</span>
+                        <span class="data-label">Roll</span>
                     </div>
                 </div>
             </div>
 
-            <div class="sensor-card" style="min-height: 220px;">
-                <div class="card-header"><i class="fas fa-tachometer-alt"></i> Dropper Power</div>
-                
-                <div class="gauge-main-container" style="width: 200px; height: 120px; margin: 20px auto; position: relative;">
-                    <div class="gauge-arc-visual" style="position: absolute; width: 200px; height: 100px; overflow: hidden; top: 0; left: 0;">
-                        <div style="width: 200px; height: 200px; border-radius: 50%; border: 15px solid #e0e0e0; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); box-sizing: border-box;"></div>
+            <!-- Vibration + Speed en la misma fila -->
+            <div class="sensor-row-2">
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-wave-square"></i> Vibration</div>
+                    <div class="big-val-wrap">
+                        <span id="val-freq" class="big-val">0.0</span>
+                        <span class="big-unit">shakes/s</span>
                     </div>
-                    
-                    <div id="gauge-needle" style="position: absolute; bottom: 20px; left: 50%; width: 4px; height: 75px; background: #ff0000; transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 0.5s ease; z-index: 10; border-radius: 2px;"></div>
-                    
-                    <div style="position: absolute; bottom: 15px; left: 50%; width: 12px; height: 12px; background: #333; border-radius: 50%; transform: translateX(-50%); z-index: 11;"></div>
-
-                    <div style="position: absolute; bottom: -30px; width: 100%; text-align: center;">
-                        <div id="gauge-text" style="font-size: 2rem; font-weight: 800; color: #005aab;">0%</div>
-                        <div style="font-size: 0.7rem; color: #999; font-weight: bold; letter-spacing: 1px;">LOAD</div>
+                </div>
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-tachometer-alt"></i> Speed</div>
+                    <div class="big-val-wrap">
+                        <span id="val-speed" class="big-val">0.0</span>
+                        <span class="big-unit">km/h</span>
                     </div>
                 </div>
             </div>
 
-            <div class="recording-panel" style="margin-top: 50px;">
+            <!-- Engine + Dropper gauges en la misma fila -->
+            <div class="gauge-row">
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-cog"></i> Engine Power</div>
+                    <div class="gauge-main-container">
+                        <div class="gauge-arc-visual">
+                            <div class="gauge-arc-inner"></div>
+                        </div>
+                        <div class="gauge-needle" id="engine-needle"></div>
+                        <div class="gauge-pivot"></div>
+                        <div class="gauge-readout">
+                            <span class="gauge-pct" id="engine-pct">0%</span>
+                            <span class="gauge-lbl">Load</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-tachometer-alt"></i> Dropper Power</div>
+                    <div class="gauge-main-container">
+                        <div class="gauge-arc-visual">
+                            <div class="gauge-arc-inner"></div>
+                        </div>
+                        <div class="gauge-needle" id="dropper-needle"></div>
+                        <div class="gauge-pivot"></div>
+                        <div class="gauge-readout">
+                            <span class="gauge-pct" id="dropper-pct" style="color:#c5a059;">0%</span>
+                            <span class="gauge-lbl">Load</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Acquisition -->
+            <div class="recording-panel">
                 <h3><i class="fas fa-file-csv"></i> Data Acquisition</h3>
-                <button id="btnStart" onclick="startRecording()" class="btn btn-start">
-                    <i class="fas fa-play"></i> Start Recording
-                </button>
-                <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
-                    <i class="fas fa-download"></i> Stop & Download
-                </button>
+
+                <!-- Timer programable -->
+                <div class="timer-section">
+                    <label><i class="fas fa-clock" style="margin-right:5px;color:#c5a059;"></i>Tiempo de ensayo</label>
+                    <div class="timer-input-wrap">
+                        <input type="number" id="timerMinutes" class="timer-input" min="0" max="999" value="5" placeholder="5">
+                        <span class="timer-unit">min</span>
+                        <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0" placeholder="0">
+                        <span class="timer-unit">seg</span>
+                    </div>
+                    <label class="timer-toggle">
+                        <input type="checkbox" id="timerEnabled"> Auto-stop
+                    </label>
+                </div>
+
+                <!-- Countdown bar -->
+                <div class="countdown-bar-wrap" id="countdownWrap">
+                    <div class="countdown-track">
+                        <div class="countdown-fill" id="countdownFill"></div>
+                    </div>
+                    <div class="countdown-text" id="countdownText">00:00</div>
+                </div>
+
+                <div class="rec-btn-row">
+                    <button id="btnStart" onclick="startRecording()" class="btn btn-start">
+                        <i class="fas fa-play"></i> Start Recording
+                    </button>
+                    <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
+                        <i class="fas fa-download"></i> Stop &amp; Download
+                    </button>
+                </div>
+
                 <div id="recordStatus" class="status-rec">
-                    <i class="fas fa-circle blink"></i> PRESS START TO BEGIN...
+                    <i class="fas fa-circle blink"></i>&nbsp; REC — ACQUIRING DATA...
                 </div>
             </div>
         </div>
 
+        <!-- ── RIGHT COLUMN ── -->
         <div class="col-right">
             <div class="sensor-card">
                 <div class="card-header"><i class="fas fa-tint"></i> Flow Meter Network (L/min)</div>
@@ -134,37 +177,45 @@
 
 <script>
     let stompClient = null;
+    let isRecording = false;
+    let countdownInterval = null;
+    let countdownTotal = 0;
+    let countdownRemaining = 0;
 
+    // ── PENDIENTE NAVEGACIÓN (para modal de salida) ──
+    let pendingNavUrl = null;
+
+    // ── GAUGES ──
+    function setGauge(needleId, pctId, val) {
+        const needle = document.getElementById(needleId);
+        const pct    = document.getElementById(pctId);
+        if (!needle || !pct) return;
+        const clamped = Math.max(0, Math.min(100, parseFloat(val) || 0));
+        const deg = (clamped * 1.8) - 90;
+        needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+        pct.innerText = Math.round(clamped) + '%';
+    }
+
+    // ── WEBSOCKET ──
     function connect() {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-
         stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-
-            // Suscribirse al tópico de caudales
             stompClient.subscribe('/topic/flow', function (message) {
-                const flowData = JSON.parse(message.body);
-                updateFlowSensors(flowData);
+                updateFlowSensors(JSON.parse(message.body));
             });
-
-            // Mantener el polling para otros sensores por ahora
             setInterval(updateOtherSensors, 1000);
-        }, function (error) {
-            console.log('Error: ' + error);
+        }, function () {
             setTimeout(connect, 5000);
         });
     }
 
     function updateFlowSensors(flowData) {
         if (flowData.sensores) {
-            for (let i = 0; i < flowData.sensores.length; i++) {
-                const sensor = flowData.sensores[i];
-                const element = document.getElementById('flow-' + sensor.id);
-                if (element) {
-                    element.innerText = sensor.flowRate.toFixed(2);
-                }
-            }
+            flowData.sensores.forEach(sensor => {
+                const el = document.getElementById('flow-' + sensor.id);
+                if (el) el.innerText = sensor.flowRate.toFixed(2);
+            });
         }
     }
 
@@ -173,94 +224,180 @@
             const response = await fetch('/sensor');
             const data = await response.json();
 
-            // ADXL
             if (data.adxl) {
                 document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
-                document.getElementById('val-roll').innerText = data.adxl.roll.toFixed(1) + '°';
-                document.getElementById('val-x').innerText = data.adxl.x.toFixed(2);
-                document.getElementById('val-y').innerText = data.adxl.y.toFixed(2);
-                document.getElementById('val-z').innerText = data.adxl.z.toFixed(2);
+                document.getElementById('val-roll').innerText  = data.adxl.roll.toFixed(1)  + '°';
             }
-
-            // Vibración
-            if (data.frecuency_sensor) {
-                document.getElementById('val-freq').innerText = data.frecuency_sensor.frecuency.toFixed(1);
-            }
-
-            // Speed
-            if (data.speed) {
+            if (data.frecuency_sensor)
+                document.getElementById('val-freq').innerText  = data.frecuency_sensor.frecuency.toFixed(1);
+            if (data.speed)
                 document.getElementById('val-speed').innerText = data.speed.speedValue.toFixed(1);
-            }
+            if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined)
+                setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
+            if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined)
+                setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
 
-            // Engine gauge
-            if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
-                const val = parseFloat(data.engine_gauge.gaugeValue);
-                const textEl = document.getElementById('gauge-text');
-                const needleEl = document.getElementById('gauge-needle');
-
-                if(textEl) textEl.innerText = Math.round(val) + "%";
-                if(needleEl) {
-                    const degrees = (val * 1.8) - 90;
-                    needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
-                }
-            }
-
-            // Dropper gauge
-            if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
-                const val = parseFloat(data.dropper_gauge.dropperValue);
-                // Note: This will update the same gauge as engine_gauge
-                // You might want to create separate gauge elements
-                const textEl = document.getElementById('gauge-text');
-                const needleEl = document.getElementById('gauge-needle');
-
-                if(textEl) textEl.innerText = Math.round(val) + "%";
-                if(needleEl) {
-                    const degrees = (val * 1.8) - 90;
-                    needleEl.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
-                }
-            }
-
-            // Caudales fallback desde el endpoint REST
             if (data.caudales) {
                 Object.keys(data.caudales).forEach(key => {
-                    const sensorId = parseInt(key);
                     const sensor = data.caudales[key];
-                    const element = document.getElementById('flow-' + sensorId);
-                    if (element && sensor && sensor.flowRate !== undefined) {
-                        element.innerText = sensor.flowRate.toFixed(2);
-                    }
+                    const el = document.getElementById('flow-' + parseInt(key));
+                    if (el && sensor && sensor.flowRate !== undefined)
+                        el.innerText = sensor.flowRate.toFixed(2);
                 });
             }
-        } catch (error) {
-            console.error("Error fetching sensor data:", error);
-        }
+        } catch (e) { console.error('Sensor fetch error:', e); }
     }
 
+    // ── COUNTDOWN ──
+    function formatTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function startCountdown(totalSeconds) {
+        countdownTotal     = totalSeconds;
+        countdownRemaining = totalSeconds;
+
+        const wrap = document.getElementById('countdownWrap');
+        const fill = document.getElementById('countdownFill');
+        const text = document.getElementById('countdownText');
+
+        wrap.classList.add('active');
+        fill.style.width = '100%';
+        text.innerText   = formatTime(countdownRemaining);
+
+        countdownInterval = setInterval(() => {
+            countdownRemaining--;
+            const pct = (countdownRemaining / countdownTotal) * 100;
+            fill.style.width  = pct + '%';
+            text.innerText    = formatTime(countdownRemaining);
+
+            if (countdownRemaining <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                stopRecording();
+            }
+        }, 1000);
+    }
+
+    function stopCountdown() {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        document.getElementById('countdownWrap').classList.remove('active');
+        document.getElementById('countdownFill').style.width = '100%';
+        document.getElementById('countdownText').innerText   = '00:00';
+    }
+
+    // ── RECORDING ──
     function startRecording() {
         fetch('/export/start', { method: 'POST' }).then(res => {
-            if (res.ok) {
-                document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnStop').disabled = false;
-                document.getElementById('recordStatus').style.display = 'block';
+            if (!res.ok) return;
+            isRecording = true;
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled  = false;
+            document.getElementById('recordStatus').classList.add('active');
+            document.getElementById('timerMinutes').disabled = true;
+            document.getElementById('timerSeconds').disabled = true;
+            document.getElementById('timerEnabled').disabled = true;
+
+            const useTimer = document.getElementById('timerEnabled').checked;
+            if (useTimer) {
+                const mins = parseInt(document.getElementById('timerMinutes').value) || 0;
+                const secs = parseInt(document.getElementById('timerSeconds').value) || 0;
+                const total = mins * 60 + secs;
+                if (total > 0) startCountdown(total);
             }
         });
     }
 
-    function stopRecording() {
+    function stopRecording(callback) {
+        stopCountdown();
+        isRecording = false;
         window.location.href = '/export/download';
         setTimeout(() => {
             document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
-            document.getElementById('recordStatus').style.display = 'none';
+            document.getElementById('btnStop').disabled  = true;
+            document.getElementById('recordStatus').classList.remove('active');
+            document.getElementById('timerMinutes').disabled = false;
+            document.getElementById('timerSeconds').disabled = false;
+            document.getElementById('timerEnabled').disabled = false;
+            if (typeof callback === 'function') callback();
         }, 1500);
     }
 
-    // Conectar WebSocket al cargar la página
-    window.onload = function() {
+    // ── MODAL DE SALIDA ──
+    function showExitModal(url, isLogout) {
+        pendingNavUrl = url;
+        pendingIsLogout = isLogout || false;
+        document.getElementById('exitModal').classList.add('active');
+    }
+
+    let pendingIsLogout = false;
+
+    document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+        document.getElementById('exitModal').classList.remove('active');
+        if (isRecording) {
+            // Detiene, descarga, y luego navega
+            stopCountdown();
+            isRecording = false;
+            fetch('/export/download').then(() => {
+                if (pendingIsLogout) {
+                    document.getElementById('logoutForm').submit();
+                } else if (pendingNavUrl) {
+                    window.location.href = pendingNavUrl;
+                }
+            }).catch(() => {
+                window.location.href = pendingNavUrl || '/';
+            });
+            // Fallback en caso de que fetch no resuelva (descarga de fichero)
+            setTimeout(() => {
+                if (pendingIsLogout) document.getElementById('logoutForm').submit();
+                else if (pendingNavUrl) window.location.href = pendingNavUrl;
+            }, 1200);
+        } else {
+            if (pendingIsLogout) document.getElementById('logoutForm').submit();
+            else if (pendingNavUrl) window.location.href = pendingNavUrl;
+        }
+    });
+
+    document.getElementById('modalCancelBtn').addEventListener('click', () => {
+        document.getElementById('exitModal').classList.remove('active');
+        pendingNavUrl = null;
+    });
+
+    // Interceptar logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        if (isRecording) {
+            showExitModal(null, true);
+        } else {
+            document.getElementById('logoutForm').submit();
+        }
+    });
+
+    // Interceptar enlace de históricos
+    document.getElementById('historyLink').addEventListener('click', (e) => {
+        if (isRecording) {
+            e.preventDefault();
+            showExitModal(e.currentTarget.href, false);
+        }
+    });
+
+    // Interceptar cierre/navegación del navegador (beforeunload)
+    window.addEventListener('beforeunload', (e) => {
+        if (isRecording) {
+            e.preventDefault();
+            e.returnValue = 'Hay un ensayo en curso. ¿Seguro que quieres salir?';
+        }
+    });
+
+    // ── INIT ──
+    window.onload = function () {
         updateOtherSensors();
         connect();
     };
 </script>
-
 </body>
 </html>

@@ -51,40 +51,55 @@ nav a {
 
 nav a:hover { color: #004481; }
 
-/* DROPDOWN */
-.dropdown-container { position: relative; }
+/* =========================================================================
+   DROPDOWN - CORREGIDO Y UNIFICADO
+   ========================================================================= */
+.dropdown-container { 
+    position: relative; 
+}
+
 .dropdown-content {
     position: absolute;
     top: 100%;
     right: 0;
-    background: white;
+    background: #ffffff;
     min-width: 180px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
     border-radius: 12px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
     list-style: none;
     padding: 0.5rem 0;
+    z-index: 1000; /* Evita que las tarjetas tapen el menú */
+    
+    /* Configuración de animación base oculta */
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.dropdown-content li { padding: 0; }
+/* LA CLASE MÁGICA: Activada por tu JavaScript limpio */
+.dropdown-content.show {
+    display: block !important;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-content li { 
+    padding: 0; 
+}
+
 .dropdown-content a {
     display: block;
     padding: 0.75rem 1.5rem;
     color: #333;
     font-weight: normal;
-}
-
-.dropdown-content.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+    text-decoration: none;
+    transition: background 0.2s ease;
 }
 
 .dropdown-content a:hover {
     background: #f8f9fa;
+    color: #004481;
 }
 
 /* MAIN WRAPPER */

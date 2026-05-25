@@ -12,7 +12,6 @@
     <div class="container">
         <h2><i class="fas fa-users"></i> Gestión Completa de Usuarios</h2>
         
-        <!-- Mensajes -->
         <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"
              style="margin: 20px 0; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px;">
         </div>
@@ -42,12 +41,12 @@
                     </td>
                     <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        <!-- EDITAR -->
+                        
                         <a th:href="@{/edit-user/{id}(id=${user.id})}" 
                            class="btn-edit" title="Editar">
                             <i class="fas fa-edit"></i> Editar
                         </a>
-                        <!-- BASURA - BORRAR -->
+                        
                         <a th:href="@{/delete-user/{id}(id=${user.id})}" 
                            class="btn-delete"
                            onclick="return confirm('¿Eliminar usuario [[${user.username}]]? Esta acción no se puede deshacer.')"
