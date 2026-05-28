@@ -3,6 +3,8 @@ package antonio.mesa.antonio_mesa_gravimetrica;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class RegistroService {
 
@@ -41,4 +43,16 @@ public class RegistroService {
         }
         return hexString.toString();
     }
+
+    @Transactional // ◄ Asegura que el borrado se ejecute y guarde en la BBDD real
+    public boolean eliminarRegistro(Long id) { // ◄ Cambiada a PUBLIC
+        if (historicoRepository.existsById(id)) {
+            historicoRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+
+
 }

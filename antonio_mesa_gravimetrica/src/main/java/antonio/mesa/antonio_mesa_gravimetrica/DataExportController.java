@@ -33,15 +33,26 @@ public class DataExportController {
     /// - POST /export/start: Starts the recording of sensor data. It captures snapshots of the current sensor data every 250 milliseconds and stores them in memory until the recording is stopped.
     /// - GET /export/download: Stops the recording and generates a CSV file with the recorded
     /// data. The CSV file is then sent to the user as a downloadable response. Additionally, the same CSV content is saved in the database for historical records.
+    /// 
+    /// DELTA_T is the time slot which takes the measure
     ///
     @Autowired
     private RegistroService registroService;
 
     private boolean isRecording = false;
+    /*
+    *
+    * A syncronized list is a thread-safe variant of ArrayList that ensures that all operations 
+    * that access or modify the list are synchronized, preventing concurrent modification issues when multiple threads access
+    * the list simultaneously. In this context, it is used to store the recorded sensor data safely
+    * while allowing concurrent access from different threads without risking data corruption or inconsistencies.
+    * 
+    */
     private final List<String[]> recordedData = Collections.synchronizedList(new ArrayList<>());
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     
     private final double DELTA_T = 0.25;
+    private final long SLOT_T = (long) DELTA_T * 1000;
 
     public DataExportController(MqttListener mqttListener) {
         this.mqttListener = mqttListener;
@@ -57,13 +68,13 @@ public class DataExportController {
             recordedData.clear();
             isRecording = true;
             
-            // Every 250ms, captures a snapshot which contains the actual data in the MqttListener and stores it in the "recordedData" list within the RAM.
+            // Every DELTA_T seconds, captures a snapshot which contains the actual data in the MqttListener and stores it in the "recordedData" list within the RAM.
             // This process continues until the user stops the recording.
             new Thread(() -> {
                 while (isRecording) {
                     captureSnapshot();
                     try { 
-                        Thread.sleep(250); 
+                        Thread.sleep(SLOT_T); 
                     } catch (InterruptedException e) { 
                         Thread.currentThread().interrupt(); 
                         break; 
@@ -94,6 +105,7 @@ public class DataExportController {
         row[6] = formatDecimal(weight.getWeightValue());
         
         double currentSpeed = (speed.getSpeedValue() != null) ? speed.getSpeedValue() : 0.0;
+
         row[7] = formatDecimal(currentSpeed);
         row[8] = formatDecimal(calculateAcceleration(currentSpeed));
 
@@ -125,6 +137,10 @@ public class DataExportController {
 
     //////////////////////////////////////////////////////////////////////////////////////////// 
 
+    
+
+    
+
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {
         // 1. Detenemos la grabación inmediatamente
@@ -145,6 +161,7 @@ public class DataExportController {
             // Limpiamos los datos después de generar el String para el siguiente ensayo
             recordedData.clear();
         }
+
 
         // 3. Guardamos EXACTAMENTE lo mismo que se descarga en la BBDD
         try {

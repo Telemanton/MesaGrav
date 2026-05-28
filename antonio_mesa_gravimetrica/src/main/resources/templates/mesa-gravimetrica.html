@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- ═══ EXIT MODAL ═══ -->
 <div class="modal-overlay" id="exitModal">
     <div class="modal-box">
         <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
@@ -47,10 +46,7 @@
     </header>
 
     <div class="main-grid">
-        <!-- ── LEFT COLUMN ── -->
-        <div class="col-left">
-
-            <!-- ADXL345 -->
+        <section class="telemetry-section">
             <div class="sensor-card">
                 <div class="card-header"><i class="fas fa-compass"></i> ADXL345 — Orientation</div>
                 <div class="data-row">
@@ -65,7 +61,6 @@
                 </div>
             </div>
 
-            <!-- Vibration + Speed en la misma fila -->
             <div class="sensor-row-2">
                 <div class="sensor-card">
                     <div class="card-header"><i class="fas fa-wave-square"></i> Vibration</div>
@@ -78,12 +73,21 @@
                     <div class="card-header"><i class="fas fa-tachometer-alt"></i> Speed</div>
                     <div class="big-val-wrap">
                         <span id="val-speed" class="big-val">0.0</span>
-                        <span class="big-unit">km/h</span>
+                        <span class="big-unit">m/s</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Engine + Dropper gauges en la misma fila -->
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-weight-hanging"></i> Weight Sensor</div>
+                <div class="big-val-wrap">
+                    <span id="val-weight" class="big-val">0.0</span>
+                    <span class="big-unit">g</span>
+                </div>
+            </div>
+        </section>
+
+            <section class="gauges-section">
             <div class="gauge-row">
                 <div class="sensor-card">
                     <div class="card-header"><i class="fas fa-cog"></i> Engine Power</div>
@@ -114,12 +118,26 @@
                     </div>
                 </div>
             </div>
+        </section>
+
+        <section class="flow-network-section">
+            <div class="sensor-card">
+                <div class="card-header"><i class="fas fa-tint"></i> Flow Meter Network (L/min)</div>
+                <div class="flow-grid">
+                    <div th:each="i : ${#numbers.sequence(1, 3)}" class="mini-card">
+                        <span class="mini-id">Sensor <span th:text="${i}"></span></span>
+                        <span th:id="'flow-' + ${i}" class="mini-value">0.00</span>
+                        <span class="mini-unit">L/min</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
             <!-- Data Acquisition -->
+            <section class="control-panel-section">
             <div class="recording-panel">
                 <h3><i class="fas fa-file-csv"></i> Data Acquisition</h3>
 
-                <!-- Timer programable -->
                 <div class="timer-section">
                     <label><i class="fas fa-clock" style="margin-right:5px;color:#c5a059;"></i>Tiempo de ensayo</label>
                     <div class="timer-input-wrap">
@@ -133,7 +151,6 @@
                     </label>
                 </div>
 
-                <!-- Countdown bar -->
                 <div class="countdown-bar-wrap" id="countdownWrap">
                     <div class="countdown-track">
                         <div class="countdown-fill" id="countdownFill"></div>
@@ -154,21 +171,8 @@
                     <i class="fas fa-circle blink"></i>&nbsp; REC — ACQUIRING DATA...
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- ── RIGHT COLUMN ── -->
-        <div class="col-right">
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-tint"></i> Flow Meter Network (L/min)</div>
-                <div class="flow-grid">
-                    <div th:each="i : ${#numbers.sequence(1, 3)}" class="mini-card">
-                        <span class="mini-id">Sensor <span th:text="${i}"></span></span>
-                        <span th:id="'flow-' + ${i}" class="mini-value">0.00</span>
-                        <span class="mini-unit">L/min</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -245,6 +249,8 @@
                         el.innerText = sensor.flowRate.toFixed(2);
                 });
             }
+            if (data.weight) document.getElementById('val-weight').innerText = data.weight.weightValue.toFixed(1);
+
         } catch (e) { console.error('Sensor fetch error:', e); }
     }
 

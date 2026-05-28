@@ -69,8 +69,10 @@
     </div>
 
     <script>
+
+        // confirmation window
         document.querySelector('.user-form').addEventListener('submit', function(e) {
-            if (!confirm(ifn('create.admin.confirmation'))) {
+            if (!confirm('¿Está seguro de que quiere crear este admin?')) {
                 e.preventDefault();
             }
         });

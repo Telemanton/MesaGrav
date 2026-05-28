@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -22,6 +23,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,6 +51,9 @@ public class HomeController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RegistroService registroService;
 
     
 
@@ -408,6 +413,7 @@ public class HomeController {
         
     }
 
+    
 @GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
 public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
     try {
@@ -460,7 +466,18 @@ public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
         e.printStackTrace(); 
         return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
     }
-}
+}   
+
+@DeleteMapping("/borrar/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // ◄ Solo usuarios con rol ADMIN pueden entrar aquí
+    public ResponseEntity<?> eliminarRegistro(@PathVariable Long id) {
+        boolean borradoExitoso = registroService.eliminarRegistro(id);
+        if (borradoExitoso) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 /**
  * Fuerza al navegador a mantenerse en la página actual y mostrar la alerta flotante.
@@ -475,27 +492,6 @@ private ResponseEntity<String> crearRespuestaConAlertaPantalla() {
             .contentType(MediaType.TEXT_HTML)
             .body(scriptAlerta);
 }
-/* 
-private String descompactar(String datosBase64) throws Exception {
-    byte[] comprimido = Base64.getDecoder().decode(datosBase64);
-    try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
-        byte[] descompuesto = gis.readAllBytes(); 
-        return new String(descompuesto, StandardCharsets.UTF_8);
-    }
-}
-
-// Función para transformar el objeto recuperado en filas de CSV
-private String convertirPayloadACSV(SessionPayload p) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Variable;Valor\n");
-    sb.append("Dispositivo;Mesa de concentración gravimétrica\n");
-    sb.append("Pitch;").append(p.adxl.getPitch()).append("\n");
-    sb.append("Roll;").append(p.adxl.getRoll()).append("\n");
-    sb.append("Frecuencia;").append(p.frecuencia.getFrecuency()).append("\n");
-    sb.append("Peso;").append(p.weight.getWeightValue()).append("\n");
-    // Añade aquí todas las variables que capturaste en SessionPayload
-    return sb.toString();
-}*/
 
 }
 

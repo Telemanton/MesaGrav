@@ -13,7 +13,16 @@ CREATE TABLE app_user (
     created_at   TIMESTAMP          NOT NULL DEFAULT NOW()
 );
 
--- Usuarios de prueba (password = "password" hasheada con BCrypt), rian putero
+-- Crear la tabla de históricos para la mesa gravimétrica
+CREATE TABLE historico (
+    id                BIGSERIAL PRIMARY KEY,
+    fecha_registro    TIMESTAMP NOT NULL DEFAULT NOW(),
+    dispositivo_id    VARCHAR(255) NOT NULL DEFAULT 'Mesa de concentración gravimétrica',
+    datos_compactados TEXT NOT NULL,
+    checksum          VARCHAR(64) NOT NULL
+);
+
+-- Usuarios de prueba (password = "password" hasheada con BCrypt)
 INSERT INTO app_user (username, password_hash, name, surname, email, role) VALUES 
     ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'Root', 'admin@ujaen.es', 'ADMIN'),
     ('keyuser1', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Key', 'User', 'keyuser@ujaen.es', 'KEYUSER'),

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Usuarios - Admin UJA</title>
+    <title th:text="#{userListTitle}">Usuarios - Admin UJA</title>
     <link rel="stylesheet" th:href="@{/css/styles-admin.css}">
     <link rel="stylesheet" th:href="@{/css/styles-list.css}">
 
@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container">
-        <h2><i class="fas fa-users"></i> Gestión Completa de Usuarios</h2>
+        <h2 th:text="#{management.users}"><i class="fas fa-users"></i> Gestión Completa de Usuarios</h2>
         
         <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"
              style="margin: 20px 0; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px;">
@@ -19,13 +19,13 @@
         <table id="usersTable" class="display" style="width:100%">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Nombre Completo</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Rol</th>
-                    <th>Fecha Creación</th>
-                    <th>Acciones</th>
+                    <th th:text="#{idTable}"></th>
+                    <th th:text="#{fullnameTable}"></th>
+                    <th th:text="#{usernameTable}"></th>
+                    <th th:text="#{emailTable}"></th>
+                    <th th:text="#{roleTable}"></th>
+                    <th th:text="#{dateTable}"></th>
+                    <th th:text="#{actionsTable}"></th>
                 </tr>
             </thead>
             <tbody>

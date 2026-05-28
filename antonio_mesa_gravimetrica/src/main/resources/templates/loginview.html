@@ -6,8 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="robots" content="noindex, nofollow">
     
-    <title th:text="#{login.title}">Indique su nombre de usuario y clave de acceso</title>
-
+    <title th:text="#{login.title}"></title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="icon" href="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/favicon.ico?tag=06950">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -43,12 +42,12 @@
                                 <input type="hidden" name="authsource">
                                 
                                 <div class="pure-control-group">
-                                    <label id="label-user" for="username" th:text="#{login.username}">Nombre de usuario</label>
+                                    <label id="label-user" for="username" th:text="#{login.username}"></label>
                                     <input id="username" type="text" name="username" required>
                                 </div>
 
                                 <div class="pure-control-group">
-                                    <label id="label-pass" for="password" th:text="#{login.password}">Clave de acceso</label>
+                                    <label id="label-pass" for="password" th:text="#{login.password}"></label>
                                     <input id="password" type="password" name="password" required>
                                 </div>
 
@@ -62,18 +61,18 @@
 
                 <div class="full-width-info">
                     <div class="wrap">
-                        <h6 id="info-title" th:text="#{login.welcome}">Bienvenido al servicio de monitorización de equipos industriales de la Universidad de Jaén</h6>
-                        <p id="info-p1" th:text="#{login.description1}">Este portal le permitirá acceder a los datos en tiempo real de la maquinaria perteneciente al departamento de explotación de minas. Inicie sesión con su cuenta de la Universidad de Jaén para visualizar los datos y configurar alertas personalizadas.</p>
-                        <p id="info-p2" th:text="#{login.description2}">Si tiene problemas para iniciar sesión, por favor contacte con el soporte técnico de la universidad o revise la sección de ayuda en el sitio web.</p>
+                        <h6 id="info-title" th:text="#{login.welcome}"></h6>
+                        <p id="info-p1" th:text="#{login.description1}"></p>
+                        <p id="info-p2" th:text="#{login.description2}"></p>
                     </div>
                 </div>
 
                 <footer class="footer-info">
                     <div class="wrap">
-                        <p><strong th:text="#{login.contact}">Explotación de Minas - Universidad de Jaén</strong></p>
+                        <p><strong th:text="#{login.contact}"></strong></p>
                         <p th:text="#{login.address}">Carretera de Madrid, s/n 23071 Jaén</p>
-                        <p th:text="#{login.phone}">Teléfono de Información: XXXXXXXXX</p>
-                        <p><span th:text="#{login.email}">Email</span>: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
+                        <p th:text="#{login.phone}"></p>
+                        <p><span th:text="#{login.email}"></span>: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
                     </div>
                 </footer>
             </div>
