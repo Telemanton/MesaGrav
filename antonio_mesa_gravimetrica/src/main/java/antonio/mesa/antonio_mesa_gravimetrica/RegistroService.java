@@ -5,24 +5,37 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
+/*
+================================
+RegistroService DOCUMENTATION
+================================
+
+
+
+
+*/
 @Service
 public class RegistroService {
 
-    @Autowired
+    @Autowired // Inyects historicoRepository in order to
     private HistoricoRepository historicoRepository;
 
     public void guardarEnHistorico(String contenidoCsv) throws Exception {
         // Compacts the CSV content using GZIP and encodes it in Base64 to save space in the database
         String datosCompactados = compactar(contenidoCsv);
         
-        // Calculates a checksum of the original CSV content to ensure data integrity and allow verification of the stored data in the future. This checksum can be used to detect any corruption or tampering with the data when it is retrieved from the database. By comparing the checksum of the retrieved data with the original checksum, we can confirm that the data has not been altered and is intact. This adds an extra layer of security and reliability to our data storage process.
+        // Calculates a checksum of the original CSV content to ensure data integrity and allow verification of the stored data in the future. 
+        // This checksum can be used to detect any corruption or tampering with the data when it is retrieved from the database. 
+        // By comparing the checksum of the retrieved data with the original checksum, we can confirm that the data has not been altered and is intact. 
+        // This adds an extra layer of security and reliability to the data storage process.
         String checksum = generarChecksum(contenidoCsv);
         
-        // Creates a new Historico entity with the compacted data and its checksum, and saves it to the database using the HistoricoRepository.
+        // Creates a new Historico entity with the compacted data and its checksum, and saves it to the database 
         Historico registro = new Historico(datosCompactados, checksum);
         historicoRepository.save(registro);
     }
 
+    // Auxiliar method to compact the CSV content using GZIP and encode it in Base64
     private String compactar(String texto) throws Exception {
         if (texto == null || texto.isEmpty()) return "";
         java.io.ByteArrayOutputStream obj = new java.io.ByteArrayOutputStream();
@@ -32,6 +45,7 @@ public class RegistroService {
         return java.util.Base64.getEncoder().encodeToString(obj.toByteArray());
     }
 
+    // Auxiliar method to generate a SHA-256 checksum of the original CSV content
     private String generarChecksum(String texto) throws Exception {
         java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(texto.getBytes(java.nio.charset.StandardCharsets.UTF_8));
@@ -44,8 +58,10 @@ public class RegistroService {
         return hexString.toString();
     }
 
-    @Transactional // ◄ Asegura que el borrado se ejecute y guarde en la BBDD real
-    public boolean eliminarRegistro(Long id) { // ◄ Cambiada a PUBLIC
+    @Transactional // Ensures that the delete operation is executed within a transaction, providing data integrity and consistency. 
+    // If any exception occurs during the deletion process, the transaction will be rolled back, 
+    // preventing partial updates to the database and ensuring that the database remains in a consistent state.
+    public boolean eliminarRegistro(Long id) { // 
         if (historicoRepository.existsById(id)) {
             historicoRepository.deleteById(id);
             return true;

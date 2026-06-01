@@ -31,26 +31,6 @@ public class SensorController {
         this.mqttListener = mqttListener;
     }
 
-    /*
-    Returns the latest data from all sensors in a JSON format whenever a GET request to "/sensor" endpoint by the frontend (JAVA SCRIPT)
-    To check the data structure of the response, you can use the following example:
-    {
-        "adxl": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0,
-            "pitch": 0.0,
-            "roll": 0.0
-        },
-        "frecuency sensor": {
-            "frecuency": 0.0
-        }
-    }
-
-    Revise MqttListener.java for more details about the data structure of the response. 
-    Revise mesa-gravimetrica.html code for more details about how the data is used in the frontend.
-
-    */ 
     @GetMapping
     public Map<String, Object> getLastData() {
         Map<String, Object> response = new HashMap<>();

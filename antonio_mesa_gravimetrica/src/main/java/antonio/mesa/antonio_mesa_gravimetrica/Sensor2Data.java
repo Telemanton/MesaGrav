@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Sensor2Data {
     private double frecuency;
 
+    // Default constructor and parameterized constructor for Sensor2Data class
     public Sensor2Data() {}
     public Sensor2Data(float frecuency) {this.frecuency = frecuency;}
     
