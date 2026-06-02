@@ -19,40 +19,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
 
+// This controller class is specialized for handling the recording and exporting of sensors data to a CSV file. 
+// It provides two main endpoints: one to start the recording process and another to stop it and download the recorded data as a CSV file. The recorded data is also saved in a database for historical reference.
+
 @RestController
 @RequestMapping("/export")
 public class DataExportController {
 
     private final MqttListener mqttListener;
     
-    //////////////////////////////////////////////////////////////////////////////////////////// 
-    /// DataExportController class documentation
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    /// The DataExportController class is responsible for handling the recording and exporting of sensor data in CSV format.
-    /// It provides two main endpoints:
-    /// - POST /export/start: Starts the recording of sensor data. It captures snapshots of the current sensor data every 250 milliseconds and stores them in memory until the recording is stopped.
-    /// - GET /export/download: Stops the recording and generates a CSV file with the recorded
-    /// data. The CSV file is then sent to the user as a downloadable response. Additionally, the same CSV content is saved in the database for historical records.
-    /// 
-    /// DELTA_T is the time slot which takes the measure
-    ///
+    /**
+     * Class registroService:
+     * Is a service that handles the interaction with the database, 
+     * specifically for saving the recorded data in the historical record.
+     */
     @Autowired
     private RegistroService registroService;
 
     private boolean isRecording = false;
-    /*
-    *
-    * A syncronized list is a thread-safe variant of ArrayList that ensures that all operations 
-    * that access or modify the list are synchronized, preventing concurrent modification issues when multiple threads access
-    * the list simultaneously. In this context, it is used to store the recorded sensor data safely
-    * while allowing concurrent access from different threads without risking data corruption or inconsistencies.
-    * 
-    */
     private final List<String[]> recordedData = Collections.synchronizedList(new ArrayList<>());
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    
+
+    // DELTA_T is the time interval in seconds between each recorded snapshot, which is used to calculate the acceleration based on the change in speed over time.
     private final double DELTA_T = 0.25;
-    private final long SLOT_T = (long) DELTA_T * 1000;
 
     public DataExportController(MqttListener mqttListener) {
         this.mqttListener = mqttListener;
@@ -74,7 +63,7 @@ public class DataExportController {
                 while (isRecording) {
                     captureSnapshot();
                     try { 
-                        Thread.sleep(SLOT_T); 
+                        Thread.sleep(250); 
                     } catch (InterruptedException e) { 
                         Thread.currentThread().interrupt(); 
                         break; 
@@ -103,11 +92,8 @@ public class DataExportController {
         row[4] = formatDecimal(engine.getGaugeValue());
         row[5] = formatDecimal(dropper.getDropperValue());
         row[6] = formatDecimal(weight.getWeightValue());
-        
-        double currentSpeed = (speed.getSpeedValue() != null) ? speed.getSpeedValue() : 0.0;
-
-        row[7] = formatDecimal(currentSpeed);
-        row[8] = formatDecimal(calculateAcceleration(currentSpeed));
+        row[7] = formatDecimal(speed.getSpeedValue());
+        row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 
         for (int i = 1; i <= 3; i++) {
             Sensor3Data f = flows.get(i);
@@ -117,15 +103,15 @@ public class DataExportController {
         recordedData.add(row);
     }
 
-    private double calculateAcceleration(double currentSpeed) {
+    private float calculateAcceleration(float currentSpeed) {
         synchronized (recordedData) {
-            if (recordedData.isEmpty()) return 0.0;
+            if (recordedData.isEmpty()) return 0.0f;
             try {
-                String lastRow[] = recordedData.get(recordedData.size() - 1);
-                double lastSpeed = Double.parseDouble(lastRow[7].replace(',', '.'));
-                return (currentSpeed - lastSpeed) / DELTA_T;
+                String[] lastRow = recordedData.get(recordedData.size() - 1);
+                float lastSpeed = Float.parseFloat(lastRow[7].replace(',', '.'));
+                return (float) ((currentSpeed - lastSpeed) / DELTA_T);
             } catch (Exception e) {
-                return 0.0;
+                return 0.0f;
             }
         }
     }
@@ -135,11 +121,7 @@ public class DataExportController {
         return String.valueOf(value).replace('.', ',');
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////// 
-
-    
-
-    
+    //////////////////////////////////////////////////////////////////////////////////////////// de aquí hasta arriba congelado
 
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {
@@ -161,7 +143,6 @@ public class DataExportController {
             // Limpiamos los datos después de generar el String para el siguiente ensayo
             recordedData.clear();
         }
-
 
         // 3. Guardamos EXACTAMENTE lo mismo que se descarga en la BBDD
         try {

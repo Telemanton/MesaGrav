@@ -179,17 +179,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-<script>
-    let stompClient = null;
+<script>let stompClient = null;
     let isRecording = false;
     let countdownInterval = null;
     let countdownTotal = 0;
     let countdownRemaining = 0;
-    let sensorsInterval = null; // 
-
-    // ── PENDIENTE NAVEGACIÓN (para modal de salida) ──
     let pendingNavUrl = null;
-    
+    let pendingIsLogout = false;
 
     // ── GAUGES ──
     function setGauge(needleId, pctId, val) {
@@ -210,7 +206,7 @@
             stompClient.subscribe('/topic/flow', function (message) {
                 updateFlowSensors(JSON.parse(message.body));
             });
-            setInterval(updateOtherSensors, 1000);
+            // CORRECCIÓN: Eliminado el setInterval de aquí para que no dependa del éxito del WS
         }, function () {
             setTimeout(connect, 5000);
         });
@@ -225,6 +221,7 @@
         }
     }
 
+    // ── POLLING HTTP (SENSORES GENERALES) ──
     async function updateOtherSensors() {
         try {
             const response = await fetch('/sensor');
@@ -234,12 +231,18 @@
                 document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
                 document.getElementById('val-roll').innerText  = data.adxl.roll.toFixed(1)  + '°';
             }
-            if (data.frecuency_sensor)
+            if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined) {
                 document.getElementById('val-freq').innerText  = data.frecuency_sensor.frecuency.toFixed(1);
-            if (data.speed)
-                document.getElementById('val-speed').innerText = data.speed.speedValue.toFixed(1);
+            }
+            
+            // CORRECCIÓN: Ajustado para leer 'speed' directamente según el cambio nativo de Java
+            if (data.speed && data.speed.speed !== undefined) {
+                document.getElementById('val-speed').innerText = data.speed.speed.toFixed(1);
+            }
+            
             if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined)
                 setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
+            
             if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined)
                 setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
 
@@ -251,9 +254,13 @@
                         el.innerText = sensor.flowRate.toFixed(2);
                 });
             }
-            if (data.weight) document.getElementById('val-weight').innerText = data.weight.weightValue.toFixed(1);
+            if (data.weight && data.weight.weightValue !== undefined) {
+                document.getElementById('val-weight').innerText = data.weight.weightValue.toFixed(1);
+            }
 
-        } catch (e) { console.error('Sensor fetch error:', e); }
+        } catch (e) { 
+            console.error('Sensor fetch error:', e); 
+        }
     }
 
     // ── COUNTDOWN ──
@@ -343,12 +350,9 @@
         document.getElementById('exitModal').classList.add('active');
     }
 
-    let pendingIsLogout = false;
-
     document.getElementById('modalConfirmBtn').addEventListener('click', () => {
         document.getElementById('exitModal').classList.remove('active');
         if (isRecording) {
-            // Detiene, descarga, y luego navega
             stopCountdown();
             isRecording = false;
             fetch('/export/download').then(() => {
@@ -360,7 +364,6 @@
             }).catch(() => {
                 window.location.href = pendingNavUrl || '/';
             });
-            // Fallback en caso de que fetch no resuelva (descarga de fichero)
             setTimeout(() => {
                 if (pendingIsLogout) document.getElementById('logoutForm').submit();
                 else if (pendingNavUrl) window.location.href = pendingNavUrl;
@@ -376,7 +379,6 @@
         pendingNavUrl = null;
     });
 
-    // Interceptar logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
         if (isRecording) {
             showExitModal(null, true);
@@ -385,7 +387,6 @@
         }
     });
 
-    // Interceptar enlace de históricos
     document.getElementById('historyLink').addEventListener('click', (e) => {
         if (isRecording) {
             e.preventDefault();
@@ -393,7 +394,6 @@
         }
     });
 
-    // Interceptar cierre/navegación del navegador (beforeunload)
     window.addEventListener('beforeunload', (e) => {
         if (isRecording) {
             e.preventDefault();
@@ -401,9 +401,15 @@
         }
     });
 
-    // ── INIT ──
+    // ── INIT CORREGIDO ──
     window.onload = function () {
-        updateOtherSensors();
+        // Ejecución inmediata inicial
+        updateOtherSensors(); 
+        
+        // CORRECCIÓN: Activamos el bucle repetitivo de consulta HTTP de forma independiente cada 1 segundo
+        setInterval(updateOtherSensors, 1000); 
+        
+        // Arrancamos el canal secundario de WebSockets para el caudal
         connect();
     };
 </script>
