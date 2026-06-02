@@ -11,18 +11,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 
 //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
-// Ignores any unknown properties in the JSON payload to prevent errors during deserialization if the payload contains extra fields that are not defined in this class.
-                @JsonIgnoreProperties(ignoreUnknown = true)
-//////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
 
 public class Sensor2Data {
-    private double frecuency;
+    private float frecuency;
 
     // Default constructor and parameterized constructor for Sensor2Data class
     public Sensor2Data() {}
     public Sensor2Data(float frecuency) {this.frecuency = frecuency;}
     
     
-    public double getFrecuency() { return frecuency;}
+    public float getFrecuency() { return frecuency;}
     public void setFrecuency(float frecuency) { this.frecuency = frecuency;}
 }
