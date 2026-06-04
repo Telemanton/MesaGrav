@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -36,12 +35,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-
-
-
 @Controller
 public class HomeController {
 
+    private final AntonioMesaGravimetricaApplication antonioMesaGravimetricaApplication;
 
     @Autowired
     private HistoricoRepository historicoRepository;
@@ -55,7 +52,9 @@ public class HomeController {
     @Autowired
     private RegistroService registroService;
 
-    
+    HomeController(AntonioMesaGravimetricaApplication antonioMesaGravimetricaApplication) {
+        this.antonioMesaGravimetricaApplication = antonioMesaGravimetricaApplication;
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          PUBLIC ACCESS SECTION
@@ -68,34 +67,42 @@ public class HomeController {
     }
 
     /**
-     * USER LOGIN AUTHENTICATION login(): This method handles the POST request for user login authentication.
-     * 
-     * This method authenticates a user depending on its username and password against the database.
-     * In case of successful authentication, it creates a Spring Security context
-     * with the appropriate role-based authority, stores the authenticated user in the session,
-     * and redirects the user to their role-specific home page.
-     * 
+     * USER LOGIN AUTHENTICATION login(): This method handles the POST request
+     * for user login authentication.
+     *
+     * This method authenticates a user depending on its username and password
+     * against the database. In case of successful authentication, it creates a
+     * Spring Security context with the appropriate role-based authority, stores
+     * the authenticated user in the session, and redirects the user to their
+     * role-specific home page.
+     *
      * @param username the username provided by the user for authentication
-     * @param password the plain-text password provided by the user for authentication
-     * @param request the HTTP request object (may be used for additional processing)
-     * @param session the HTTP session object used to store authentication context and user information
-     * 
-     * @return a redirect URL based on the result:
-     *         - "redirect:/admin-home" if the user has ADMIN role
-     *         - "redirect:/keyuser-home" if the user has KEYUSER role
-     *         - "redirect:/user-home" for all other roles, in this case USER role. May be expanded in the future if new roles are added.
-     *         - "redirect:/?error=true" if authentication fails (user not found or password mismatch)
-     * 
-     * @implNote This method performs the following steps:
-     *           1. Queries the database for a user matching the provided username
-     *           2. If found, verifies the password using a PasswordEncoder
-     *           3. Creates a UsernamePasswordAuthenticationToken with the user's role prefixed as "ROLE_" according to Spring Security conventions
-     *           4. Stores the authentication token in the Spring Security context
-     *           5. Persists the security context and current user in the HTTP session
-     *           6. Redirects to the appropriate page based on user role
-     * 
+     * @param password the plain-text password provided by the user for
+     * authentication
+     * @param request the HTTP request object (may be used for additional
+     * processing)
+     * @param session the HTTP session object used to store authentication
+     * context and user information
+     *
+     * @return a redirect URL based on the result: - "redirect:/admin-home" if
+     * the user has ADMIN role - "redirect:/keyuser-home" if the user has
+     * KEYUSER role - "redirect:/user-home" for all other roles, in this case
+     * USER role. May be expanded in the future if new roles are added. -
+     * "redirect:/?error=true" if authentication fails (user not found or
+     * password mismatch)
+     *
+     * @implNote This method performs the following steps: 1. Queries the
+     * database for a user matching the provided username 2. If found, verifies
+     * the password using a PasswordEncoder 3. Creates a
+     * UsernamePasswordAuthenticationToken with the user's role prefixed as
+     * "ROLE_" according to Spring Security conventions 4. Stores the
+     * authentication token in the Spring Security context 5. Persists the
+     * security context and current user in the HTTP session 6. Redirects to the
+     * appropriate page based on user role
+     *
      * @see org.springframework.security.core.context.SecurityContext
-     * @see org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+     * @see
+     * org.springframework.security.authentication.UsernamePasswordAuthenticationToken
      */
     @PostMapping("/user-logging")
     public String login(@RequestParam String username,
@@ -110,14 +117,16 @@ public class HomeController {
 
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
                 /**
-                 * Constructs a role name by prefixing the user's role with "ROLE_" and converting it to uppercase.
-                 * This practice follows the standard Spring Security role naming convention where roles are prefixed with "ROLE_".
-                 * 
-                 * Example: If user.getRole().name() returns "ADMIN", the resulting roleName will be "ROLE_ADMIN".
+                 * Constructs a role name by prefixing the user's role with
+                 * "ROLE_" and converting it to uppercase. This practice follows
+                 * the standard Spring Security role naming convention where
+                 * roles are prefixed with "ROLE_".
+                 *
+                 * Example: If user.getRole().name() returns "ADMIN", the
+                 * resulting roleName will be "ROLE_ADMIN".
                  */
                 String roleName = "ROLE_" + user.getRole().name();
 
-                
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                         user.getUsername(), null, AuthorityUtils.createAuthorityList(roleName));
 
@@ -149,8 +158,9 @@ public class HomeController {
     @GetMapping("/user-home")
     public String userHome(HttpSession session, Model model) {
         AppUser user = (AppUser) session.getAttribute("currentUser");
-        if (user == null || (user.getRole() == Role.ADMIN) || (user.getRole() == Role.KEYUSER))
+        if (user == null || (user.getRole() == Role.ADMIN) || (user.getRole() == Role.KEYUSER)) {
             return "redirect:/";
+        }
         model.addAttribute("currentUser", user);
         return "user-home";
     }
@@ -162,12 +172,13 @@ public class HomeController {
     @GetMapping("/keyuser-home")
     public String keyuserHome(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null || currentUser.getRole() != Role.KEYUSER) 
+        if (currentUser == null || currentUser.getRole() != Role.KEYUSER) {
             return "redirect:/";
+        }
         model.addAttribute("currentUser", currentUser);
         return "keyuser-home";
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          ADMIN USER PROPIETARY SECTION
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,19 +188,19 @@ public class HomeController {
     @GetMapping("/admin-home")
     public String adminHome(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
+        }
         model.addAttribute("currentUser", currentUser);
         return "admin-home";
     }
 
-    
     @GetMapping("/create-admin")
     public String createAdmin(Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
         if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
-    }
+        }
 
         model.addAttribute("userForm", new AppUser());
 
@@ -197,7 +208,6 @@ public class HomeController {
     }
 
     // --- ADMIN USER LIST PAGE (GET) ---
-
     @GetMapping("/admin-users")
     public String adminUsersList(Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
@@ -229,12 +239,12 @@ public class HomeController {
         return "create-user";
     }
 
-     @PostMapping("/save-user")
+    @PostMapping("/save-user")
     public String saveUser(@ModelAttribute("userForm") AppUser userForm,
             BindingResult result, Model model,
             RedirectAttributes redirectAttributes, HttpSession session) {
         AppUser user = (AppUser) session.getAttribute("currentUser");
-        
+
         if (session.getAttribute("currentUser") == null || user.getRole() != Role.ADMIN && user.getRole() != Role.KEYUSER) {
             return "redirect:/";
         }
@@ -260,19 +270,18 @@ public class HomeController {
             } else if (currentUser.getRole() == Role.KEYUSER) {
                 return "redirect:/keyuser-home";
             }
-        } 
+        }
 
         return "redirect:/";
-        
+
     }
 
-     // --- DELETE USER VIEW ---
+    // --- DELETE USER VIEW ---
     @GetMapping("/delete-user/{id}")
     public String deleteUser(@PathVariable Long id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
-        
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
         if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
@@ -291,14 +300,15 @@ public class HomeController {
     @GetMapping("/edit-user/{id}")
     public String editUserForm(@PathVariable Long id, Model model, HttpSession session) {
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
+        }
 
         Optional<AppUser> userToEdit = userRepository.findById(id);
         if (userToEdit.isPresent()) {
-            
+
             model.addAttribute("userForm", userToEdit.get());
-            return "edit-user"; 
+            return "edit-user";
         }
 
         return "redirect:/admin-users";
@@ -313,9 +323,10 @@ public class HomeController {
             RedirectAttributes redirectAttributes) {
 
         AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-        if (currentUser == null || currentUser.getRole() != Role.ADMIN)
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
             return "redirect:/";
-        
+        }
+
         Optional<AppUser> existingUserOpt = userRepository.findById(userForm.getId());
 
         if (existingUserOpt.isPresent()) {
@@ -334,7 +345,6 @@ public class HomeController {
         return "redirect:/admin-users";
 
     }
-
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          MACHINERY VIEW SECTION
@@ -356,14 +366,44 @@ public class HomeController {
             return "redirect:/";
         }
         model.addAttribute("currentUser", currentUser);
-        return "mesa-gravimetrica";
-    }
 
+        if(currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
+            return "mesa-gravimetrica";
+        } 
+        if(currentUser.getRole() == Role.USER) {
+            return "mesa-gravimetrica-user";
+        }
+        else {
+            return "redirect:/";
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
     //                                          AUXILIAR METHODS SECTION
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+
+
+    // --- /home management based on user roles ---
+    @GetMapping("/home")
+    public String homeRedirect(HttpSession session) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/";
+        }
+        switch (currentUser.getRole()) {
+            case ADMIN:
+                return "redirect:/admin-home";
+            case KEYUSER:
+                return "redirect:/keyuser-home";
+            default:
+                return "redirect:/user-home";
+        }
+    }
+
+
+
+
     // --- LOGOUT ---
 
     @PostMapping("/logout")
@@ -376,7 +416,6 @@ public class HomeController {
         return "redirect:/?logout=true";
     }
 
-   
     /* CANCEL OPERATION cancel(): The cancel() method is a GET endpoint that allow user to cancel their current action.
     Depending on its roles returns to an appropriate home page. */
     @GetMapping("/cancel")
@@ -396,112 +435,118 @@ public class HomeController {
 
         return "redirect:/";
 
-    
-        
     }
 
-  
     @GetMapping("/historicos-mesagrav")
-    public String listarHistoricos(Model model) {
-       if (historicoRepository.findAll().isEmpty()) {
-            return "no-data";
-        } else {
-            model.addAttribute("registros", historicoRepository.findAll());
-            return "historicos-mesagrav";
-        }
-
-        
+public String listarHistoricos(Model model, HttpSession session) {
+    AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+    if (currentUser == null) {
+        return "redirect:/";
     }
+    model.addAttribute("currentUser", currentUser);
 
+    List<Historico> listaEnsayos = historicoRepository.findAll();
     
-@GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
-public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
-    try {
-        // 1. Buscamos el registro en la base de datos
-        Historico h = historicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No encontrado"));
-        
-        // 2. Intentamos decodificar el Base64 de forma segura
-        byte[] comprimido;
-        try {
-            comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
-        } catch (IllegalArgumentException e) {
-            System.err.println("[INTEGRIDAD] Base64 corrupto en ID " + id);
-            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-        }
+    model.addAttribute("registros", listaEnsayos);
 
-        // 3. Intentamos descomprimir el GZIP
-        byte[] descomprimido;
-        try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
-            descomprimido = gis.readAllBytes(); 
-        } catch (ZipException e) {
-            System.err.println("🚨 [INTEGRIDAD] GZIP corrupto/manipulado en ID " + id);
-            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-        }
-
-        // 4. Comprobación del Checksum SHA-256
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashCalculadoBytes = digest.digest(descomprimido);
-        
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashCalculadoBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        String checksumCalculado = sb.toString();
-
-        if (!checksumCalculado.equals(h.getChecksum())) {
-            System.err.println("🚨 [SEGURIDAD] El ensayo " + id + " no coincide con su Checksum original.");
-            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-        }
-
-        // 5. Si todo es legal, enviamos el archivo CSV para descarga automática
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_recuperado_" + id + ".csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(descomprimido);
-
-    } catch (Exception e) {
-        // Captura cualquier otro imprevisto del servidor
-        System.err.println("❌ Fallo general al descargar el registro " + id);
-        e.printStackTrace(); 
-        return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+    if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
+        return "historicos-mesagrav";
+    } else {
+        return "historicos-mesagrav-user";
     }
-}   
+}
 
-@DeleteMapping("/borrar/{id}")
-    @PreAuthorize("hasRole('ADMIN')") // ◄ Solo usuarios con rol ADMIN pueden entrar aquí
-    public ResponseEntity<?> eliminarRegistro(@PathVariable Long id) {
-        boolean borradoExitoso = registroService.eliminarRegistro(id);
+    @GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
+    public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
+        try {
+            // 1. Buscamos el registro en la base de datos
+            Historico h = historicoRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("No encontrado"));
+
+            // 2. Intentamos decodificar el Base64 de forma segura
+            byte[] comprimido;
+            try {
+                comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
+            } catch (IllegalArgumentException e) {
+                System.err.println("[INTEGRIDAD] Base64 corrupto en ID " + id);
+                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+            }
+
+            // 3. Intentamos descomprimir el GZIP
+            byte[] descomprimido;
+            try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
+                descomprimido = gis.readAllBytes();
+            } catch (ZipException e) {
+                System.err.println("🚨 [INTEGRIDAD] GZIP corrupto/manipulado en ID " + id);
+                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+            }
+
+            // 4. Comprobación del Checksum SHA-256
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashCalculadoBytes = digest.digest(descomprimido);
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashCalculadoBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            String checksumCalculado = sb.toString();
+
+            if (!checksumCalculado.equals(h.getChecksum())) {
+                System.err.println("🚨 [SEGURIDAD] El ensayo " + id + " no coincide con su Checksum original.");
+                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+            }
+
+            // 5. Si todo es legal, enviamos el archivo CSV para descarga automática
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_recuperado_" + id + ".csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .body(descomprimido);
+
+        } catch (Exception e) {
+            // Captura cualquier otro imprevisto del servidor
+            System.err.println("❌ Fallo general al descargar el registro " + id);
+            e.printStackTrace();
+            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
+        }
+    }
+
+    @DeleteMapping("/borrar/{id}")
+    public ResponseEntity<?> eliminarRegistro(@PathVariable Long id, HttpSession session) {
+        boolean borradoExitoso = registroService.eliminarRegistro(id, (AppUser) session.getAttribute("currentUser"));
         if (borradoExitoso) {
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.notFound().build();
+            return crearRespuestaSinPermisos(); // Retorna 200 OK con el script de alerta de acceso denegado
         }
     }
 
-/**
- * Fuerza al navegador a mantenerse en la página actual y mostrar la alerta flotante.
- */
-private ResponseEntity<String> crearRespuestaConAlertaPantalla() {
-    String scriptAlerta = "<script type='text/javascript'>"
-            + "alert('⚠️ ¡AVISO DE SEGURIDAD CRÍTICO!\\n\\nLos datos de este ensayo han sido manipulados o están corruptos.\\nPor favor, consulte de inmediato al administrador del sistema.');"
-            + "window.location.href = window.location.href;" // Recarga la página actual de históricos de forma limpia
-            + "</script>";
+    /*
+User with no privileges for deleting records pop-up
+     */
+    private ResponseEntity<String> crearRespuestaSinPermisos() {
+        String scriptAlerta = "<script type='text/javascript'>"
+                + "alert('⚠️ ¡ACCESO DENEGADO!\\n\\nNo tienes permisos para realizar esta acción.\\nPor favor, contacta al administrador si crees que esto es un error.');"
+                + "window.location.href = window.location.href;" // Recarga la página actual de históricos de forma limpia
+                + "</script>";
 
-    return ResponseEntity.ok() // Devolvemos HTTP 200 para obligar al navegador a procesar el script
-            .contentType(MediaType.TEXT_HTML)
-            .body(scriptAlerta);
+        return ResponseEntity.ok() // Devolvemos HTTP 200 para obligar al navegador a procesar el script
+                .contentType(MediaType.TEXT_HTML)
+                .body(scriptAlerta);
+    }
+
+    /**
+     * Fuerza al navegador a mantenerse en la página actual y mostrar la alerta
+     * flotante.
+     */
+    private ResponseEntity<String> crearRespuestaConAlertaPantalla() {
+        String scriptAlerta = "<script type='text/javascript'>"
+                + "alert('⚠️ ¡AVISO DE SEGURIDAD CRÍTICO!\\n\\nLos datos de este ensayo han sido manipulados o están corruptos.\\nPor favor, consulte de inmediato al administrador del sistema.');"
+                + "window.location.href = window.location.href;" // Recarga la página actual de históricos de forma limpia
+                + "</script>";
+
+        return ResponseEntity.ok() // Devolvemos HTTP 200 para obligar al navegador a procesar el script
+                .contentType(MediaType.TEXT_HTML)
+                .body(scriptAlerta);
+    }
+
 }
-
-}
-
-
-
-    
-
-    
-
-    
-
-    
-

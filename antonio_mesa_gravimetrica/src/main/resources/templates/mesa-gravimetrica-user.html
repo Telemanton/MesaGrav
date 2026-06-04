@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
+
 </head>
 <body>
 
@@ -147,49 +148,8 @@
                     </div>
                 </div>
             </div>
-
-            <div class="sensor-card">
-                <div class="recording-panel">
-                    <div class="card-header" style="padding:0; margin-bottom:15px;">
-                        <i class="fas fa-file-csv"></i> <span th:text="#{data.acquisition}">Grabación de Datos (.CSV)</span>
-                    </div>
-
-                    <div class="timer-section">
-                        <label><i class="fas fa-clock" style="margin-right:5px; color: var(--primary-blue);"></i> <span th:text="#{data.acquisition.timer}">Temporizador</span></label>
-                        <div class="timer-input-wrap">
-                            <input type="number" id="timerMinutes" class="timer-input" min="0" max="999" value="5" placeholder="5">
-                            <span class="timer-unit">min</span>
-                            <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0" placeholder="0">
-                            <span class="timer-unit">seg</span>
-                        </div>
-                        <label class="timer-toggle">
-                            <input type="checkbox" id="timerEnabled"> Auto-stop
-                        </label>
-                    </div>
-
-                    <div class="countdown-bar-wrap" id="countdownWrap">
-                        <div class="countdown-track">
-                            <div class="countdown-fill" id="countdownFill"></div>
-                        </div>
-                        <div class="countdown-text" id="countdownText">00:00</div>
-                    </div>
-
-                    <div class="rec-btn-row">
-                        <button id="btnStart" onclick="startRecording()" class="btn btn-start">
-                            <i class="fas fa-play"></i> <span th:text="#{btn.start.recording}">Iniciar Grabación</span>
-                        </button>
-                        <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
-                            <i class="fas fa-download"></i> <span th:text="#{btn.stop.download}">Detener y Guardar</span>
-                        </button>
-                    </div>
-
-                    <div id="recordStatus" class="status-rec">
-                        <i class="fas fa-circle blink"></i> <span th:text="#{recordStatus}">SISTEMA GRABANDO TELEMETRÍA</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
     </div>
 </div>
 
@@ -198,14 +158,11 @@
 
 <script>
     let stompClient = null;
-    let isRecording = false;
-    let countdownInterval = null;
-    let countdownTotal = 0;
-    let countdownRemaining = 0;
+    let isRecording = false; 
     let pendingNavUrl = null;
     let pendingIsLogout = false;
 
-    // ── GESTIÓN DINÁMICA DE LOS GAUGES ELECTROMECÁNICOS CORREGIDOS ──
+    // ── GESTIÓN DINÁMICA DE LOS GAUGES ELECTROMECÁNICOS ──
     function setGauge(needleId, pctId, val) {
         const needle = document.getElementById(needleId);
         const pct    = document.getElementById(pctId);
@@ -222,13 +179,13 @@
     function connect() {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-        stompClient.debug = null; 
+        stompClient.debug = null; // Optimiza el hilo principal silenciando la consola
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/topic/flow', function (message) {
                 updateFlowSensors(JSON.parse(message.body));
             });
         }, function () {
-            setTimeout(connect, 5000); 
+            setTimeout(connect, 5000); // Reconexión automática tolerante a microcortes
         });
     }
 
@@ -283,116 +240,25 @@
         }
     }
 
-    // ── GESTIÓN DEL RELOJ / TEMPORIZADOR DE GRABACIÓN ──
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    }
-
-    function startCountdown(totalSeconds) {
-        countdownTotal     = totalSeconds;
-        countdownRemaining = totalSeconds;
-
-        const wrap = document.getElementById('countdownWrap');
-        const fill = document.getElementById('countdownFill');
-        const text = document.getElementById('countdownText');
-
-        wrap.classList.add('active');
-        fill.style.width = '100%';
-        text.innerText   = formatTime(countdownRemaining);
-
-        countdownInterval = setInterval(() => {
-            countdownRemaining--;
-            const pct = (countdownRemaining / countdownTotal) * 100;
-            fill.style.width  = pct + '%';
-            text.innerText    = formatTime(countdownRemaining);
-
-            if (countdownRemaining <= 0) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-                stopRecording();
-            }
-        }, 1000);
-    }
-
-    function stopCountdown() {
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-        }
-        document.getElementById('countdownWrap').classList.remove('active');
-        document.getElementById('countdownFill').style.width = '100%';
-        document.getElementById('countdownText').innerText   = '00:00';
-    }
-
-    // ── CONTROLES DE ADQUISICIÓN DE DATOS (START / STOP LOGGING) ──
-    function startRecording() {
-        fetch('/export/start', { method: 'POST' }).then(res => {
-            if (!res.ok) return;
-            isRecording = true;
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled  = false;
-            document.getElementById('recordStatus').classList.add('active');
-            document.getElementById('timerMinutes').disabled = true;
-            document.getElementById('timerSeconds').disabled = true;
-            document.getElementById('timerEnabled').disabled = true;
-
-            const useTimer = document.getElementById('timerEnabled').checked;
-            if (useTimer) {
-                const mins = parseInt(document.getElementById('timerMinutes').value) || 0;
-                const secs = parseInt(document.getElementById('timerSeconds').value) || 0;
-                const total = mins * 60 + secs;
-                if (total > 0) startCountdown(total);
-            }
-        });
-    }
-
-    function stopRecording(callback) {
-        stopCountdown();
-        isRecording = false;
-        window.location.href = '/export/download';
-        setTimeout(() => {
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled  = true;
-            document.getElementById('recordStatus').classList.remove('active');
-            document.getElementById('timerMinutes').disabled = false;
-            document.getElementById('timerSeconds').disabled = false;
-            document.getElementById('timerEnabled').disabled = false;
-            if (typeof callback === 'function') callback();
-        }, 1500);
-    }
-
-    // ── CONTROLADORES DE SALIDA SEGURA E INTERCEPTOR DEL MODAL ──
+    // ── CONTROLADORES DE SALIDA SEGURA DEL PANEL ──
     function showExitModal(url, isLogout) {
         pendingNavUrl = url;
         pendingIsLogout = isLogout || false;
         document.getElementById('exitModal').classList.add('active');
     }
 
-    document.getElementById('modalConfirmBtn').addEventListener('click', () => {
-        document.getElementById('exitModal').classList.remove('active');
-        if (isRecording) {
-            stopCountdown();
-            isRecording = false;
-            fetch('/export/download').then(() => {
-                if (pendingIsLogout) {
-                    document.getElementById('logoutForm').submit();
-                } else if (pendingNavUrl) {
-                    window.location.href = pendingNavUrl;
-                }
-            }).catch(() => {
-                window.location.href = pendingNavUrl || '/';
-            });
-        } else {
-            if (pendingIsLogout) document.getElementById('logoutForm').submit();
-            else if (pendingNavUrl) window.location.href = pendingNavUrl;
-        }
-    });
-
     document.getElementById('modalCancelBtn').addEventListener('click', () => {
         document.getElementById('exitModal').classList.remove('active');
         pendingNavUrl = null;
+    });
+
+    document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+        document.getElementById('exitModal').classList.remove('active');
+        if (pendingIsLogout) {
+            document.getElementById('logoutForm').submit();
+        } else if (pendingNavUrl) {
+            window.location.href = pendingNavUrl;
+        }
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -407,18 +273,11 @@
         }
     });
 
-    window.addEventListener('beforeunload', (e) => {
-        if (isRecording) {
-            e.preventDefault();
-            e.returnValue = 'Hay un ensayo en curso. ¿Seguro que quieres salir?';
-        }
-    });
-
-    // ── INICIALIZACIÓN DE BUCLOS PRINCIPALES ──
+    // ── INICIALIZACIÓN AUTÓNOMA ──
     window.onload = function () {
         updateOtherSensors(); 
-        setInterval(updateOtherSensors, 1000); // Polling constante a 1Hz
-        connect(); // WebSockets de caudal
+        setInterval(updateOtherSensors, 1000); // Polling a 1Hz regular
+        connect(); // Inicializa hilos de WebSockets para caudales
     };
 </script>
 </body>

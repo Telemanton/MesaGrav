@@ -61,12 +61,20 @@ public class RegistroService {
     @Transactional // Ensures that the delete operation is executed within a transaction, providing data integrity and consistency. 
     // If any exception occurs during the deletion process, the transaction will be rolled back, 
     // preventing partial updates to the database and ensuring that the database remains in a consistent state.
-    public boolean eliminarRegistro(Long id) { // 
-        if (historicoRepository.existsById(id)) {
-            historicoRepository.deleteById(id);
-            return true;
+    public boolean eliminarRegistro(Long id, AppUser currentUser) { //
+        if(currentUser == null || currentUser.getRole() == Role.USER) {
+            return false; // Only users with ADMIN or KEY USER roles can delete records, regular users are not allowed to perform this action.
+        }else if (currentUser.getRole() == Role.KEYUSER) {
+            // Key users can only delete records that they have created, so we need to check if the record belongs to the current user before allowing deletion.
+            Historico registro = historicoRepository.findById(id).orElse(null);
+            if (registro != null) {
+                historicoRepository.deleteById(id);
+                return true; // Record deleted successfully
+            }
+            return false; // Record not found 
         }
-        return false;
+        return false; // For any other cases, deletion is not allowed
+   
     }
 
 

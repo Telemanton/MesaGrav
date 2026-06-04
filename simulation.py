@@ -22,9 +22,12 @@ client = mqtt.Client()
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print(f"Simulador conectado y adaptado a MqttListener.java")
+        print("====================================================")
+        print(" SIMULADOR MESA GRAVIMÉTRICA ACTIVO (MODO ESP32)   ")
+        print("====================================================")
+        print("Conectado con éxito al broker MQTT.")
     else:
-        print(f"Error de conexión, rc={rc}")
+        print(f"Error crítico de conexión, rc={rc}")
         sys.exit(1)
 
 client.on_connect = on_connect
@@ -36,7 +39,7 @@ try:
     while True:
         t += 0.1
         
-        # 1. ADXL345: Java usa objectMapper -> ENVIAR JSON
+        # 1. ADXL345: Envío de JSON con orientación espacial
         adxl_data = {
             "x": round(math.sin(t) * 0.5, 2),
             "y": round(math.cos(t) * 0.3, 2),
@@ -46,27 +49,27 @@ try:
         }
         client.publish(TOPIC_ADXL, json.dumps(adxl_data))
 
-        # 2. FLOW: Java usa objectMapper con FlowWrapper -> ENVIAR JSON
+        # 2. FLOW: Red de caudalímetros envuelta en objeto
         caudales_lista = []
-        for i in range(1, 13):
+        for i in range(1, 4):  
             caudales_lista.append({
                 "id": i, 
                 "flowRate": round(random.uniform(1.5, 12.0), 2)
             })
         client.publish(TOPIC_FLOW, json.dumps({"sensores": caudales_lista}))
 
-        # 3. FRECUENCIA: Java usa objectMapper -> ENVIAR JSON
-        freq_data = {"frecuencia": round(50.0 + random.uniform(-2.0, 2.0), 2)}
+        # 3. FRECUENCIA: Se envía como Objeto JSON (clave "frecuency")
+        freq_data = {"frecuency": round(50.0 + random.uniform(-2.0, 2.0), 2)}
         client.publish(TOPIC_FRECUENCIA, json.dumps(freq_data))
 
-        # 4. PESO, VELOCIDAD Y GAUGES: 
-        # Java usa Double.parseDouble(payload.trim()) -> ENVIAR SOLO EL NÚMERO (STRING)
-        
-        peso = round(random.uniform(0, 500), 2)
-        client.publish(TOPIC_WEIGHT, str(peso)) # Envía "123.45"
-
+        # 4. VELOCIDAD CORREGIDA: Envía como texto plano de un número flotante (ej: "45.32")
+        # Tu MqttListener de Java lo recibe con Double.parseDouble(payload.trim())
         velocidad = round(random.uniform(0, 100), 2)
         client.publish(TOPIC_SPEED, str(velocidad))
+
+        # 5. PESO Y GAUGES: Se envían como texto plano (String numérico)
+        peso = round(random.uniform(0, 500), 2)
+        client.publish(TOPIC_WEIGHT, str(peso)) 
 
         engine_gauge = round(random.uniform(0, 100), 2)
         client.publish(TOPIC_ENGINE_GAUGE, str(engine_gauge))
@@ -74,11 +77,12 @@ try:
         dropper_gauge = round(random.uniform(0, 100), 2)
         client.publish(TOPIC_DROPPER_GAUGE, str(dropper_gauge))
 
-        print(f"[{time.strftime('%H:%M:%S')}] Telemetría enviada (Mix JSON/Texto)")
+        # Output de traza por consola para verificar el envío
+        print(f"[{time.strftime('%H:%M:%S')}] Telemetría enviada. Velocidad transmitida: {velocidad} m/s")
         time.sleep(0.5)
 
 except KeyboardInterrupt:
-    print("\nSimulación detenida.")
+    print("\nSimulación finalizada por el usuario.")
 finally:
     client.loop_stop()
     client.disconnect()
