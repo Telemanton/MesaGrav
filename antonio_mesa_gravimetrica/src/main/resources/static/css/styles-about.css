@@ -1,0 +1,228 @@
+/* =========================================================================
+   ESTILOS PREMIUM CLAROS - PÁGINA ABOUT (SMARTTABLE CONTROL)
+   ========================================================================= */
+
+/* 1. Variables de Diseño (Estética Clara / Laboratorio de Alta Gama) */
+:root {
+    --bg-main: #f4f6f9;         /* Fondo gris muy claro y limpio */
+    --bg-card: #ffffff;         /* Tarjetas y paneles en blanco puro */
+    --bg-card-hover: #fafbfc;   /* Sutil cambio al pasar el ratón */
+    --primary-blue: #0056b3;    /* Azul corporativo/técnico con buen contraste */
+    --accent-green: #1e7e34;    /* Verde de éxito/producción refinado */
+    --text-main: #2b2d42;       /* Texto principal gris oscuro/antracita (evita el negro puro) */
+    --text-muted: #6c757d;      /* Texto secundario o explicativo */
+    --border-color: #e2e8f0;    /* Bordes finos y limpios */
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 2. Estructura Base */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* 3. Cabecera Limpia (Sin contrastes oscuros) */
+header {
+    text-align: center;
+    padding: 50px 20px 30px 20px;
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+}
+
+header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+    color: var(--text-main);
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+header hr {
+    display: none;
+}
+
+/* 4. Paneles y Tarjetas de Contenido (Estilo Bloques Blancos de la Mesa) */
+section {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 35px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: #cbd5e1;
+}
+
+/* Títulos de sección integrados suavemente con el color de acento */
+section h2 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-main);
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+    width: 100%;
+}
+
+/* Indicadores laterales de color sutiles (Como los widgets de la mesa) */
+section:first-of-type {
+    border-left: 4px solid var(--primary-blue);
+}
+section:first-of-type h2 {
+    border-bottom-color: rgba(0, 86, 179, 0.15);
+}
+
+section:last-of-type {
+    border-left: 4px solid var(--accent-green);
+}
+section:last-of-type h2 {
+    border-bottom-color: rgba(30, 126, 52, 0.15);
+}
+
+/* 5. Sub-bloques internos (Fases de desarrollo) */
+article {
+    background-color: #f8fafc; /* Gris ligerísimo para romper la monotonía del fondo blanco */
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 20px 25px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+article h3 {
+    font-size: 1.05rem;
+    color: var(--text-main);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+/* Pequeño indicador cuadrado antes de cada fase */
+article h3::before {
+    content: "■";
+    color: var(--primary-blue);
+    font-size: 0.75rem;
+    margin-right: 10px;
+}
+
+section:last-of-type article h3::before {
+    color: var(--accent-green);
+}
+
+/* 6. Listas y viñetas */
+ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+ul li {
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+ul li strong {
+    color: #000000;
+}
+
+ul li::marker {
+    color: var(--primary-blue);
+}
+
+section:last-of-type ul li::marker {
+    color: var(--accent-green);
+}
+
+/* 7. Tipografía y Textos */
+p {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text-main);
+    font-size: 0.98rem;
+    text-align: justify;
+}
+
+strong {
+    color: #000000;
+    font-weight: 600;
+}
+
+/* Etiquetas de código técnicas con contraste suave (Fondo gris/texto oscuro) */
+code, em {
+    font-family: 'Orbitron', monospace;
+    font-style: normal;
+    background-color: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+/* 8. Pie de página de laboratorio */
+footer {
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 50px;
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+footer hr {
+    display: none;
+}
+
+footer p {
+    text-align: center;
+    font-size: 0.9rem;
+    margin: 4px 0;
+    color: var(--text-muted);
+}
+
+footer p strong {
+    color: var(--primary-blue);
+}
+
+/* 9. Responsivo */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.7rem;
+    }
+    section {
+        padding: 20px;
+    }
+    p {
+        text-align: left;
+    }
+}

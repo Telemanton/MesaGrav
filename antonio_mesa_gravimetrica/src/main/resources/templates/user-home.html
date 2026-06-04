@@ -12,20 +12,18 @@
         <header>
             <div class="menu-container">
                 <div class="logo">
-                    <img
-                        src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png"
-                        alt="UJA Logo">
+                    <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo" style="filter: brightness(0) invert(1);">
                 </div>
                 <nav>
                     <ul>
-                        <li><a href="#" th:text="#{nav.history}"></a></li>
+                        <li><a href="#" th:text="#{nav.about}" onclick="window.location.href='/about'"></a></li>
                         <li class="dropdown-container">
                             <a href="#" id="userDropdown">
                                 <i class="fas fa-user-circle"></i>
                                 <span th:text="${currentUser.username}"></span>
                             </a>
                             <ul id="dropdownMenu" class="dropdown-content">
-                                <li><a href="#" th:text="#{user.title}"></a></li>
+                                <li><a href="#" th:text="#{user.title}" onclick="window.location.href='/myprofile'"></a></li>
                                 <li>
                                     <a href="#"
                                         onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"

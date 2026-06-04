@@ -1,0 +1,226 @@
+/* =========================================================================
+   ESTILOS ADICIONALES: PÁGINA DE MI PERFIL (MODO CLARO DE LABORATORIO)
+   ========================================================================= */
+
+.profile-container {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Cabecera superior integrada */
+.profile-header {
+    background-color: #ffffff;
+    padding: 20px 0;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.header-container {
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.profile-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.6rem;
+    color: #2b2d42;
+    margin: 0;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f1f5f9;
+    color: #475569;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+/* Rejilla de Distribución (Grid simétrico) */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Estructura de Tarjetas */
+.profile-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+}
+
+.card-title-wrap h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: #2b2d42;
+    margin: 0;
+}
+
+.card-icon { color: #0056b3; font-size: 1.3rem; }
+.card-icon-sec { color: #1e7e34; font-size: 1.3rem; }
+
+/* Sección Izquierda: Visualización de datos */
+.info-group {
+    margin-bottom: 20px;
+}
+
+.info-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.info-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.info-value {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: #2b2d42;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Distintivo para los Roles del sistema */
+.role-badge {
+    display: inline-block;
+    font-family: 'Orbitron', monospace;
+    background-color: rgba(0, 86, 179, 0.08);
+    border-color: rgba(0, 86, 179, 0.2);
+    color: #0056b3;
+    font-weight: 700;
+}
+
+/* Sección Derecha: Inputs del Formulario */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
+}
+
+/* Validaciones Visuales */
+.input-error {
+    border-color: #dc3545 !important;
+    background-color: #fff5f5 !important;
+}
+
+.error-msg {
+    display: block;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* Botón de Enviar Formulario */
+.btn-submit {
+    width: 100%;
+    background-color: #1e7e34;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-submit:hover {
+    background-color: #155d24;
+}
+
+.btn-submit:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}

@@ -79,7 +79,7 @@ try:
 
         # Output de traza por consola para verificar el envío
         print(f"[{time.strftime('%H:%M:%S')}] Telemetría enviada. Velocidad transmitida: {velocidad} m/s")
-        time.sleep(0.5)
+        time.sleep(0.25)
 
 except KeyboardInterrupt:
     print("\nSimulación finalizada por el usuario.")

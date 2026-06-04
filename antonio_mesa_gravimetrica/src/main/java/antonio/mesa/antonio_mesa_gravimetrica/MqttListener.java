@@ -8,8 +8,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,9 +49,6 @@ public class MqttListener {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<Integer, Sensor3Data> flowSensorsMap = new ConcurrentHashMap<>();
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     private MqttClient client;
 
     public Map<Integer, Sensor3Data> getAllFlowData() {
@@ -91,11 +86,10 @@ public class MqttListener {
 
     // Add more getter methods for new topics here, for example:
     // public NewTopicData getLastNewTopicData() { return lastNewTopicData.get(); }
-
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
 
     @PostConstruct // This method will be called after the bean is initialized, and it will set up
-                   // the MQTT client and subscriptions.
+    // the MQTT client and subscriptions.
     public void init() {
         try {
             client = new MqttClient(BROKER_URL, CLIENT_ID, null);
@@ -187,13 +181,15 @@ public class MqttListener {
             // Speed sensor data suscription
             client.subscribe(TOPIC_SPEED, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("speed recibido: " + payload);
                 try {
                     float valor = Float.parseFloat(payload.trim());
 
                     Sensor7Data data = new Sensor7Data();
-                    data.setSpeedValue(valor); 
+                    data.setSpeedValue(valor);
 
                     lastSensor7Data.set(data);
+
                 } catch (Exception e) {
                     System.err.println("Error parseando Speed: " + e.getMessage());
                 }
@@ -206,11 +202,11 @@ public class MqttListener {
                     FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
                     if (wrapper.getSensores() != null) {
                         for (Sensor3Data sensor : wrapper.getSensores()) {
+                            // Sigue guardando los datos en el mapa de memoria perfectamente
                             flowSensorsMap.put(sensor.getId(), sensor);
                         }
 
-                        // Envía el objeto completo al canal que escuchará el HTML
-                        messagingTemplate.convertAndSend("/topic/flow", wrapper);
+                
                     }
 
                     System.out.println("Actualizados " + wrapper.getSensores().size() + " sensores de caudal.");
@@ -224,7 +220,9 @@ public class MqttListener {
             e.printStackTrace();
         }
 
-        ////////////////////////////////////////////////////////////////////
+    
+
+////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////
     }
 

@@ -367,13 +367,12 @@ public class HomeController {
         }
         model.addAttribute("currentUser", currentUser);
 
-        if(currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
+        if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
             return "mesa-gravimetrica";
-        } 
-        if(currentUser.getRole() == Role.USER) {
-            return "mesa-gravimetrica-user";
         }
-        else {
+        if (currentUser.getRole() == Role.USER) {
+            return "mesa-gravimetrica-user";
+        } else {
             return "redirect:/";
         }
     }
@@ -383,6 +382,59 @@ public class HomeController {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
 
+    // -- My profile page (GET) ---
+    @GetMapping("/myprofile")
+    public String myProfile(HttpSession session, Model model) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/";
+        }
+        model.addAttribute("currentUser", currentUser);
+        return "my-profile";
+    }
+
+    // -- My profile update password (POST) ---
+    @PostMapping("/my-profile/update-password")
+    public String updatePassword(
+            @RequestParam("currentPassword") String currentPassword,
+            @RequestParam("newPassword") String newPassword,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) { // Permite enviar mensajes temporales en la redirección
+
+        AppUser sessionUser = (AppUser) session.getAttribute("currentUser");
+        if (sessionUser == null) {
+            return "redirect:/";
+        }
+
+        AppUser databaseUser = userRepository.findById(sessionUser.getId()).orElse(null);
+        if (databaseUser == null) {
+            redirectAttributes.addFlashAttribute("error", "Usuario no encontrado en el sistema.");
+            return "redirect:/";
+        }
+
+        boolean matches = passwordEncoder.matches(currentPassword, databaseUser.getPasswordHash());
+        if (!matches) {
+            // Viaja de vuelta a la página del perfil de forma segura
+            redirectAttributes.addFlashAttribute("error", "La contraseña actual introducida no es correcta.");
+            return "redirect:/my-profile"; // Asegúrate de que esta URL coincide con la de tu @GetMapping de perfil
+        }
+
+        String encryptedNewPassword = passwordEncoder.encode(newPassword);
+        databaseUser.setPasswordHash(encryptedNewPassword);
+        userRepository.save(databaseUser);
+
+        session.setAttribute("currentUser", databaseUser); // Guardamos el usuario de BD actualizado
+
+        redirectAttributes.addFlashAttribute("success", "Contraseña actualizada exitosamente.");
+
+        if (sessionUser.getRole() == Role.ADMIN) {
+            return "redirect:/admin-home";
+        } else if (sessionUser.getRole() == Role.KEYUSER) {
+            return "redirect:/keyuser-home";
+        } else {
+            return "redirect:/user-home";
+        }
+    }
 
     // --- /home management based on user roles ---
     @GetMapping("/home")
@@ -401,11 +453,16 @@ public class HomeController {
         }
     }
 
-
-
+    @GetMapping("/about")
+    public String aboutPage(HttpSession session, Model model) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/";
+        }
+        return "about";
+    }
 
     // --- LOGOUT ---
-
     @PostMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -438,23 +495,23 @@ public class HomeController {
     }
 
     @GetMapping("/historicos-mesagrav")
-public String listarHistoricos(Model model, HttpSession session) {
-    AppUser currentUser = (AppUser) session.getAttribute("currentUser");
-    if (currentUser == null) {
-        return "redirect:/";
-    }
-    model.addAttribute("currentUser", currentUser);
+    public String listarHistoricos(Model model, HttpSession session) {
+        AppUser currentUser = (AppUser) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/";
+        }
+        model.addAttribute("currentUser", currentUser);
 
-    List<Historico> listaEnsayos = historicoRepository.findAll();
-    
-    model.addAttribute("registros", listaEnsayos);
+        List<Historico> listaEnsayos = historicoRepository.findAll();
 
-    if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
-        return "historicos-mesagrav";
-    } else {
-        return "historicos-mesagrav-user";
+        model.addAttribute("registros", listaEnsayos);
+
+        if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.KEYUSER) {
+            return "historicos-mesagrav";
+        } else {
+            return "historicos-mesagrav-user";
+        }
     }
-}
 
     @GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
     public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {

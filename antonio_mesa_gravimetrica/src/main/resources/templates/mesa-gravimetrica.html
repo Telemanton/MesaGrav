@@ -150,7 +150,7 @@
 
             <div class="sensor-card">
                 <div class="recording-panel">
-                    <div class="card-header" style="padding:0; margin-bottom:15px;">
+                    <div class="card-header">
                         <i class="fas fa-file-csv"></i> <span th:text="#{data.acquisition}">Grabación de Datos (.CSV)</span>
                     </div>
 
@@ -218,70 +218,68 @@
         pct.innerText = Math.round(clamped) + '%';
     }
 
-    // ── INFRAESTRUCTURA ASÍNCRONA: WEBSOCKETS (Caudales) ──
-    function connect() {
-        const socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null; 
-        stompClient.connect({}, function (frame) {
-            stompClient.subscribe('/topic/flow', function (message) {
-                updateFlowSensors(JSON.parse(message.body));
-            });
-        }, function () {
-            setTimeout(connect, 5000); 
-        });
-    }
-
-    function updateFlowSensors(flowData) {
-        if (flowData.sensores) {
-            flowData.sensores.forEach(sensor => {
-                const el = document.getElementById('flow-' + sensor.id);
-                if (el) el.innerText = sensor.flowRate.toFixed(2);
-            });
-        }
-    }
 
     // ── INFRAESTRUCTURA REPETITIVA: HTTP POLLING (Sincronización Java Backend) ──
     async function updateOtherSensors() {
-        try {
-            const response = await fetch('/sensor');
-            const data = await response.json();
+    try {
+        const response = await fetch('/sensor');
+        const data = await response.json();
 
-            // 1. Orientación ADXL345
-            if (data.adxl) {
-                document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
-                document.getElementById('val-roll').innerText  = data.adxl.roll.toFixed(1)  + '°';
+        // 1. Orientación ADXL345
+        if (data.adxl) {
+            document.getElementById('val-pitch').innerText = data.adxl.pitch.toFixed(1) + '°';
+            document.getElementById('val-roll').innerText  = data.adxl.roll.toFixed(1)  + '°';
+        }
+        
+        // 2. Frecuencia de Vibración
+        if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined) {
+            document.getElementById('val-freq').innerText  = data.frecuency_sensor.frecuency.toFixed(1);
+        }
+        
+        // 3. Mapeo de la Velocidad
+        if (data.speed && data.speed.speedValue !== undefined && data.speed.speedValue !== null) {
+            const speedFloat = parseFloat(data.speed.speedValue);
+            if (!isNaN(speedFloat)) {
+                document.getElementById('val-speed').innerText = speedFloat.toFixed(1);
             }
-            
-            // 2. Frecuencia de Vibración
-            if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined) {
-                document.getElementById('val-freq').innerText  = data.frecuency_sensor.frecuency.toFixed(1);
-            }
-            
-            // 3. Mapeo de la Velocidad (Adaptado al objeto encapsulado 'speedValue' de Sensor7Data en Java)
-            if (data.speed && data.speed.speedValue !== undefined && data.speed.speedValue !== null) {
-                const speedFloat = parseFloat(data.speed.speedValue);
-                if (!isNaN(speedFloat)) {
-                    document.getElementById('val-speed').innerText = speedFloat.toFixed(1);
+        }
+        
+        // 4. Medidores de Actuadores (Gauges)
+        if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
+            setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
+        }
+        if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
+            setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
+        }
+        
+        // 5. Peso en Celda de Carga
+        if (data.weight && data.weight.weightValue !== undefined) {
+            document.getElementById('val-weight').innerText = data.weight.weightValue.toFixed(1);
+        }
+
+        // ==========================================================
+        // 6. SOLUCIÓN COMPLETA Y DEFINITIVA PARA LA RED DE CAUDALÍMETROS
+        // ==========================================================
+        if (data.caudales) {
+            // Recorremos del 1 al 3 usando un bucle limpio
+            for (let i = 1; i <= 3; i++) {
+                // Buscamos la propiedad en formato texto (ej: data.caudales["1"])
+                const sensorData = data.caudales[String(i)]; 
+                
+                if (sensorData && sensorData.flowRate !== undefined && sensorData.flowRate !== null) {
+                    const elementoHtml = document.getElementById(`flow-${i}`);
+                    if (elementoHtml) {
+                        // Forzamos 2 decimales para que coincida con tu formato '0.00' del HTML
+                        elementoHtml.innerText = sensorData.flowRate.toFixed(2); 
+                    }
                 }
             }
-            
-            // 4. Medidores de Actuadores (Gauges)
-            if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
-                setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
-            }
-            if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
-                setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
-            }
-            
-            // 5. Peso en Celda de Carga
-            if (data.weight && data.weight.weightValue !== undefined) {
-                document.getElementById('val-weight').innerText = data.weight.weightValue.toFixed(1);
-            }
-        } catch (e) { 
-            console.error('Error fetching general sensors via REST:', e); 
         }
+
+    } catch (e) { 
+        console.error('Error fetching general sensors via REST:', e); 
     }
+}
 
     // ── GESTIÓN DEL RELOJ / TEMPORIZADOR DE GRABACIÓN ──
     function formatTime(sec) {
@@ -417,8 +415,7 @@
     // ── INICIALIZACIÓN DE BUCLOS PRINCIPALES ──
     window.onload = function () {
         updateOtherSensors(); 
-        setInterval(updateOtherSensors, 1000); // Polling constante a 1Hz
-        connect(); // WebSockets de caudal
+        setInterval(updateOtherSensors, 250); // Polling constante a 4Hz
     };
 </script>
 </body>
