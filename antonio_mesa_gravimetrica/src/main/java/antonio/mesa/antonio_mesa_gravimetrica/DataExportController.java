@@ -77,7 +77,10 @@ public class DataExportController {
     private void captureSnapshot() {
         SensorData adxl = mqttListener.getLastSensorData();
         Sensor2Data freq = mqttListener.getLastSensor2Data();
+        
+        // 1. CORRECCIÓN AQUÍ: Recibimos el Mapa nativo con clave Integer desde MqttListener
         Map<Integer, Sensor3Data> flows = mqttListener.getAllFlowData();
+        
         Sensor4Data engine = mqttListener.getLastSensor4Data();
         Sensor5Data dropper = mqttListener.getLastSensor5Data();
         Sensor6Data weight = mqttListener.getLastSensor6Data();
@@ -95,8 +98,9 @@ public class DataExportController {
         row[7] = formatDecimal(speed.getSpeedValue());
         row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 
+        // 2. CORRECCIÓN AQUÍ: Buscamos en el mapa usando el tipo primitivo int/Integer directamente
         for (int i = 1; i <= 3; i++) {
-            Sensor3Data f = flows.get(i);
+            Sensor3Data f = flows.get(i); // Buscamos usando el número entero directamente
             row[8 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
         }
         

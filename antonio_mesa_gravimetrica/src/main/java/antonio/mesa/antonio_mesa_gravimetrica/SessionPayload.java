@@ -1,9 +1,8 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
+
 import java.util.Map;
 
-
-/* 
-===================================
+/* ===================================
 SessionPayload class documentation
 ===================================
 The SessionPayload class represents the data structure for holding all sensor data collected from the MQTT listener.

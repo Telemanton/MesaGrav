@@ -176,6 +176,68 @@
             })
             .catch(error => console.error("Proceso de descarga abortado:", error.message));
     }
+
+    // =========================================================================
+    // SCRIPT DE CAPTURA ASÍNCRONA DE TELEMETRÍA (4 Hz)
+    // =========================================================================
+    async function updateOtherSensors() {
+        try {
+            const response = await fetch('/sensor');
+            if (!response.ok) return;
+            
+            const data = await response.json();
+
+            // Mapeo ADXL345
+            if (data.adxl) {
+                const pitchEl = document.getElementById('adxl-pitch');
+                const rollEl = document.getElementById('adxl-roll');
+                if (pitchEl) pitchEl.innerText = data.adxl.pitch !== undefined ? Number(data.adxl.pitch).toFixed(2) : "0.00";
+                if (rollEl) rollEl.innerText = data.adxl.roll !== undefined ? Number(data.adxl.roll).toFixed(2) : "0.00";
+            }
+
+            // Mapeo Frecuencia
+            if (data.frecuency_sensor && document.getElementById('sensor-frecuencia')) {
+                document.getElementById('sensor-frecuencia').innerText = data.frecuency_sensor.frecuency !== undefined ? Number(data.frecuency_sensor.frecuency).toFixed(2) : "0.00";
+            }
+
+            // Mapeo Velocidad Mecánica
+            if (data.speed && document.getElementById('sensor-velocidad')) {
+                document.getElementById('sensor-velocidad').innerText = data.speed.speedValue !== undefined ? Number(data.speed.speedValue).toFixed(2) : "0.00";
+            }
+
+            // Mapeo Gauges de Carga
+            if (data.engine_gauge && document.getElementById('gauge-engine')) {
+                document.getElementById('gauge-engine').innerText = data.engine_gauge.gaugeValue !== undefined ? Number(data.engine_gauge.gaugeValue).toFixed(2) : "0.00";
+            }
+            if (data.dropper_gauge && document.getElementById('gauge-dropper')) {
+                document.getElementById('gauge-dropper').innerText = data.dropper_gauge.dropperValue !== undefined ? Number(data.dropper_gauge.dropperValue).toFixed(2) : "0.00";
+            }
+
+            // Mapeo Peso Estático
+            if (data.weight && document.getElementById('sensor-peso')) {
+                document.getElementById('sensor-peso').innerText = data.weight.weightValue !== undefined ? Number(data.weight.weightValue).toFixed(2) : "0.00";
+            }
+
+            // Mapeo de la red de Caudalímetros Hidráulicos (Búsqueda híbrida e inmune)
+            if (data.caudales) {
+                for (let i = 1; i <= 3; i++) {
+                    const sensorData = data.caudales[String(i)] || data.caudales[i];
+                    if (sensorData && sensorData.flowRate !== undefined && sensorData.flowRate !== null) {
+                        const elementoHtml = document.getElementById(`flow-${i}`);
+                        if (elementoHtml) {
+                            elementoHtml.innerText = Number(sensorData.flowRate).toFixed(2);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching general sensors via REST:", error);
+        }
+    }
+
+    // Intervalo de actualización cíclico continuo
+    setInterval(updateOtherSensors, 250);
+    window.addEventListener('DOMContentLoaded', updateOtherSensors);
 </script>
 </body>
 </html>

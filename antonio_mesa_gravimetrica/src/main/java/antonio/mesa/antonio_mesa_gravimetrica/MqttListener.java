@@ -2,7 +2,6 @@ package antonio.mesa.antonio_mesa_gravimetrica;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -10,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.annotation.PostConstruct;
@@ -19,7 +19,7 @@ public class MqttListener {
 
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
     /// MQTT Broker configuration
-    private static final String BROKER_URL = "tcp://localhost:1883";
+    private static final String BROKER_URL = "tcp://10.3.141.1:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
@@ -27,8 +27,8 @@ public class MqttListener {
     private static final String TOPIC_ADXL = "sensor/adxl345";
     private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
-    private static final String TOPIC_ENGINE_GAUGE = "sensor/engine_gauge";
-    private static final String TOPIC_DROPPER_GAUGE = "sensor/dropper_gauge";
+    private static final String TOPIC_ENGINE_GAUGE = "tele/tasmota-motor/SENSOR";
+    private static final String TOPIC_DROPPER_GAUGE = "tele/tasmota-platform/SENSOR";
     private static final String TOPIC_WEIGHT = "sensor/weight";
     private static final String TOPIC_SPEED = "sensor/speed";
     // Add more topics here as needed, for example:
@@ -46,8 +46,8 @@ public class MqttListener {
     // AtomicReference
 
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Map<Integer, Sensor3Data> flowSensorsMap = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper = new ObjectMapper(); // Very important for parsing JSON payloads into Java variables
+    private final Map<Integer, Sensor3Data> flowSensorsMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     private MqttClient client;
 
@@ -115,7 +115,7 @@ public class MqttListener {
             // ADXL345 sensor data suscription
             client.subscribe(TOPIC_ADXL, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("ADXL345 recibido: " + payload);
+                //  System.out.println("ADXL345 recibido: " + payload);
                 try {
                     SensorData data = objectMapper.readValue(payload, SensorData.class);
                     lastSensorData.set(data);
@@ -127,7 +127,7 @@ public class MqttListener {
             // Frecuency sensor data suscription
             client.subscribe(TOPIC_FRECUENCIA, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("Frecuencia recibido: " + payload);
+                // System.out.println("Frecuencia recibido: " + payload);
                 try {
                     Sensor2Data data = objectMapper.readValue(payload, Sensor2Data.class);
                     lastSensor2Data.set(data);
@@ -136,17 +136,29 @@ public class MqttListener {
                 }
             });
 
+    
+
             // Engine gauge sensor data suscription
             client.subscribe(TOPIC_ENGINE_GAUGE, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 System.out.println("Gauge recibido: " + payload);
                 try {
-                    Double valor = Double.parseDouble(payload.trim());
+                    // Converts the JSON string into a JsonNode object for easier navigation
+                    JsonNode rootNode = objectMapper.readTree(payload);
+
+                    // Navegates through the JSON structure to extract the "Power" value as a Double
+                    Double valor = rootNode.path("ENERGY").path("Power").asDouble();
+
+                   
                     Sensor4Data data = new Sensor4Data();
                     data.setGaugeValue(valor);
                     lastSensor4Data.set(data);
+
+                    System.out.println("Potencia extraída con éxito: " + valor + " W");
+
                 } catch (Exception e) {
-                    System.err.println("Error parseando Gauge: " + e.getMessage());
+                    
+                    System.err.println("Error parseando Gauge (Extrayendo Power): " + e.getMessage());
                 }
             });
 
@@ -181,7 +193,7 @@ public class MqttListener {
             // Speed sensor data suscription
             client.subscribe(TOPIC_SPEED, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("speed recibido: " + payload);
+                //  System.out.println("speed recibido: " + payload);
                 try {
                     float valor = Float.parseFloat(payload.trim());
 
@@ -200,17 +212,15 @@ public class MqttListener {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 try {
                     FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
+
                     if (wrapper.getSensores() != null) {
                         for (Sensor3Data sensor : wrapper.getSensores()) {
-                            // Sigue guardando los datos en el mapa de memoria perfectamente
-                            flowSensorsMap.put(sensor.getId(), sensor);
+                            if (sensor.getId() != null) {
+                                flowSensorsMap.put(sensor.getId(), sensor);
+                            }
                         }
-
-                
                     }
-
                     System.out.println("Actualizados " + wrapper.getSensores().size() + " sensores de caudal.");
-
                 } catch (Exception e) {
                     System.err.println("Error parseando Flow: " + e.getMessage());
                 }
