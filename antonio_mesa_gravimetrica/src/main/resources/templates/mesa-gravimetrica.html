@@ -8,6 +8,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
+    
+    <style>
+        .tara-wrapper {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .btn-tara {
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-tara:hover {
+            background: #e68a00;
+        }
+        .btn-tara:active {
+            transform: scale(0.96);
+        }
+    </style>
 </head>
 <body>
 
@@ -35,7 +64,7 @@
         <div class="logo">
             <a th:href="@{/home}">
                 <i class="fas fa-cubes" style="color: var(--accent-green); font-size: 1.4rem; margin-right: 8px;"></i>
-                <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" th:text="#{mesa.home.title}"></span>
+                <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" th:text="#{mesa.home.title}">Mesa Gravimétrica</span>
             </a>
         </div>
         <div class="user-info">
@@ -100,6 +129,11 @@
                     <span id="val-weight" class="big-val">0.0</span>
                     <span class="big-unit">g</span>
                 </div>
+                <div class="tara-wrapper">
+                    <button type="button" class="btn-tara" onclick="ejecutarTara()">
+                        <i class="fas fa-balance-scale"></i> <span>Tarar Báscula</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -123,7 +157,7 @@
                     </div>
 
                     <div class="gauge-item-container">
-                        <div class="gauge-item-title" th:text="#{gauge.hopper}">Alimentador Tolva</div>
+                        <div class="gauge-item-title" th:text="#{gauge.hopper}">Tolva de Carga</div>
                         <div class="gauge-main-container">
                             <div class="gauge-arc-visual"><div class="gauge-arc-inner"></div></div>
                             <div class="gauge-needle" id="dropper-needle"></div>
@@ -215,7 +249,18 @@
     let pendingNavUrl = null;
     let pendingIsLogout = false;
 
-    // ── GESTIÓN DINÁMICA DE LOS GAUGES ELECTROMECÁNICOS CORREGIDOS ──
+    function ejecutarTara() {
+        fetch('/sensor/tare', { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                console.log("¡Báscula tarada! El dashboard y el CSV se han sincronizado a 0.");
+            } else {
+                console.error("Error al procesar la tara en el servidor.");
+            }
+        })
+        .catch(err => console.error("Error de conexión al enviar tara:", err));
+    }
+
     function setGauge(needleId, pctId, val) {
         const needle = document.getElementById(needleId);
         const pct    = document.getElementById(pctId);
@@ -227,14 +272,12 @@
         pct.innerText = Math.round(clamped) + '%';
     }
 
-    // ── INFRAESTRUCTURA REPETITIVA: HTTP POLLING (Sincronización Java Backend) ──
     async function updateOtherSensors() {
         try {
             const response = await fetch('/sensor');
             if (!response.ok) return;
             const data = await response.json();
 
-            // 1. Orientación ADXL345 (Blindado contra nulos)
             if (data.adxl && data.adxl.pitch !== undefined && data.adxl.roll !== undefined) {
                 const p = parseFloat(data.adxl.pitch);
                 const r = parseFloat(data.adxl.roll);
@@ -242,13 +285,11 @@
                 document.getElementById('val-roll').innerText  = (!isNaN(r) ? r.toFixed(1) : "0.0") + '°';
             }
             
-            // 2. Frecuencia de Vibración
             if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined && data.frecuency_sensor.frecuency !== null) {
                 const f = parseFloat(data.frecuency_sensor.frecuency);
                 document.getElementById('val-freq').innerText  = !isNaN(f) ? f.toFixed(1) : "0.0";
             }
             
-            // 3. Mapeo de la Velocidad
             if (data.speed && data.speed.speedValue !== undefined && data.speed.speedValue !== null) {
                 const speedFloat = parseFloat(data.speed.speedValue);
                 if (!isNaN(speedFloat)) {
@@ -256,7 +297,6 @@
                 }
             }
             
-            // 4. Medidores de Actuadores (Gauges)
             if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
                 setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
             }
@@ -264,13 +304,11 @@
                 setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
             }
             
-            // 5. Peso en Celda de Carga
             if (data.weight && data.weight.weightValue !== undefined && data.weight.weightValue !== null) {
                 const w = parseFloat(data.weight.weightValue);
                 document.getElementById('val-weight').innerText = !isNaN(w) ? w.toFixed(1) : "0.0";
             }
 
-            // 6. MAPEO DINÁMICO E INMUNE PARA LA RED DE CAUDALÍMETROS (Búsqueda por ID numérico e hilo seguro)
             if (data.caudales) {
                 for (let i = 1; i <= 3; i++) {
                     const sensorData = data.caudales[String(i)] || data.caudales[i];
@@ -289,7 +327,6 @@
         }
     }
 
-    // ── GESTIÓN DEL RELOJ / TEMPORIZADOR DE GRABACIÓN ──
     function formatTime(sec) {
         const m = Math.floor(sec / 60);
         const s = sec % 60;
@@ -412,10 +449,9 @@
         }
     });
 
-    // ── INICIALIZACIÓN DE BUCLES PRINCIPALES ──
     window.onload = function () {
         updateOtherSensors(); 
-        setInterval(updateOtherSensors, 250); // Polling constante a 4Hz sin bloqueos
+        setInterval(updateOtherSensors, 250); 
     };
 </script>
 </body>

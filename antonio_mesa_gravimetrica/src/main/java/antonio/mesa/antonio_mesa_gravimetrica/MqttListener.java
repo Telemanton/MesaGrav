@@ -104,13 +104,7 @@ public class MqttListener {
             // Subscriptions to MQTT topics and handleling incoming messages //
             ////////////////////////////////////////////////////////////////////
             /// Each subscription listens to a specific topic and processes incoming
-            //////////////////////////////////////////////////////////////////// messages by
-            //////////////////////////////////////////////////////////////////// parsing the
-            //////////////////////////////////////////////////////////////////// JSON
-            //////////////////////////////////////////////////////////////////// payload
-            //////////////////////////////////////////////////////////////////// into the
-            //////////////////////////////////////////////////////////////////// corresponding
-            //////////////////////////////////////////////////////////////////// data class
+            //////////////////////////////////////////////////////////////////// 
 
             // ADXL345 sensor data suscription
             client.subscribe(TOPIC_ADXL, (topic, message) -> {
@@ -167,14 +161,25 @@ public class MqttListener {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 System.out.println("Gauge recibido: " + payload);
                 try {
-                    Double valor = Double.parseDouble(payload.trim());
+                    // Converts the JSON string into a JsonNode object for easier navigation
+                    JsonNode rootNode = objectMapper.readTree(payload);
+
+                    // Navegates through the JSON structure to extract the "Power" value as a Double
+                    Double valor = rootNode.path("ENERGY").path("Power").asDouble();
+
+                   
                     Sensor5Data data = new Sensor5Data();
                     data.setDropperValue(valor);
                     lastSensor5Data.set(data);
+
+                    System.out.println("Potencia extraída con éxito: " + valor + " W");
+
                 } catch (Exception e) {
-                    System.err.println("Error parseando Gauge: " + e.getMessage());
+                    
+                    System.err.println("Error parseando Gauge (Extrayendo Power): " + e.getMessage());
                 }
             });
+
 
             // Weight sensor data suscription
             client.subscribe(TOPIC_WEIGHT, (topic, message) -> {
@@ -232,7 +237,7 @@ public class MqttListener {
 
     
 
-////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////
     }
 

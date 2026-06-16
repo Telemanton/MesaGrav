@@ -94,7 +94,20 @@ public class DataExportController {
         row[3] = formatDecimal(freq.getFrecuency());
         row[4] = formatDecimal(engine.getGaugeValue());
         row[5] = formatDecimal(dropper.getDropperValue());
-        row[6] = formatDecimal(weight.getWeightValue());
+
+        // === COLA DE TARA COMPARTIDA SIN ERRORES DE COMPILACIÓN ===
+        float pesoNetoTarado = 0.0f;
+        if (weight != null && weight.getWeightValue() != null) {
+            float pesoCrudo = weight.getWeightValue().floatValue();
+            
+            // Extraemos la tara global del SensorController de forma estática
+            pesoNetoTarado = pesoCrudo - SensorController.getValorTara(); 
+            if (pesoNetoTarado < 0.0f) {
+                pesoNetoTarado = 0.0f;
+            }
+        }
+        row[6] = formatDecimal(pesoNetoTarado);
+        
         row[7] = formatDecimal(speed.getSpeedValue());
         row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 
@@ -136,7 +149,7 @@ public class DataExportController {
 
         // 2. Generamos el contenido del CSV primero
         StringBuilder csv = new StringBuilder();
-        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Motor_Load;Dropper_Load;Peso_Kg;Velocidad_RPM;Aceleracion_RPM_s2;Caudal_1;Caudal_2;Caudal_3\n");
+        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Consumo_Motor_W;Consumo_Total_W;Peso_entrada_g;Velocidad_RPM;Aceleracion_RPM_s2;Caudal_1;Caudal_2;Caudal_3\n");
         
         String csvFinal;
         synchronized (recordedData) {
