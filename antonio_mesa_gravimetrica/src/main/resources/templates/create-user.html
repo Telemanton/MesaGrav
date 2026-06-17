@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="#{create.user.header}"></title>
-    <link rel="stylesheet" href="/css/styles-keyuser.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 <body>
     <header>
         <div class="menu-container">
             <div class="logo">
-                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+                <img th:src="@{/images/logo_uja.png}" alt="UJA Logo">
             </div>
             <nav>
                 <ul>
-                    <li><a href="/keyuser-home"><i class="fas fa-arrow-left"></i></a></li>
+                    <li><a th:href="@{/keyuser-home}"><i class="fas fa-arrow-left"></i></a></li>
                 </ul>
             </nav>
         </div>
@@ -28,7 +29,7 @@
         </section>
 
         <section class="form-section">
-            <form action="/save-user" method="post" class="user-form">
+            <form th:action="@{/save-user}" method="post" class="user-form">
 
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> <span th:text="#{create.user.name}"></span></label>
@@ -36,7 +37,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label ><i class="fas fa-user-tag"></i> <span th:text="#{create.user.surname}"></span></label>
+                    <label><i class="fas fa-user-tag"></i> <span th:text="#{create.user.surname}"></span></label>
                     <input type="text" name="surname" required placeholder="Pérez García" maxlength="100">
                 </div>
 
@@ -68,7 +69,7 @@
                     <button type="submit" class="btn-primary">
                         <i class="fas fa-save"></i> <span th:text="#{create.user.submit}"></span>
                     </button>
-                    <a href="/cancel" class="btn-secondary">
+                    <a th:href="@{/cancel}" class="btn-secondary">
                         <i class="fas fa-times"></i> <span th:text="#{create.user.cancel}"></span>
                     </a>
                 </div>

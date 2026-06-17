@@ -39,7 +39,7 @@ public class SensorController {
 
     private final MqttListener mqttListener;
 
-    // Global tare reference value stored in memory (accessible across recording threads and UI polling cycles)
+    // Global tare reference value stored in memory (accessible across getter method below)
     private static float valorTara = 0.0f;
 
     // Constructor for SensorController, which takes an instance of MqttListener as a parameter
@@ -54,34 +54,90 @@ public class SensorController {
 
     //////////////////////////////////////////////////////////          //////////////////////////////////////////////////////////
         // Retrieve the latest data from the MqttListener and put it in the response map
-        response.put("adxl", mqttListener.getLastSensorData());
-        response.put("frecuency_sensor", mqttListener.getLastSensor2Data());
-        response.put("engine_gauge", mqttListener.getLastSensor4Data());
-        response.put("caudales", mqttListener.getAllFlowData());
-        response.put("dropper_gauge", mqttListener.getLastSensor5Data());
-        
-        // --- LIVE TARE WEIGHT PROCESSING ---
-        // Fetch raw weight data from MQTT in real-time
+        if (mqttListener.getLastSensorData() != null) {
+            response.put("adxl", mqttListener.getLastSensorData());
+        } else {
+            response.put("adxl", null);
+        }
+
+        if (mqttListener.getLastSensor2Data() != null) {
+            response.put("frecuency_sensor", mqttListener.getLastSensor2Data());
+        } else {
+            response.put("frecuency_sensor", null);
+        }
+
+        if (mqttListener.getLastSensor4Data() != null) {
+            response.put("engine_gauge", mqttListener.getLastSensor4Data());
+        } else {
+            response.put("engine_gauge", null);
+        }
+
+        if (mqttListener.getAllFlowData() != null) {
+            response.put("caudales", mqttListener.getAllFlowData());
+        } else {
+            response.put("caudales", null);
+        }
+
+        if (mqttListener.getLastSensor5Data() != null) {
+            response.put("dropper_gauge", mqttListener.getLastSensor5Data());
+        } else {
+            response.put("dropper_gauge", null);
+        }
         Sensor6Data rawWeightData = mqttListener.getLastSensor6Data();
         Sensor6Data processedWeight = new Sensor6Data();
         
-        if (rawWeightData != null && rawWeightData.getWeightValue() != null) {
-            float rawWeight = rawWeightData.getWeightValue().floatValue();
-            // Subtract the global software tare offset
-            float netWeight = rawWeight - valorTara;
-            
-            // Prevent minor mechanical scale bounce or noise from reading below absolute zero
+        if (rawWeightData.getWeightValue() != 0.0f) {
+            float netWeight = rawWeightData.getWeightValue() - valorTara;
             if (netWeight < 0.0f) {
                 netWeight = 0.0f;
             }
-            processedWeight.setWeightValue((double) netWeight);
+            processedWeight.setWeightValue(netWeight);
         } else {
-            processedWeight.setWeightValue(0.0);
+            processedWeight.setWeightValue(0.0f);
         }
         
         // Send the real-time calculated net weight instead of raw values to the JS dashboard UI
         response.put("weight", processedWeight);
         response.put("speed", mqttListener.getLastSensor7Data());
+
+        Sensor8Data motorData = (Sensor8Data) mqttListener.getLastSensor8Data();
+        if (motorData != null) {
+            response.put("motor_active_power", motorData.getActivePower());
+            response.put("motor_apparent_power", motorData.getApparentPower());
+            response.put("motor_reactive_power", motorData.getReactivePower());
+            response.put("motor_power_factor", motorData.getPowerFactor());
+            response.put("motor_voltage", motorData.getVoltage());
+            response.put("motor_current", motorData.getCurrent());
+            response.put("motor_temperature", motorData.getESP32Temperature());
+        } else {
+            response.put("motor_active_power", 0.0f);
+            response.put("motor_apparent_power", 0.0f);
+            response.put("motor_reactive_power", 0.0f);
+            response.put("motor_power_factor", 0.0f);
+            response.put("motor_voltage", 0.0f);
+            response.put("motor_current", 0.0f);
+            response.put("motor_temperature", 0.0f);
+        }
+
+        Sensor8Data platformData = (Sensor8Data) mqttListener.getLastSensor8_2_Data();
+        if (platformData != null) {
+            response.put("platform_active_power", platformData.getActivePower());
+            response.put("platform_apparent_power", platformData.getApparentPower());
+            response.put("platform_reactive_power", platformData.getReactivePower());
+            response.put("platform_power_factor", platformData.getPowerFactor());
+            response.put("platform_voltage", platformData.getVoltage());
+            response.put("platform_current", platformData.getCurrent());
+            response.put("platform_temperature", platformData.getESP32Temperature());
+        } else {
+            response.put("platform_active_power", 0.0f);
+            response.put("platform_apparent_power", 0.0f);
+            response.put("platform_reactive_power", 0.0f);
+            response.put("platform_power_factor", 0.0f);
+            response.put("platform_voltage", 0.0f);
+            response.put("platform_current", 0.0f);
+            response.put("platform_temperature", 0.0f);
+        }
+        
         // Put the new topics in the response map here, for example:
         // response.put("new topic name", mqttListener.getLastNewTopicData()); 
         // *
@@ -101,11 +157,9 @@ public class SensorController {
             return ResponseEntity.status(403).body("Access Denied");
         }
 
-        Sensor6Data currentWeightData = mqttListener.getLastSensor6Data();
-        if (currentWeightData != null && currentWeightData.getWeightValue() != null) {
-            // Lock down the current raw reading value as the new baseline
-            valorTara = currentWeightData.getWeightValue().floatValue();
-            System.out.println("[TARE CONTROLLER] Global tare baseline set at: " + valorTara + " g");
+        if (mqttListener.getLastSensor6Data() != null && mqttListener.getLastSensor6Data().getWeightValue() != 0.0f) {
+            System.out.println("[TARE CONTROLLER] Global tare baseline set at - " + mqttListener.getLastSensor6Data().getWeightValue() + " g");
+            valorTara = mqttListener.getLastSensor6Data().getWeightValue();
             return ResponseEntity.ok("Tare baseline set to: " + valorTara);
         } else {
             // Reset to default zero index if sensor connection isn't alive or is unreadable

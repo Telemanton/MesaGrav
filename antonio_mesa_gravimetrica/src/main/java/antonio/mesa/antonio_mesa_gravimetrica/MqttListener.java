@@ -27,20 +27,30 @@ public class MqttListener {
     private static final String TOPIC_ADXL = "sensor/adxl345";
     private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
-    private static final String TOPIC_ENGINE_GAUGE = "tele/tasmota-motor/SENSOR";
-    private static final String TOPIC_DROPPER_GAUGE = "tele/tasmota-platform/SENSOR";
+    private static final String TOPIC_ENGINE_GAUGE = "sensor/engine_gauge";
+    private static final String TOPIC_DROPPER_GAUGE = "sensor/dropper_gauge";
+    private static final String TOPIC_MOTOR_ENERGY = "tele/tasmota-motor/SENSOR";
+    private static final String TOPIC_PLATFORM_ENERGY = "tele/tasmota-platform/SENSOR";
     private static final String TOPIC_WEIGHT = "sensor/weight";
     private static final String TOPIC_SPEED = "sensor/speed";
     // Add more topics here as needed, for example:
     // private static final String TOPIC_NEW = "sensor/newtopic";
 
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
+    /*
+    * AtomicReference is used for sensors to ensure thread-safe access and updates to the latest sensor data.
+    * In case of using a traditional constructor instead of an AtomicReference, the data could be overwritten while another constructor is been generated
+    * 
+    *  */
+    
     private final AtomicReference<SensorData> lastSensorData = new AtomicReference<>(new SensorData());
     private final AtomicReference<Sensor2Data> lastSensor2Data = new AtomicReference<>(new Sensor2Data());
     private final AtomicReference<Sensor4Data> lastSensor4Data = new AtomicReference<>(new Sensor4Data());
     private final AtomicReference<Sensor5Data> lastSensor5Data = new AtomicReference<>(new Sensor5Data());
     private final AtomicReference<Sensor6Data> lastSensor6Data = new AtomicReference<>(new Sensor6Data());
     private final AtomicReference<Sensor7Data> lastSensor7Data = new AtomicReference<>(new Sensor7Data());
+    private final AtomicReference<Sensor8Data> lastSensor8Data = new AtomicReference<>(new Sensor8Data());
+    private final AtomicReference<Sensor8Data> lastSensor8_2_Data = new AtomicReference<>(new Sensor8Data());
     // Add more AtomicReferences for new topics here, for example:
     // private final AtomicReference<NewTopicData> lastNewTopicData = new
     // AtomicReference
@@ -48,6 +58,7 @@ public class MqttListener {
     ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
     private final ObjectMapper objectMapper = new ObjectMapper(); // Very important for parsing JSON payloads into Java variables
     private final Map<Integer, Sensor3Data> flowSensorsMap = new java.util.concurrent.ConcurrentHashMap<>();
+
 
     private MqttClient client;
 
@@ -82,6 +93,14 @@ public class MqttListener {
 
     public Sensor3Data getFlowDataById(Integer id) {
         return flowSensorsMap.get(id);
+    }
+
+    public Sensor8Data getLastSensor8Data() {
+        return lastSensor8Data.get();
+    }
+
+    public Sensor8Data getLastSensor8_2_Data() {
+        return lastSensor8_2_Data.get();
     }
 
     // Add more getter methods for new topics here, for example:
@@ -127,6 +146,56 @@ public class MqttListener {
                     lastSensor2Data.set(data);
                 } catch (Exception e) {
                     System.err.println("Error parseando Frecuencia: " + e.getMessage());
+                }
+            });
+
+            // Motor energy intelligent plug data suscription
+            client.subscribe(TOPIC_MOTOR_ENERGY, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                //System.out.println("Motor Energy recibido: " + payload);
+                try {
+                    JsonNode rootNode = objectMapper.readTree(payload);
+                    
+                    Sensor8Data data = new Sensor8Data();
+                    data.setActivePower(rootNode.path("ENERGY").path("Power").floatValue());
+                    data.setApparentPower(rootNode.path("ENERGY").path("ApparentPower").floatValue());
+                    data.setReactivePower(rootNode.path("ENERGY").path("ReactivePower").floatValue());
+                    data.setPowerFactor(rootNode.path("ENERGY").path("Factor").floatValue());
+                    data.setVoltage(rootNode.path("ENERGY").path("Voltage").floatValue());
+                    data.setCurrent(rootNode.path("ENERGY").path("Current").floatValue());
+                    data.setESP32Temperature(rootNode.path("ESP32").path("Temperature").floatValue());
+
+                    lastSensor8Data.set(data);
+
+                    System.out.println("ok: Motor Energy extraído con éxito: " + data.getActivePower() + " W, " + data.getVoltage() + " V, " + data.getCurrent() + " A");
+
+                } catch (Exception e) {
+                    System.err.println("Error parseando Motor Energy: " + e.getMessage());
+                }
+            });
+
+            // Platform energy intelligent plug data suscription
+            client.subscribe(TOPIC_PLATFORM_ENERGY, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                //System.out.println("Platform Energy recibido: " + payload);
+                try {
+                    JsonNode rootNode = objectMapper.readTree(payload);
+                    
+                    Sensor8Data data = new Sensor8Data();
+                    data.setActivePower(rootNode.path("ENERGY").path("Power").floatValue());
+                    data.setApparentPower(rootNode.path("ENERGY").path("ApparentPower").floatValue());
+                    data.setReactivePower(rootNode.path("ENERGY").path("ReactivePower").floatValue());
+                    data.setPowerFactor(rootNode.path("ENERGY").path("Factor").floatValue());
+                    data.setVoltage(rootNode.path("ENERGY").path("Voltage").floatValue());
+                    data.setCurrent(rootNode.path("ENERGY").path("Current").floatValue());
+                    data.setESP32Temperature(rootNode.path("ESP32").path("Temperature").floatValue());
+
+                    lastSensor8_2_Data.set(data);
+
+                    System.out.println("ok: Platform Energy extraído con éxito: " + data.getActivePower() + " W, " + data.getVoltage() + " V, " + data.getCurrent() + " A");
+
+                } catch (Exception e) {
+                    System.err.println("Error parseando Platform Energy: " + e.getMessage());
                 }
             });
 
@@ -186,7 +255,7 @@ public class MqttListener {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 System.out.println("Weight recibido: " + payload);
                 try {
-                    Double valor = Double.parseDouble(payload.trim());
+                    float valor = Float.parseFloat(payload.trim());
                     Sensor6Data data = new Sensor6Data();
                     data.setWeightValue(valor);
                     lastSensor6Data.set(data);

@@ -6,10 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="robots" content="noindex, nofollow">
     
-    <title th:text="#{login.title}"></title>
+    <title th:text="#{login.title}">Acceso - UJA</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <link rel="icon" href="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/favicon.ico?tag=06950">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="shortcut icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+    
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 
 <body>
@@ -17,7 +19,7 @@
         <header id="header">
             <div class="wrap v-center">
                 <div id="logo">
-                    <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png?tag=06950" alt="Universidad de Jaén">
+                    <img th:src="@{/images/logo_uja.png}" alt="Universidad de Jaén">
                 </div>
 
                 <div class="language-selection">
@@ -36,18 +38,18 @@
                 <div class="wrap">
                     <div id="flex-container-login">
                         <div class="siduja-box login-card">
-                            <img class="siduja_logo" src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_siduja.png?tag=06950" alt="SIDUJA">
+                            <img class="siduja_logo" th:src="@{/images/logo_siduja.png}" alt="SIDUJA">
                             
-                            <form id="login-form" class="pure-form pure-form-aligned" action="user-logging" method="POST" name="login-form">
+                            <form id="login-form" class="pure-form pure-form-aligned" th:action="@{/user-logging}" method="POST" name="login-form">
                                 <input type="hidden" name="authsource">
                                 
                                 <div class="pure-control-group">
-                                    <label id="label-user" for="username" th:text="#{login.username}"></label>
+                                    <label id="label-user" for="username" th:text="#{login.username}">Usuario</label>
                                     <input id="username" type="text" name="username" required>
                                 </div>
 
                                 <div class="pure-control-group">
-                                    <label id="label-pass" for="password" th:text="#{login.password}"></label>
+                                    <label id="label-pass" for="password" th:text="#{login.password}">Contraseña</label>
                                     <input id="password" type="password" name="password" required>
                                 </div>
 
@@ -61,7 +63,7 @@
 
                 <div class="full-width-info">
                     <div class="wrap">
-                        <h6 id="info-title" th:text="#{login.welcome}"></h6>
+                        <h6 id="info-title" th:text="#{login.welcome}">Bienvenidos</h6>
                         <p id="info-p1" th:text="#{login.description1}"></p>
                         <p id="info-p2" th:text="#{login.description2}"></p>
                     </div>
@@ -69,10 +71,10 @@
 
                 <footer class="footer-info">
                     <div class="wrap">
-                        <p><strong th:text="#{login.contact}"></strong></p>
+                        <p><strong th:text="#{login.contact}">Contacto</strong></p>
                         <p th:text="#{login.address}">Carretera de Madrid, s/n 23071 Jaén</p>
                         <p th:text="#{login.phone}"></p>
-                        <p><span th:text="#{login.email}"></span>: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
+                        <p><span th:text="#{login.email}">Email</span>: <a href="mailto:explotacionminas@ujaen.es">explotacionminas@ujaen.es</a></p>
                     </div>
                 </footer>
             </div>
@@ -80,26 +82,15 @@
     </div>
 
     <script>
-        const selector = document.getElementById('language-selector');
-        
-        selector.addEventListener('change', (e) => {
+        document.getElementById('language-selector').addEventListener('change', (e) => {
             const lang = e.target.value;
-            // Use fetch to change language via AJAX without creating new history entry
-            fetch('?lang=' + lang, {
-                method: 'GET',
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                // Replace current history entry instead of creating a new one
-                // This way when user clicks back, they go to previous page (not previous language)
-                const url = new URL(window.location);
-                url.searchParams.set('lang', lang);
-                window.history.replaceState({lang: lang}, '', url.toString());
-                
-                // Reload page to apply new language
-                window.location.reload();
-            })
-            .catch(error => console.error('Error changing language:', error));
+            const url = new URL(window.location.href);
+            
+            // Setea el parámetro de idioma esperado por Spring Security / MVC 'LocaleChangeInterceptor'
+            url.searchParams.set('lang', lang);
+            
+            // Redirige reemplazando el historial para conservar el comportamiento del botón "Atrás"
+            window.location.replace(url.toString());
         });
     </script>
 </body>

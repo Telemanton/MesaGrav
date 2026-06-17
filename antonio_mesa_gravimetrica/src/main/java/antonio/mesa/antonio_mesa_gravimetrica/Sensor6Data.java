@@ -7,10 +7,10 @@ The Sensor6Data class represents the data structure for the sensor, which measur
 The Sensor6Data class is used to encapsulate the weight data collected.
 */
 public class Sensor6Data {
-    private Double weightValue;
+    private float weightValue;
 
     public Sensor6Data() {}
 
-    public Double getWeightValue() { return weightValue; }
-    public void setWeightValue(Double weightValue) { this.weightValue = weightValue; }
+    public float getWeightValue() { return weightValue; }
+    public void setWeightValue(float weightValue) { this.weightValue = weightValue; }
 }

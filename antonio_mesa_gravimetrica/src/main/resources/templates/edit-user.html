@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="#{editar.usuario.title}">Editar Usuario - UJA Admin</title>
     <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 <body>
     <header>
         <div class="menu-container">
             <div class="logo">
-                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+                <img th:src="@{/images/logo_uja.png}" alt="UJA Logo">
             </div>
             <nav>
                 <ul>
@@ -23,7 +24,7 @@
 
     <div class="main-wrapper">
         <section class="intro">
-            <h1 th:text="#{editar.usuario.editar.usuario}"><i class="fas fa-user-edit"></i> Editar Usuario</h1>
+            <h1><i class="fas fa-user-edit"></i> <span th:text="#{editar.usuario.editar.usuario}">Editar Usuario</span></h1>
             <p th:text="#{editar.modif}">Modifique los datos del usuario seleccionado.</p>
         </section>
 
@@ -39,22 +40,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-user" th:text="#{edit.user.namee}"></i> Nombre</label>
+                    <label><i class="fas fa-user"></i> <span th:text="#{edit.user.namee}">Nombre</span></label>
                     <input type="text" th:field="*{name}" required placeholder="Nombre" maxlength="100">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-user-tag" th:text="#{edit.user.surnamee}"></i> Apellidos</label>
+                    <label><i class="fas fa-user-tag"></i> <span th:text="#{edit.user.surnamee}">Apellidos</span></label>
                     <input type="text" th:field="*{surname}" required placeholder="Apellidos" maxlength="100">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-envelope" th:text="#{edit.user.emaill}"></i> Email</label>
+                    <label><i class="fas fa-envelope"></i> <span th:text="#{edit.user.emaill}">Email</span></label>
                     <input type="email" th:field="*{email}" required placeholder="usuario@ujaen.es" maxlength="100">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-users-cog" th:text="#{edit.user.roll}"></i> Rol del Sistema</label>
+                    <label><i class="fas fa-users-cog"></i> <span th:text="#{edit.user.roll}">Rol del Sistema</span></label>
                     <select th:field="*{role}" required class="form-select">
                         <option value="USER" th:text="#{usuario.standard}">Usuario Normal (USER)</option>
                         <option value="KEYUSER" th:text="#{keyuser.standard}">Key User</option>
@@ -64,10 +65,10 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-save" th:text="#{usuario.save.changes}"></i> Guardar Cambios
+                        <i class="fas fa-save"></i> <span th:text="#{usuario.save.changes}">Guardar Cambios</span>
                     </button>
                     <a th:href="@{/admin-users}" class="btn-secondary">
-                        <i class="fas fa-times" th:text="#{usuario.cancel}"></i> Cancelar
+                        <i class="fas fa-times"></i> <span th:text="#{usuario.cancel}">Cancelar</span>
                     </a>
                 </div>
             </form>

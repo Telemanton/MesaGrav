@@ -6,42 +6,34 @@
     <title th:text="#{admin.home}"></title>
     <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
     <link rel="stylesheet" th:href="@{/css/styles-admin.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 <body>
     <header>
         <div class="menu-container">
             <div class="logo">
-                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+                <img th:src="@{/images/logo_uja.png}" alt="UJA Logo">
             </div>
             <nav>
                 <ul>
                     <li><a href="#" th:text="#{nav.about}" onclick="window.location.href='/about'"></a></li>
-                            <li class="dropdown-container">
-                            <a href="#" id="userDropdown">
-                                <i class="fas fa-user-circle"></i>
-                                <span th:text="${currentUser.username}"></span>
-                            </a>
-                            <ul id="dropdownMenu" class="dropdown-content">
-                                <li><a href="#" th:text="#{user.title}" onclick="window.location.href='/myprofile'"></a></li>
-                                <li>
-                                    <a href="#"
-                                        onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
-                                        th:text="#{nav.logout}"></a>
-                                </li>
-                            </ul>
-                            <form id="logoutForm" th:action="@{/logout}"
-                                method="post" style="display: none;">
-                            </form>
-                        </li>
-                            <!-- Why do it this way?
-                            Security: The Spring Security standard recommends that logout be a POST request. If a simple link (GET) is used,
-                            any malicious site could close the user's session without their permission by simply loading an image with the logout URL.
-
-                            Redirection: When using th:action="@{/logout}", Spring will process the request and by default redirect to /login?logout.-->
-                        </li>
+                    <li class="dropdown-container">
+                        <a href="#" id="userDropdown">
+                            <i class="fas fa-user-circle"></i>
+                            <span th:text="${currentUser.username}"></span>
+                        </a>
+                        <ul id="dropdownMenu" class="dropdown-content">
+                            <li><a href="#" th:text="#{user.title}" onclick="window.location.href='/myprofile'"></a></li>
+                            <li>
+                                <a href="#"
+                                   onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
+                                   th:text="#{nav.logout}"></a>
+                            </li>
+                        </ul>
+                        <form id="logoutForm" th:action="@{/logout}" method="post" style="display: none;"></form>
+                    </li>
                 </ul>
-                
             </nav>
         </div>
     </header>
@@ -55,7 +47,6 @@
         </section>
 
         <section class="articles-grid">
-            <!-- Card 1: User Management (exactly as keyuser) -->
             <div class="article-card">
                 <div class="icon-header">
                     <i class="fas fa-users-cog"></i>
@@ -67,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- Card 2: Create Admin (only for admins) -->
             <div class="article-card">
                 <div class="icon-header">
                     <i class="fas fa-user-shield"></i>
@@ -79,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- Card 3: View All Users (only for admins) -->
             <div class="article-card">
                 <div class="icon-header">
                     <i class="fas fa-table-list"></i>
@@ -91,7 +80,6 @@
                 </div>
             </div>
 
-            <!-- Card 4: Gravimetric Table (existing machinery) -->
             <div class="article-card">
                 <div class="icon-header">
                     <i class="fas fa-layer-group"></i>
@@ -106,11 +94,6 @@
     </div>
 
     <script>
-        // Change language function using AJAX with history.replaceState
-        /*
-        credentials: 'same-origin' is necessary to include cookies in the request,
-        This ensures that the server can properly identify the user and maintain their session while processing the language change request.
-        */
         function changeLanguage(lang) {
             fetch('?lang=' + lang, {
                 method: 'GET',
@@ -125,52 +108,22 @@
             .catch(error => console.error('Error changing language:', error));
         }
 
-        // Language dropdown
-        document.getElementById('languageDropdown').addEventListener('click', function(e) {
-            e.preventDefault(); 
-            document.getElementById('languageMenu').classList.toggle('show');
-        });
+        const userBtn = document.getElementById('userDropdown');
+        const userMenu = document.getElementById('dropdownMenu');
 
-        // Dropdown menu
-        document.getElementById('userDropdown').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('dropdownMenu').classList.toggle('show');
-        });
+        if (userBtn && userMenu) {
+            userBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+        }
         
         window.onclick = function(event) {
-            if (!event.target.closest('.dropdown-container')) {
-                document.getElementById('dropdownMenu').classList.remove('show');
-                document.getElementById('languageMenu').classList.remove('show');
+            if (userMenu && !event.target.closest('.dropdown-container')) {
+                userMenu.classList.remove('show');
             }
         }
     </script>
-    <script>
-
-    // logout form
-    function submitLogout(event) {
-        event.preventDefault();
-        if (document.getElementById('logoutForm')) form.submit();
-    }
-
-
-    const userBtn = document.getElementById('userDropdown');
-    const userMenu = document.getElementById('dropdownMenu');
-
-    if (userBtn && userMenu) {
-        userBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation(); // fixes scrolling bugs
-            userMenu.classList.toggle('show');
-        };
-    }
-
-    // Menu closing in case the user does a click out of the container
-    window.onclick = function(event) {
-        const menu = document.getElementById('dropdownMenu');
-        if (menu && !event.target.closest('.dropdown-container')) {
-            menu.classList.remove('show');
-        }
-    };
-</script>
 </body>
 </html>

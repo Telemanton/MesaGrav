@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title th:text="#{userListTitle}">Usuarios - Admin UJA</title>
     <link rel="stylesheet" th:href="@{/css/styles-admin.css}">
     <link rel="stylesheet" th:href="@{/css/styles-list.css}">
 
-    <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/jquery.dataTables.min.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 <body>
     <div class="container">
@@ -41,7 +42,6 @@
                     </td>
                     <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        
                         <a th:href="@{/edit-user/{id}(id=${user.id})}" 
                            class="btn-edit" title="Editar">
                             <i class="fas fa-edit"></i> Editar
@@ -65,21 +65,33 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-    $('#usersTable').DataTable({
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-        },
-        pageLength: 25
+    <script th:src="@{/js/jquery-3.7.0.min.js}"></script>
+    <script th:src="@{/js/jquery.dataTables.min.js}"></script>
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('#usersTable').DataTable({
+            // CAMBIO 5: Traducción incrustada en local (Evita la petición al CDN)
+            language: {
+                processing:     "Procesando...",
+                search:         "Buscar:",
+                lengthMenu:    "Mostrar _MENU_ registros",
+                info:           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                infoEmpty:      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                infoFiltered:   "(filtrado de un total de _MAX_ registros)",
+                loadingRecords: "Cargando...",
+                zeroRecords:    "No se encontraron resultados",
+                emptyTable:     "Ningún dato disponible en esta tabla",
+                paginate: {
+                    first:      "Primero",
+                    previous:   "Anterior",
+                    next:       "Siguiente",
+                    last:       "Último"
+                }
+            },
+            pageLength: 25
+        });
     });
-});
-
-</script>
-
-
-
+    </script>
 </body>
 </html>

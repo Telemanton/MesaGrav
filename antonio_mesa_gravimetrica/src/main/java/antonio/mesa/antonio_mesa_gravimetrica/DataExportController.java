@@ -37,6 +37,11 @@ public class DataExportController {
     private RegistroService registroService;
 
     private boolean isRecording = false;
+    /*
+    *
+    * The recordedData list is a synchronized list that stores the snapshots of sensor data captured during the recording process as String
+    * Each snapshot is represented as an array of strings, where each element corresponds to a specific
+    *  */
     private final List<String[]> recordedData = Collections.synchronizedList(new ArrayList<>());
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -59,6 +64,9 @@ public class DataExportController {
             
             // Every DELTA_T seconds, captures a snapshot which contains the actual data in the MqttListener and stores it in the "recordedData" list within the RAM.
             // This process continues until the user stops the recording.
+
+            // Creates a new task on the background indiferently of the main thread, only is executed when the user starts the recording,
+            //  and it will be stopped when the user stops the recording.
             new Thread(() -> {
                 while (isRecording) {
                     captureSnapshot();
@@ -75,16 +83,13 @@ public class DataExportController {
     }
 
     private void captureSnapshot() {
-        SensorData adxl = mqttListener.getLastSensorData();
-        Sensor2Data freq = mqttListener.getLastSensor2Data();
-        
-        // 1. CORRECCIÓN AQUÍ: Recibimos el Mapa nativo con clave Integer desde MqttListener
-        Map<Integer, Sensor3Data> flows = mqttListener.getAllFlowData();
-        
-        Sensor4Data engine = mqttListener.getLastSensor4Data();
-        Sensor5Data dropper = mqttListener.getLastSensor5Data();
-        Sensor6Data weight = mqttListener.getLastSensor6Data();
-        Sensor7Data speed = mqttListener.getLastSensor7Data();
+        SensorData adxl = mqttListener.getLastSensorData(); // columns 1 and 2
+        Sensor2Data freq = mqttListener.getLastSensor2Data(); // column 3
+        Map<Integer, Sensor3Data> flows = mqttListener.getAllFlowData(); // columns 4, 5, 6
+        Sensor4Data engine = mqttListener.getLastSensor4Data(); // column 7
+        Sensor5Data dropper = mqttListener.getLastSensor5Data(); // column 8
+        Sensor6Data weight = mqttListener.getLastSensor6Data(); // column 9
+        Sensor7Data speed = mqttListener.getLastSensor7Data(); // column 10
 
         String[] row = new String[12]; 
         
@@ -95,19 +100,18 @@ public class DataExportController {
         row[4] = formatDecimal(engine.getGaugeValue());
         row[5] = formatDecimal(dropper.getDropperValue());
 
-        // === COLA DE TARA COMPARTIDA SIN ERRORES DE COMPILACIÓN ===
         float pesoNetoTarado = 0.0f;
-        if (weight != null && weight.getWeightValue() != null) {
-            float pesoCrudo = weight.getWeightValue().floatValue();
+        if (weight != null && weight.getWeightValue() != 0.0f) {
+            float pesoCrudo = weight.getWeightValue();
             
-            // Extraemos la tara global del SensorController de forma estática
+            // Extracting the tare value from the SensorController to calculate the net weight. 
+            // If the net weight is negative, it is set to zero.
             pesoNetoTarado = pesoCrudo - SensorController.getValorTara(); 
             if (pesoNetoTarado < 0.0f) {
                 pesoNetoTarado = 0.0f;
             }
         }
         row[6] = formatDecimal(pesoNetoTarado);
-        
         row[7] = formatDecimal(speed.getSpeedValue());
         row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 

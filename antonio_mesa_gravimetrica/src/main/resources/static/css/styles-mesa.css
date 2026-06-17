@@ -1,21 +1,21 @@
 /* =========================================================================
-   1. CONFIGURACIÓN BASE, VARIABLES UNIFICADAS Y FUENTES PRO
+   1. Base configuration and CSS variables for the Gravimetric Table Dashboard
    ========================================================================= */
 :root {
-    /* Paleta Corporativa Avanzada */
-    --primary-blue:      #004481; /* Azul de ingeniería de la mina */
-    --accent-green:      #00a651; /* Verde activo / Éxito / LED On */
+    /* Corporative pallete */
+    --primary-blue:      #004481; 
+    --accent-green:      #00a651; 
     --accent-green-dark: #15693a;
     --accent-green-dim:  #e8f5e9;
-    --danger-red:        #c62828; /* Rojo alertas / Parada de emergencia */
+    --danger-red:        #c62828; 
     --danger-red-dark:   #a52e24;
     --danger-red-dim:    #ffebee;
-    --dark-bg:           #1a1a1a; /* Gris oscuro industrial */
+    --dark-bg:           #1a1a1a; 
 
-    /* Fondos y Superficies Limpias */
-    --bg-page:           #f0f2f5; /* Gris claro de fondo general */
-    --card-bg:           #ffffff; /* Blanco puro para tarjetas */
-    --card-bg-inner:     #f8f9fa; /* Gris sutil para sub-cajas */
+    
+    --bg-page:           #f0f2f5; 
+    --card-bg:           #ffffff; 
+    --card-bg-inner:     #f8f9fa; 
     --surface-accent:    #f4f4f4;
 
     /* Texto */
@@ -49,7 +49,7 @@ body {
 }
 
 /* =========================================================================
-   2. HEADER PREMIUM, NAVEGACIÓN Y COMPONENTES DE USUARIO
+   2. HEADER 
    ========================================================================= */
 header {
     background: var(--dark-bg);
@@ -89,7 +89,7 @@ header {
     gap: 12px;
 }
 
-/* Botones de acción del menú (Historial, Logout) */
+/* Menu action buttons */
 .btn-link {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -113,7 +113,7 @@ header {
     border-color: var(--accent-green);
 }
 
-/* Dropdown base (por si se usa en otras pantallas) */
+/* Dropdown base */
 .dropdown-container { position: relative; }
 .dropdown-content {
     display: none; position: absolute; right: 0; top: 35px;
@@ -128,7 +128,7 @@ header {
 .dropdown-content a:hover { background: var(--card-bg-inner); color: var(--accent-green); }
 
 /* =========================================================================
-   3. ARQUITECTURA DE REJILLAS (GRID SYSTEM PRO)
+   3. GRID SYSTEM ARCHITECTURE FOR DASHBOARD LAYOUT
    ========================================================================= */
 .dashboard-grid {
     display: grid;
@@ -151,7 +151,7 @@ header {
 }
 
 /* =========================================================================
-   4. INDUSTRIAL CARDS (TARJETAS DE TELEMETRÍA)
+   4. INDUSTRIAL CARDS 
    ========================================================================= */
 .sensor-card, .sensor-main-card, .sensor-side-card, .article-card {
     background: var(--card-bg);
@@ -192,7 +192,7 @@ header {
 }
 
 /* =========================================================================
-   5. DISPLAYS DIGITALES DE 7 SEGMENTOS (ESTILO LED SCADA)
+   5. 7 SEGMENT DIGITAL FONT FOR DATA DISPLAY (SCADA STYLE)
    ========================================================================= */
 .data-value, .axis-value, .angle-value, .freq-value, .big-val, .mini-value, .gauge-pct {
     font-family: 'Orbitron', monospace !important;
@@ -202,7 +202,7 @@ header {
     text-shadow: 0 0 12px rgba(0, 68, 129, 0.15);
 }
 
-/* Bloque ADXL345 (Pitch & Roll) */
+/* ADXL345 (Pitch & Roll) */
 .data-row {
     display: flex;
     justify-content: space-around;
@@ -232,7 +232,7 @@ header {
     font-weight: 700;
 }
 
-/* Grandes paneles Numéricos (Vibración, Velocidad y Peso) */
+/* Big Value Displays */
 .big-val-wrap, .freq-display {
     text-align: center;
     padding: 12px 0 4px 0;
@@ -243,7 +243,7 @@ header {
     color: var(--primary-blue);
 }
 
-/* Override LED Verde para elementos activos de alta precisión */
+ 
 #val-freq, #val-speed, .mini-value {
     color: var(--accent-green) !important;
     text-shadow: 0 0 10px rgba(0, 166, 81, 0.25) !important;
@@ -259,7 +259,7 @@ header {
     letter-spacing: 0.05em;
 }
 
-/* Rejilla de Caudalímetros (Websockets) */
+/* flow meters */
 .flow-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -297,7 +297,7 @@ header {
     font-weight: 600;
 }
 /* =========================================================================
-   6. MEDIDORES ANALÓGICOS (GAUGES ELECTROMECÁNICOS CORREGIDOS)
+   6. GAUGE METER (SPEEDOMETER STYLE) 
    ========================================================================= */
 .gauge-flex-wrapper {
     display: flex;
@@ -320,16 +320,16 @@ header {
     letter-spacing: 0.05em;
 }
 
-/* Caja contenedora total del medidor */
+
 .gauge-main-container { 
     width: 160px; 
-    height: 85px; /* Altura exacta para cortar el círculo a la mitad */
+    height: 85px; 
     margin: 0 auto; 
     position: relative; 
-    overflow: hidden; /* Corta el exceso inferior del círculo */
+    overflow: hidden; 
 }
 
-/* Máscara visual para el arco superior */
+
 .gauge-arc-visual { 
     position: absolute; 
     width: 160px; 
@@ -338,19 +338,19 @@ header {
     left: 0; 
 }
 
-/* Arco Gris de fondo: Corregido para cubrir el semicírculo entero de 180 grados */
+
 .gauge-arc-inner {
     width: 160px; 
     height: 160px;
     border-radius: 50%;
-    border: 14px solid var(--border); /* Grosor del arco */
-    border-bottom-color: transparent; /* Ocultamos la mitad inferior */
-    border-left-color: transparent;   /* Ocultamos para ajustar el ángulo de inicio */
-    transform: rotate(-45deg); /* Ángulo exacto para centrar el arco arriba */
+    border: 14px solid var(--border); 
+    border-bottom-color: transparent; 
+    border-left-color: transparent;   
+    transform: rotate(-45deg); 
     box-sizing: border-box;
 }
 
-/* Aguja indicadora */
+
 .gauge-needle {
     position: absolute; 
     bottom: 0; 
@@ -359,13 +359,12 @@ header {
     height: 58px;
     background: var(--dark-bg);
     transform-origin: bottom center;
-    transform: translateX(-50%) rotate(-90deg); /* 0% empieza apuntando a la izquierda */
+    transform: translateX(-50%) rotate(-90deg); 
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     z-index: 10;
     border-radius: 2px;
 }
 
-/* Pivot central de la aguja */
 .gauge-pivot {
     position: absolute; 
     bottom: -6px; 
@@ -378,7 +377,7 @@ header {
     z-index: 11;
 }
 
-/* Textos informativos de carga y porcentaje */
+
 .gauge-readout { 
     position: absolute; 
     bottom: 0; 
@@ -406,7 +405,7 @@ header {
     letter-spacing: 0.5px;
 }
 /* =========================================================================
-   7. PANEL DE GRABACIÓN, CONTROLES TIEMPO Y BOTONES
+   7. RECORDING PANEL AND BUTTONS FOR DATA ACQUISITION
    ========================================================================= */
 .recording-panel {
     background: var(--card-bg);
@@ -469,7 +468,6 @@ header {
 
 .btn:disabled { background: var(--border-strong); color: var(--text-muted); cursor: not-allowed; }
 
-/* Indicadores de Estado Activo de Adquisición */
 .status-rec {
     display: none;
     align-items: center;
@@ -486,7 +484,7 @@ header {
 .status-rec.active { display: inline-flex; justify-content: center; }
 
 /* =========================================================================
-   8. MODAL FLOTANTE MAQUINADO PREMIUM (BLOQUEO DE SEGURIDAD)
+   8. MODAL DIALOGS FOR CONFIRMATION AND ALERTS
    ========================================================================= */
 .modal-overlay {
     position: fixed;
@@ -576,7 +574,7 @@ header {
 .modal-btn-cancel:hover { background: var(--border); }
 
 /* =========================================================================
-   9. ANIMAClONES Y ADAPTABILIDAD (RESPONSIVE INDUSTRIAL)
+   9. ANIMATIONS AND RESPONSIVE ADJUSTMENTS
    ========================================================================= */
 @keyframes pulse-led {
     0%, 100% { opacity: 1; }
@@ -595,7 +593,7 @@ header {
 }
 
 /* =========================================================================
-   EXTENSIÓN SCADA: TIPOGRAFÍA DIGITAL DE 7 SEGMENTOS PARA PANTALLA PRINCIPAL
+   10. FONT STYLING FOR DATA VALUES AND GAUGE READOUTS
    ========================================================================= */
 .data-value, 
 .axis-value, 
@@ -610,13 +608,13 @@ header {
     text-shadow: 0 0 10px rgba(0, 68, 129, 0.2);
 }
 
-/* Efecto LED Verde para Frecuencia, Velocidad y Caudalímetros */
+
 #val-freq, #val-speed, .mini-value {
     color: var(--accent-green) !important;
     text-shadow: 0 0 10px rgba(0, 166, 81, 0.3) !important;
 }
 
-/* Ajuste de maquetación del Dashboard para evitar roturas visuales */
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -629,3 +627,31 @@ header {
     flex-direction: column;
     gap: 25px;
 }
+
+
+        .tara-wrapper {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .btn-tara {
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-tara:hover {
+            background: #e68a00;
+        }
+        .btn-tara:active {
+            transform: scale(0.96);
+        }

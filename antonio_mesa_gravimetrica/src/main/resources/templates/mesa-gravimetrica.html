@@ -4,39 +4,8 @@
     <meta charset="UTF-8">
     <title th:text="#{mesa.title}">Control Panel - Gravimetric Table</title>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    
+     <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
-    
-    <style>
-        .tara-wrapper {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .btn-tara {
-            background: #ff9800;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .btn-tara:hover {
-            background: #e68a00;
-        }
-        .btn-tara:active {
-            transform: scale(0.96);
-        }
-    </style>
 </head>
 <body>
 
@@ -135,6 +104,88 @@
                     </button>
                 </div>
             </div>
+
+
+            <div class="sensor-card">
+                <div class="card-header">
+                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Motor</span>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-motor-active-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Activa (W)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-motor-apparent-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Aparente (VA)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-motor-reactive-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Reactiva (VAR)</span>
+                    </div>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-motor-voltage" class="data-value">0.0</span>
+                        <span class="data-label">Voltaje (V)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-motor-current" class="data-value">0.00</span>
+                        <span class="data-label">Corriente (A)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-motor-power-factor" class="data-value">0.00</span>
+                        <span class="data-label">Factor Potencia</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="data-item">
+                        <span id="val-motor-temperature" class="data-value">0.0°C</span>
+                        <span class="data-label">Temp. ESP32</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="card-header">
+                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-platform-active-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Activa (W)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-apparent-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Aparente (VA)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-reactive-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Reactiva (VAR)</span>
+                    </div>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-platform-voltage" class="data-value">0.0</span>
+                        <span class="data-label">Voltaje (V)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-current" class="data-value">0.00</span>
+                        <span class="data-label">Corriente (A)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-power-factor" class="data-value">0.00</span>
+                        <span class="data-label">Factor Potencia</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="data-item">
+                        <span id="val-platform-temperature" class="data-value">0.0°C</span>
+                        <span class="data-label">Temp. ESP32</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="right-column">
@@ -278,6 +329,7 @@
             if (!response.ok) return;
             const data = await response.json();
 
+            // 1. Orientación Estructural ADXL345
             if (data.adxl && data.adxl.pitch !== undefined && data.adxl.roll !== undefined) {
                 const p = parseFloat(data.adxl.pitch);
                 const r = parseFloat(data.adxl.roll);
@@ -285,11 +337,13 @@
                 document.getElementById('val-roll').innerText  = (!isNaN(r) ? r.toFixed(1) : "0.0") + '°';
             }
             
+            // 2. Frecuencia Vibración
             if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined && data.frecuency_sensor.frecuency !== null) {
                 const f = parseFloat(data.frecuency_sensor.frecuency);
                 document.getElementById('val-freq').innerText  = !isNaN(f) ? f.toFixed(1) : "0.0";
             }
             
+            // 3. Cálculo Velocidad
             if (data.speed && data.speed.speedValue !== undefined && data.speed.speedValue !== null) {
                 const speedFloat = parseFloat(data.speed.speedValue);
                 if (!isNaN(speedFloat)) {
@@ -297,6 +351,7 @@
                 }
             }
             
+            // 4. Actuadores (Gauges)
             if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
                 setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
             }
@@ -304,11 +359,37 @@
                 setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
             }
             
+            // 5. Masa de Celda de Carga Estándar
             if (data.weight && data.weight.weightValue !== undefined && data.weight.weightValue !== null) {
                 const w = parseFloat(data.weight.weightValue);
                 document.getElementById('val-weight').innerText = !isNaN(w) ? w.toFixed(1) : "0.0";
             }
 
+            // 6. Lectura asíncrona de Sensor6Data (float)
+            if (data.sensor6 && data.sensor6.weightValue !== undefined && data.sensor6.weightValue !== null) {
+                const s6Weight = parseFloat(data.sensor6.weightValue);
+                document.getElementById('val-sensor6-weight').innerText = !isNaN(s6Weight) ? s6Weight.toFixed(1) : "0.0";
+            }
+
+            // MAPEO ENCHUFE MOTOR
+            if (data.motor_active_power !== undefined) document.getElementById('val-motor-active-power').innerText = parseFloat(data.motor_active_power).toFixed(1);
+            if (data.motor_apparent_power !== undefined) document.getElementById('val-motor-apparent-power').innerText = parseFloat(data.motor_apparent_power).toFixed(1);
+            if (data.motor_reactive_power !== undefined) document.getElementById('val-motor-reactive-power').innerText = parseFloat(data.motor_reactive_power).toFixed(1);
+            if (data.motor_voltage !== undefined) document.getElementById('val-motor-voltage').innerText = parseFloat(data.motor_voltage).toFixed(1);
+            if (data.motor_current !== undefined) document.getElementById('val-motor-current').innerText = parseFloat(data.motor_current).toFixed(2);
+            if (data.motor_power_factor !== undefined) document.getElementById('val-motor-power-factor').innerText = parseFloat(data.motor_power_factor).toFixed(2);
+            if (data.motor_temperature !== undefined) document.getElementById('val-motor-temperature').innerText = parseFloat(data.motor_temperature).toFixed(1) + '°C';
+
+            // MAPEO ENCHUFE PLATAFORMA
+            if (data.platform_active_power !== undefined) document.getElementById('val-platform-active-power').innerText = parseFloat(data.platform_active_power).toFixed(1);
+            if (data.platform_apparent_power !== undefined) document.getElementById('val-platform-apparent-power').innerText = parseFloat(data.platform_apparent_power).toFixed(1);
+            if (data.platform_reactive_power !== undefined) document.getElementById('val-platform-reactive-power').innerText = parseFloat(data.platform_reactive_power).toFixed(1);
+            if (data.platform_voltage !== undefined) document.getElementById('val-platform-voltage').innerText = parseFloat(data.platform_voltage).toFixed(1);
+            if (data.platform_current !== undefined) document.getElementById('val-platform-current').innerText = parseFloat(data.platform_current).toFixed(2);
+            if (data.platform_power_factor !== undefined) document.getElementById('val-platform-power-factor').innerText = parseFloat(data.platform_power_factor).toFixed(2);
+            if (data.platform_temperature !== undefined) document.getElementById('val-platform-temperature').innerText = parseFloat(data.platform_temperature).toFixed(1) + '°C';
+
+            // 7. Red de Caudalímetros
             if (data.caudales) {
                 for (let i = 1; i <= 3; i++) {
                     const sensorData = data.caudales[String(i)] || data.caudales[i];

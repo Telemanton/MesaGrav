@@ -5,35 +5,33 @@
     <title th:text="#{keyuser.title}">Panel Key User - UJA</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/styles-keyuser.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
 </head>
 
 <body>
     <header>
         <div class="menu-container">
             <div class="logo">
-                <img src="https://idp.ujaen.es/autenticacion/module.php/themeujaen3/assets/logo_uja.png" alt="UJA Logo">
+                <img th:src="@{/images/logo_uja.png}" alt="UJA Logo">
             </div>
             <nav>
                 <ul>
-                    <li><a href="#" th:text="#{nav.about}" onclick="window.location.href='/about'"></a></li>
+                    <li><a th:href="@{/about}" th:text="#{nav.about}"></a></li>
                     <li class="dropdown-container">
-                            <a href="#" id="userDropdown">
-                                <i class="fas fa-user-circle"></i>
-                                <span th:text="${currentUser.username}">Usuario</span>
-                            </a>
-                            <ul id="dropdownMenu" class="dropdown-content">
-                                <li><a href="#" th:text="#{user.title}"  onclick="window.location.href='/myprofile'"></a></li>
-                                <li>
-                                    <a href="#"
-                                        onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
-                                        th:text="#{nav.logout}">Cerrar sesión</a>
-                                </li>
-                            </ul>
-                            <form id="logoutForm" th:action="@{/logout}"
-                                method="post" style="display: none;">
-                            </form>
-                        </li>
+                        <a href="#" id="userDropdown">
+                            <i class="fas fa-user-circle"></i>
+                            <span th:text="${currentUser.username}">Usuario</span>
+                        </a>
+                        <ul id="dropdownMenu" class="dropdown-content">
+                            <li><a th:href="@{/myprofile}" th:text="#{user.title}"></a></li>
+                            <li>
+                                <a href="#" onclick="submitLogout(event);" th:text="#{nav.logout}">Cerrar sesión</a>
+                            </li>
+                        </ul>
+                        <form id="logoutForm" th:action="@{/logout}" method="post" style="display: none;">
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -53,7 +51,7 @@
                 <h2 th:text="#{mesa.title}"></h2>
                 <p th:text="#{mesa.data}"></p>
                 <div class="card-footer">
-                    <button class="btn-enter" onclick="window.location.href='/mesa-gravimetrica'" th:text="#{btn.enter}"></button>
+                    <button class="btn-enter" th:onclick="|window.location.href='@{/mesa-gravimetrica}'|" th:text="#{btn.enter}"></button>
                 </div>
             </div>
 
@@ -75,7 +73,7 @@
                 <h2 th:text="#{admin.users}"></h2>
                 <p th:text="#{admin.create.user}"></p>
                 <div class="card-footer">
-                    <button class="btn-enter" onclick="window.location.href='/create-user'" th:text="#{admin.create.user}"></button>
+                    <button class="btn-enter" th:onclick="|window.location.href='@{/create-user}'|" th:text="#{admin.create.user}"></button>
                 </div>
             </div>
         </section>
@@ -91,60 +89,29 @@
     </div>
 
     <script>
-        // Language dropdown
-        document.getElementById('languageDropdown').addEventListener('click', function(e) {
-            e.preventDefault();
-            const menu = document.getElementById('languageMenu');
-            menu.classList.toggle('show');
-        });
+        function submitLogout(event) {
+            event.preventDefault();
+            const form = document.getElementById('logoutForm');
+            if (form) form.submit();
+        }
 
-        // User dropdown
-        document.getElementById('userDropdown').addEventListener('click', function(e) {
-            e.preventDefault();
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('show');
-        });
+        const userBtn = document.getElementById('userDropdown');
+        const userMenu = document.getElementById('dropdownMenu');
 
-        window.onclick = function(event) {
-            if (!event.target.closest('.dropdown-container')) {
-                const menuUser = document.getElementById('dropdownMenu');
-                const menuLang = document.getElementById('languageMenu');
-                if (menuUser.classList.contains('show')) {
-                    menuUser.classList.remove('show');
-                }
-                if (menuLang.classList.contains('show')) {
-                    menuLang.classList.remove('show');
-                }
+        if (userBtn && userMenu) {
+            userBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                userMenu.classList.toggle('show');
+            });
+        }
+
+        // Cierre seguro del menú al hacer clic fuera del contenedor dropdown
+        window.addEventListener('click', function(event) {
+            if (userMenu && !event.target.closest('.dropdown-container')) {
+                userMenu.classList.remove('show');
             }
-        }
+        });
     </script>
-    
-    <script>
-
-    function submitLogout(event) {
-        event.preventDefault();
-        const form = document.getElementById('logoutForm');
-        if (form) form.submit();
-    }
-
-
-    const userBtn = document.getElementById('userDropdown');
-    const userMenu = document.getElementById('dropdownMenu');
-
-    if (userBtn && userMenu) {
-        userBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation(); // Evita que el clic se propague y se cierre solo
-            userMenu.classList.toggle('show');
-        };
-    }
-
-    window.onclick = function(event) {
-        const menu = document.getElementById('dropdownMenu');
-        if (menu && !event.target.closest('.dropdown-container')) {
-            menu.classList.remove('show');
-        }
-    };
-</script>
 </body>
 </html>
