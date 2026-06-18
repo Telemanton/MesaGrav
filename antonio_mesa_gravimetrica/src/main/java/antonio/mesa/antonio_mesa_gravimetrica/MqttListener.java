@@ -17,13 +17,9 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class MqttListener {
 
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    /// MQTT Broker configuration
     private static final String BROKER_URL = "tcp://10.3.141.1:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    /// MQTT Topics
     private static final String TOPIC_ADXL = "sensor/adxl345";
     private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
@@ -33,16 +29,7 @@ public class MqttListener {
     private static final String TOPIC_PLATFORM_ENERGY = "tele/tasmota-platform/SENSOR";
     private static final String TOPIC_WEIGHT = "sensor/weight";
     private static final String TOPIC_SPEED = "sensor/speed";
-    // Add more topics here as needed, for example:
-    // private static final String TOPIC_NEW = "sensor/newtopic";
 
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    /*
-    * AtomicReference is used for sensors to ensure thread-safe access and updates to the latest sensor data.
-    * In case of using a traditional constructor instead of an AtomicReference, the data could be overwritten while another constructor is been generated
-    * 
-    *  */
-    
     private final AtomicReference<SensorData> lastSensorData = new AtomicReference<>(new SensorData());
     private final AtomicReference<Sensor2Data> lastSensor2Data = new AtomicReference<>(new Sensor2Data());
     private final AtomicReference<Sensor4Data> lastSensor4Data = new AtomicReference<>(new Sensor4Data());
@@ -51,14 +38,10 @@ public class MqttListener {
     private final AtomicReference<Sensor7Data> lastSensor7Data = new AtomicReference<>(new Sensor7Data());
     private final AtomicReference<Sensor8Data> lastSensor8Data = new AtomicReference<>(new Sensor8Data());
     private final AtomicReference<Sensor8Data> lastSensor8_2_Data = new AtomicReference<>(new Sensor8Data());
-    // Add more AtomicReferences for new topics here, for example:
-    // private final AtomicReference<NewTopicData> lastNewTopicData = new
-    // AtomicReference
 
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    private final ObjectMapper objectMapper = new ObjectMapper(); // Very important for parsing JSON payloads into Java variables
+    private final ObjectMapper objectMapper = new ObjectMapper(); 
+    // Aseguramos la inicialización del mapa concurrente antes de usarlo
     private final Map<Integer, Sensor3Data> flowSensorsMap = new java.util.concurrent.ConcurrentHashMap<>();
-
 
     private MqttClient client;
 
@@ -66,49 +49,17 @@ public class MqttListener {
         return flowSensorsMap;
     }
 
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-    public SensorData getLastSensorData() {
-        return lastSensorData.get();
-    }
+    public SensorData getLastSensorData() { return lastSensorData.get(); }
+    public Sensor2Data getLastSensor2Data() { return lastSensor2Data.get(); }
+    public Sensor4Data getLastSensor4Data() { return lastSensor4Data.get(); }
+    public Sensor5Data getLastSensor5Data() { return lastSensor5Data.get(); }
+    public Sensor6Data getLastSensor6Data() { return lastSensor6Data.get(); }
+    public Sensor7Data getLastSensor7Data() { return lastSensor7Data.get(); }
+    public Sensor3Data getFlowDataById(Integer id) { return flowSensorsMap.get(id); }
+    public Sensor8Data getLastSensor8Data() { return lastSensor8Data.get(); }
+    public Sensor8Data getLastSensor8_2_Data() { return lastSensor8_2_Data.get(); }
 
-    public Sensor2Data getLastSensor2Data() {
-        return lastSensor2Data.get();
-    }
-
-    public Sensor4Data getLastSensor4Data() {
-        return lastSensor4Data.get();
-    }
-
-    public Sensor5Data getLastSensor5Data() {
-        return lastSensor5Data.get();
-    }
-
-    public Sensor6Data getLastSensor6Data() {
-        return lastSensor6Data.get();
-    }
-
-    public Sensor7Data getLastSensor7Data() {
-        return lastSensor7Data.get();
-    }
-
-    public Sensor3Data getFlowDataById(Integer id) {
-        return flowSensorsMap.get(id);
-    }
-
-    public Sensor8Data getLastSensor8Data() {
-        return lastSensor8Data.get();
-    }
-
-    public Sensor8Data getLastSensor8_2_Data() {
-        return lastSensor8_2_Data.get();
-    }
-
-    // Add more getter methods for new topics here, for example:
-    // public NewTopicData getLastNewTopicData() { return lastNewTopicData.get(); }
-    ////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
-
-    @PostConstruct // This method will be called after the bean is initialized, and it will set up
-    // the MQTT client and subscriptions.
+    @PostConstruct
     public void init() {
         try {
             client = new MqttClient(BROKER_URL, CLIENT_ID, null);
@@ -119,16 +70,9 @@ public class MqttListener {
             client.connect(options);
             System.out.println("Conectado al broker MQTT: " + BROKER_URL);
 
-            ////////////////////////////////////////////////////////////////////
-            // Subscriptions to MQTT topics and handleling incoming messages //
-            ////////////////////////////////////////////////////////////////////
-            /// Each subscription listens to a specific topic and processes incoming
-            //////////////////////////////////////////////////////////////////// 
-
-            // ADXL345 sensor data suscription
+            // 1. ADXL345
             client.subscribe(TOPIC_ADXL, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                //  System.out.println("ADXL345 recibido: " + payload);
                 try {
                     SensorData data = objectMapper.readValue(payload, SensorData.class);
                     lastSensorData.set(data);
@@ -137,10 +81,9 @@ public class MqttListener {
                 }
             });
 
-            // Frecuency sensor data suscription
+            // 2. Frecuencia
             client.subscribe(TOPIC_FRECUENCIA, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                // System.out.println("Frecuencia recibido: " + payload);
                 try {
                     Sensor2Data data = objectMapper.readValue(payload, Sensor2Data.class);
                     lastSensor2Data.set(data);
@@ -149,13 +92,30 @@ public class MqttListener {
                 }
             });
 
-            // Motor energy intelligent plug data suscription
+            // 3. CAUDALÍMETROS (Movido arriba para garantizar su suscripción)
+            client.subscribe(TOPIC_FLOW, (topic, message) -> {
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+                System.out.println("MqttListener -> Datos de caudal recibidos: " + payload);
+                try {
+                    FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
+                    if (wrapper != null && wrapper.getSensores() != null) {
+                        for (Sensor3Data sensor : wrapper.getSensores()) {
+                            if (sensor.getId() != null) {
+                                flowSensorsMap.put(sensor.getId(), sensor);
+                            }
+                        }
+                        System.out.println("OK: Mapa de caudales actualizado. Total sensores: " + flowSensorsMap.size());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error parseando Flow de caudales: " + e.getMessage());
+                }
+            });
+
+            // 4. Motor Energy (Tasmota JSON)
             client.subscribe(TOPIC_MOTOR_ENERGY, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                //System.out.println("Motor Energy recibido: " + payload);
                 try {
                     JsonNode rootNode = objectMapper.readTree(payload);
-                    
                     Sensor8Data data = new Sensor8Data();
                     data.setActivePower(rootNode.path("ENERGY").path("Power").floatValue());
                     data.setApparentPower(rootNode.path("ENERGY").path("ApparentPower").floatValue());
@@ -164,23 +124,17 @@ public class MqttListener {
                     data.setVoltage(rootNode.path("ENERGY").path("Voltage").floatValue());
                     data.setCurrent(rootNode.path("ENERGY").path("Current").floatValue());
                     data.setESP32Temperature(rootNode.path("ESP32").path("Temperature").floatValue());
-
                     lastSensor8Data.set(data);
-
-                    System.out.println("ok: Motor Energy extraído con éxito: " + data.getActivePower() + " W, " + data.getVoltage() + " V, " + data.getCurrent() + " A");
-
                 } catch (Exception e) {
                     System.err.println("Error parseando Motor Energy: " + e.getMessage());
                 }
             });
 
-            // Platform energy intelligent plug data suscription
+            // 5. Platform Energy (Tasmota JSON)
             client.subscribe(TOPIC_PLATFORM_ENERGY, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                //System.out.println("Platform Energy recibido: " + payload);
                 try {
                     JsonNode rootNode = objectMapper.readTree(payload);
-                    
                     Sensor8Data data = new Sensor8Data();
                     data.setActivePower(rootNode.path("ENERGY").path("Power").floatValue());
                     data.setApparentPower(rootNode.path("ENERGY").path("ApparentPower").floatValue());
@@ -189,71 +143,45 @@ public class MqttListener {
                     data.setVoltage(rootNode.path("ENERGY").path("Voltage").floatValue());
                     data.setCurrent(rootNode.path("ENERGY").path("Current").floatValue());
                     data.setESP32Temperature(rootNode.path("ESP32").path("Temperature").floatValue());
-
                     lastSensor8_2_Data.set(data);
-
-                    System.out.println("ok: Platform Energy extraído con éxito: " + data.getActivePower() + " W, " + data.getVoltage() + " V, " + data.getCurrent() + " A");
-
                 } catch (Exception e) {
                     System.err.println("Error parseando Platform Energy: " + e.getMessage());
                 }
             });
 
-    
-
-            // Engine gauge sensor data suscription
+            // 6. Engine Gauge (Texto plano número)
             client.subscribe(TOPIC_ENGINE_GAUGE, (topic, message) -> {
-                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("Gauge recibido: " + payload);
+                String payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
                 try {
-                    // Converts the JSON string into a JsonNode object for easier navigation
-                    JsonNode rootNode = objectMapper.readTree(payload);
-
-                    // Navegates through the JSON structure to extract the "Power" value as a Double
-                    Double valor = rootNode.path("ENERGY").path("Power").asDouble();
-
-                   
+                    float valor = Float.parseFloat(payload);
                     Sensor4Data data = new Sensor4Data();
                     data.setGaugeValue(valor);
                     lastSensor4Data.set(data);
-
-                    System.out.println("Potencia extraída con éxito: " + valor + " W");
-
                 } catch (Exception e) {
-                    
-                    System.err.println("Error parseando Gauge (Extrayendo Power): " + e.getMessage());
+                    System.err.println("Error parseando Gauge Motor: " + e.getMessage());
                 }
             });
 
-            // Dropper gauge sensor data suscription
+            // 7. Dropper Gauge (Tasmota JSON)
             client.subscribe(TOPIC_DROPPER_GAUGE, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("Gauge recibido: " + payload);
                 try {
-                    // Converts the JSON string into a JsonNode object for easier navigation
                     JsonNode rootNode = objectMapper.readTree(payload);
-
-                    // Navegates through the JSON structure to extract the "Power" value as a Double
-                    Double valor = rootNode.path("ENERGY").path("Power").asDouble();
-
-                   
+                    float valor = rootNode.path("ENERGY").path("Power").floatValue();
+                    
                     Sensor5Data data = new Sensor5Data();
                     data.setDropperValue(valor);
                     lastSensor5Data.set(data);
-
-                    System.out.println("Potencia extraída con éxito: " + valor + " W");
-
-                } catch (Exception e) {
                     
-                    System.err.println("Error parseando Gauge (Extrayendo Power): " + e.getMessage());
+                    System.out.println("OK: Dropper Gauge extraído: " + valor + " W");
+                } catch (Exception e) {
+                    System.err.println("Error parseando Dropper Gauge JSON: " + e.getMessage());
                 }
             });
 
-
-            // Weight sensor data suscription
+            // 8. Weight
             client.subscribe(TOPIC_WEIGHT, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("Weight recibido: " + payload);
                 try {
                     float valor = Float.parseFloat(payload.trim());
                     Sensor6Data data = new Sensor6Data();
@@ -264,50 +192,22 @@ public class MqttListener {
                 }
             });
 
-            // Speed sensor data suscription
+            // 9. Speed
             client.subscribe(TOPIC_SPEED, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                //  System.out.println("speed recibido: " + payload);
                 try {
                     float valor = Float.parseFloat(payload.trim());
-
                     Sensor7Data data = new Sensor7Data();
                     data.setSpeedValue(valor);
-
                     lastSensor7Data.set(data);
-
                 } catch (Exception e) {
                     System.err.println("Error parseando Speed: " + e.getMessage());
                 }
             });
 
-            // Flow sensor data suscription
-            client.subscribe(TOPIC_FLOW, (topic, message) -> {
-                String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                try {
-                    FlowWrapper wrapper = objectMapper.readValue(payload, FlowWrapper.class);
-
-                    if (wrapper.getSensores() != null) {
-                        for (Sensor3Data sensor : wrapper.getSensores()) {
-                            if (sensor.getId() != null) {
-                                flowSensorsMap.put(sensor.getId(), sensor);
-                            }
-                        }
-                    }
-                    System.out.println("Actualizados " + wrapper.getSensores().size() + " sensores de caudal.");
-                } catch (Exception e) {
-                    System.err.println("Error parseando Flow: " + e.getMessage());
-                }
-            });
-
         } catch (MqttException e) {
+            System.err.println("Fallo crítico al iniciar conexiones del MqttListener");
             e.printStackTrace();
         }
-
-    
-
-        ////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////
     }
-
 }

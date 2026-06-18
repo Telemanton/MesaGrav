@@ -1,248 +1,284 @@
 <!DOCTYPE html>
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title th:text="#{mesa.title}">Control Panel - Gravimetric Table</title>
-    
-     <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
+
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
+    <style>
+        /* Ajustes adicionales para lograr la distribución deseada */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        /* Hacemos que el panel inferior ocupe todo el ancho */
+        .full-width-row {
+            grid-column: 1 / -1;
+            width: 100%;
+        }
+        /* Asegurar que las columnas tengan una estructura limpia */
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="modal-overlay" id="exitModal">
-    <div class="modal-box">
-        <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h2 th:text="#{mesa.active.test}">Ensayo en curso</h2>
-        <p>
-            <span th:text="#{mesa.active.test.description}">Se están grabando datos de la mesa gravimétrica en este instante.</span><br>
-            <strong th:text="#{mesa.active.test.description.bold}">Si sale ahora, detendrá el proceso de adquisición de datos.</strong>
-        </p>
-        <div class="modal-actions">
-            <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">
-                <i class="fas fa-download"></i> <span th:text="#{btn.save.exit}">Guardar y Salir</span>
-            </button>
-            <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">
-                <i class="fas fa-arrow-left"></i> <span th:text="#{btn.back.session}">Volver al Ensayo</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<header>
-    <div class="menu-container">
-        <div class="logo">
-            <a th:href="@{/home}">
-                <i class="fas fa-cubes" style="color: var(--accent-green); font-size: 1.4rem; margin-right: 8px;"></i>
-                <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" th:text="#{mesa.home.title}">Mesa Gravimétrica</span>
-            </a>
-        </div>
-        <div class="user-info">
-            <span style="font-weight: 600; background: #2a2a2a; padding: 6px 12px; border-radius: 4px; border-left: 3px solid var(--primary-blue);" 
-                  th:text="${currentUser.name + ' ' + currentUser.surname}">Operador</span>
-            
-            <a th:href="@{/historicos-mesagrav}" class="btn-link" id="historyLink" style="background: rgba(255,255,255,0.05);">
-                <i class="fas fa-history"></i> <span th:text="#{mesa.history}">Historial</span>
-            </a>
-            
-            <form th:action="@{/logout}" method="post" style="display:inline;" id="logoutForm">
-                <button type="button" class="btn-link" id="logoutBtn" style="color: #ff9800;">
-                    <i class="fas fa-sign-out-alt"></i> <span th:text="#{nav.logout}">Cerrar Sesión</span>
+    <div class="modal-overlay" id="exitModal">
+        <div class="modal-box">
+            <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2 th:text="#{mesa.active.test}">Ensayo en curso</h2>
+            <p>
+                <span th:text="#{mesa.active.test.description}">Se están grabando datos de la mesa gravimétrica en este
+                    instante.</span><br>
+                <strong th:text="#{mesa.active.test.description.bold}">Si sale ahora, detendrá el proceso de adquisición
+                    de datos.</strong>
+            </p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">
+                    <i class="fas fa-download"></i> <span th:text="#{btn.save.exit}">Guardar y Salir</span>
                 </button>
-            </form>
+                <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">
+                    <i class="fas fa-arrow-left"></i> <span th:text="#{btn.back.session}">Volver al Ensayo</span>
+                </button>
+            </div>
         </div>
     </div>
-</header>
 
-<div class="container">
-    <div class="dashboard-grid">
-        
-        <div class="left-column">
-            
-            <div class="sensor-card">
-                <div class="card-header">
-                    <i class="fas fa-compass"></i>
-                    <span th:text="#{sensor.adxl345.orientation}">Inclinación Estructural ADXL345</span>
-                </div>
-                <div class="data-row">
-                    <div class="data-item">
-                        <span id="val-pitch" class="data-value">0.0°</span>
-                        <span class="data-label" th:text="#{sensor.adxl345.pitch}">Ángulo Pitch</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-roll" class="data-value">0.0°</span>
-                        <span class="data-label" th:text="#{sensor.adxl345.roll}">Ángulo Roll</span>
-                    </div>
-                </div>
+    <header>
+        <div class="menu-container">
+            <div class="logo">
+                <a th:href="@{/home}">
+                    <i class="fas fa-cubes"
+                        style="color: var(--accent-green); font-size: 1.4rem; margin-right: 8px;"></i>
+                    <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;"
+                        th:text="#{mesa.home.title}">Mesa Gravimétrica</span>
+                </a>
             </div>
+            <div class="user-info">
+                <span
+                    style="font-weight: 600; background: #2a2a2a; padding: 6px 12px; border-radius: 4px; border-left: 3px solid var(--primary-blue);"
+                    th:text="|${currentUser.name} ${currentUser.surname}|">Operador</span>
 
-            <div class="sensor-row-2">
-                <div class="sensor-card">
-                    <div class="card-header"><i class="fas fa-wave-square"></i> <span th:text="#{sensor.vibration}">Frecuencia Vibración</span></div>
-                    <div class="big-val-wrap">
-                        <span id="val-freq" class="big-val">0.0</span>
-                        <span class="big-unit">shakes/s</span>
-                    </div>
-                </div>
-                <div class="sensor-card">
-                    <div class="card-header"><i class="fas fa-tachometer-alt"></i> <span th:text="#{sensor.speed}">Cálculo Velocidad</span></div>
-                    <div class="big-val-wrap">
-                        <span id="val-speed" class="big-val">0.0</span>
-                        <span class="big-unit">m/s</span>
-                    </div>
-                </div>
-            </div>
+                <a th:href="@{/historicos-mesagrav}" class="btn-link" id="historyLink"
+                    style="background: rgba(255,255,255,0.05);">
+                    <i class="fas fa-history"></i> <span th:text="#{mesa.history}">Historial</span>
+                </a>
 
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-weight-hanging"></i> <span th:text="#{sensor.weight}">Masa en Celda de Carga</span></div>
-                <div class="big-val-wrap">
-                    <span id="val-weight" class="big-val">0.0</span>
-                    <span class="big-unit">g</span>
-                </div>
-                <div class="tara-wrapper">
-                    <button type="button" class="btn-tara" onclick="ejecutarTara()">
-                        <i class="fas fa-balance-scale"></i> <span>Tarar Báscula</span>
+                <form th:action="@{/logout}" method="post" style="display:inline;" id="logoutForm">
+                    <button type="button" class="btn-link" id="logoutBtn" style="color: #ff9800;">
+                        <i class="fas fa-sign-out-alt"></i> <span th:text="#{nav.logout}">Cerrar Sesión</span>
                     </button>
-                </div>
+                </form>
             </div>
-
-
-            <div class="sensor-card">
-                <div class="card-header">
-                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Motor</span>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-motor-active-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Activa (W)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-motor-apparent-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Aparente (VA)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-motor-reactive-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Reactiva (VAR)</span>
-                    </div>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-motor-voltage" class="data-value">0.0</span>
-                        <span class="data-label">Voltaje (V)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-motor-current" class="data-value">0.00</span>
-                        <span class="data-label">Corriente (A)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-motor-power-factor" class="data-value">0.00</span>
-                        <span class="data-label">Factor Potencia</span>
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="data-item">
-                        <span id="val-motor-temperature" class="data-value">0.0°C</span>
-                        <span class="data-label">Temp. ESP32</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sensor-card">
-                <div class="card-header">
-                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-platform-active-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Activa (W)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-apparent-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Aparente (VA)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-reactive-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Reactiva (VAR)</span>
-                    </div>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-platform-voltage" class="data-value">0.0</span>
-                        <span class="data-label">Voltaje (V)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-current" class="data-value">0.00</span>
-                        <span class="data-label">Corriente (A)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-power-factor" class="data-value">0.00</span>
-                        <span class="data-label">Factor Potencia</span>
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="data-item">
-                        <span id="val-platform-temperature" class="data-value">0.0°C</span>
-                        <span class="data-label">Temp. ESP32</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
+    </header>
 
-        <div class="right-column">
-            
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-bolt"></i> <span>Estado de Actuadores</span></div>
-                <div class="gauge-flex-wrapper">
-                    
-                    <div class="gauge-item-container">
-                        <div class="gauge-item-title" th:text="#{gauge.engine}">Motor Excéntrico</div>
-                        <div class="gauge-main-container">
-                            <div class="gauge-arc-visual"><div class="gauge-arc-inner"></div></div>
-                            <div class="gauge-needle" id="engine-needle"></div>
-                            <div class="gauge-pivot"></div>
-                            <div class="gauge-readout">
-                                <span class="gauge-pct" id="engine-pct">0%</span>
-                                <span class="gauge-lbl">Load</span>
-                            </div>
+    <div class="container">
+        <div class="dashboard-grid">
+
+            <div class="left-column">
+
+                <div class="sensor-card">
+                    <div class="card-header">
+                        <i class="fas fa-compass"></i>
+                        <span th:text="#{sensor.adxl345.orientation}">Inclinación Estructural ADXL345</span>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span id="val-pitch" class="data-value">0.0°</span>
+                            <span class="data-label" th:text="#{sensor.adxl345.pitch}">Ángulo Pitch</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-roll" class="data-value">0.0°</span>
+                            <span class="data-label" th:text="#{sensor.adxl345.roll}">Ángulo Roll</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="gauge-item-container">
-                        <div class="gauge-item-title" th:text="#{gauge.hopper}">Tolva de Carga</div>
-                        <div class="gauge-main-container">
-                            <div class="gauge-arc-visual"><div class="gauge-arc-inner"></div></div>
-                            <div class="gauge-needle" id="dropper-needle"></div>
-                            <div class="gauge-pivot"></div>
-                            <div class="gauge-readout">
-                                <span class="gauge-pct" id="dropper-pct">0%</span>
-                                <span class="gauge-lbl">Load</span>
+                <div class="sensor-row-2">
+                    <div class="sensor-card">
+                        <div class="card-header"><i class="fas fa-wave-square"></i> <span
+                                th:text="#{sensor.vibration}">Frecuencia Vibración</span></div>
+                        <div class="big-val-wrap">
+                            <span id="val-freq" class="big-val">0.0</span>
+                            <span class="big-unit">shakes/s</span>
+                        </div>
+                    </div>
+                    <div class="sensor-card">
+                        <div class="card-header"><i class="fas fa-tachometer-alt"></i> <span
+                                th:text="#{sensor.speed}">Cálculo Velocidad</span></div>
+                        <div class="big-val-wrap">
+                            <span id="val-speed" class="big-val">0.0</span>
+                            <span class="big-unit">m/s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-weight-hanging"></i> <span th:text="#{sensor.weight}">Masa
+                            Netas (Celda de Carga)</span></div>
+                    <div class="big-val-wrap">
+                        <span id="val-weight" class="big-val">0.0</span>
+                        <span class="big-unit">g</span>
+                    </div>
+                    <div class="tara-wrapper">
+                        <button type="button" class="btn-tara" onclick="ejecutarTara()">
+                            <i class="fas fa-balance-scale"></i> <span>Tarar Báscula</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="right-column">
+
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-bolt"></i> <span>Estado de Actuadores</span></div>
+                    <div class="gauge-flex-wrapper">
+
+                        <div class="gauge-item-container">
+                            <div class="gauge-item-title" th:text="#{gauge.engine}">Motor Excéntrico</div>
+                            <div class="gauge-main-container">
+                                <div class="gauge-arc-visual">
+                                    <div class="gauge-arc-inner"></div>
+                                </div>
+                                <div class="gauge-needle" id="engine-needle"></div>
+                                <div class="gauge-pivot"></div>
+                                <div class="gauge-readout">
+                                    <span class="gauge-pct" id="engine-pct">0%</span>
+                                    <span class="gauge-lbl">Load</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gauge-item-container">
+                            <div class="gauge-item-title" th:text="#{gauge.hopper}">Tolva de Carga</div>
+                            <div class="gauge-main-container">
+                                <div class="gauge-arc-visual">
+                                    <div class="gauge-arc-inner"></div>
+                                </div>
+                                <div class="gauge-needle" id="dropper-needle"></div>
+                                <div class="gauge-pivot"></div>
+                                <div class="gauge-readout">
+                                    <span class="gauge-pct" id="dropper-pct">0%</span>
+                                    <span class="gauge-lbl">Load</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="sensor-card">
-                <div class="card-header"><i class="fas fa-tint"></i> <span th:text="#{sensor.flow}">Red de Caudalímetros (L/min)</span></div>
-                <div class="flow-grid">
-                    <div class="mini-card">
-                        <span class="mini-id">Sensor 1</span>
-                        <span id="flow-1" class="mini-value">0.00</span>
-                        <span class="mini-unit">L/min</span>
-                    </div>
-                    <div class="mini-card">
-                        <span class="mini-id">Sensor 2</span>
-                        <span id="flow-2" class="mini-value">0.00</span>
-                        <span class="mini-unit">L/min</span>
-                    </div>
-                    <div class="mini-card">
-                        <span class="mini-id">Sensor 3</span>
-                        <span id="flow-3" class="mini-value">0.00</span>
-                        <span class="mini-unit">L/min</span>
+                <div class="sensor-card">
+                    <div class="card-header"><i class="fas fa-tint"></i> <span th:text="#{sensor.flow}">Red de
+                            Caudalímetros (L/min)</span></div>
+                    <div class="flow-grid">
+                        <div class="mini-card">
+                            <span class="mini-id">Caudal 1</span>
+                            <span id="flow-2" class="mini-value">0.00</span>
+                            <span class="mini-unit">L/min</span>
+                        </div>
+                        <div class="mini-card">
+                            <span class="mini-id">Caudal 2</span>
+                            <span id="flow-1" class="mini-value">0.00</span>
+                            <span class="mini-unit">L/min</span>
+                        </div>
+                        <div class="mini-card">
+                            <span class="mini-id">Caudal 3</span>
+                            <span id="flow-3" class="mini-value">0.00</span>
+                            <span class="mini-unit">L/min</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+                <div class="sensor-card">
+                    <div class="card-header">
+                        <i class="fas fa-plug"></i> <span>Analizador Enchufe - Motor</span>
+                    </div>
+                    <div class="data-row" style="margin-bottom: 15px;">
+                        <div class="data-item">
+                            <span id="val-motor-active-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Activa (W)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-motor-apparent-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Aparente (VA)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-motor-reactive-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Reactiva (VAR)</span>
+                        </div>
+                    </div>
+                    <div class="data-row" style="margin-bottom: 15px;">
+                        <div class="data-item">
+                            <span id="val-motor-voltage" class="data-value">0.0</span>
+                            <span class="data-label">Voltaje (V)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-motor-current" class="data-value">0.00</span>
+                            <span class="data-label">Corriente (A)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-motor-power-factor" class="data-value">0.00</span>
+                            <span class="data-label">Factor Potencia</span>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span id="val-motor-temperature" class="data-value">0.0°C</span>
+                            <span class="data-label">Temp. ESP32</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sensor-card">
+                    <div class="card-header">
+                        <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
+                    </div>
+                    <div class="data-row" style="margin-bottom: 15px;">
+                        <div class="data-item">
+                            <span id="val-platform-active-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Activa (W)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-platform-apparent-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Aparente (VA)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-platform-reactive-power" class="data-value">0.0</span>
+                            <span class="data-label">P. Reactiva (VAR)</span>
+                        </div>
+                    </div>
+                    <div class="data-row" style="margin-bottom: 15px;">
+                        <div class="data-item">
+                            <span id="val-platform-voltage" class="data-value">0.0</span>
+                            <span class="data-label">Voltaje (V)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-platform-current" class="data-value">0.00</span>
+                            <span class="data-label">Corriente (A)</span>
+                        </div>
+                        <div class="data-item">
+                            <span id="val-platform-power-factor" class="data-value">0.00</span>
+                            <span class="data-label">Factor Potencia</span>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span id="val-platform-temperature" class="data-value">0.0°C</span>
+                            <span class="data-label">Temp. ESP32</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div> </div> <div class="full-width-row">
             <div class="sensor-card">
                 <div class="recording-panel">
                     <div class="card-header">
@@ -250,11 +286,14 @@
                     </div>
 
                     <div class="timer-section">
-                        <label><i class="fas fa-clock" style="margin-right:5px; color: var(--primary-blue);"></i> <span th:text="#{data.acquisition.timer}">Temporizador</span></label>
+                        <label><i class="fas fa-clock" style="margin-right:5px; color: var(--primary-blue);"></i>
+                            <span th:text="#{data.acquisition.timer}">Temporizador</span></label>
                         <div class="timer-input-wrap">
-                            <input type="number" id="timerMinutes" class="timer-input" min="0" max="999" value="5" placeholder="5">
+                            <input type="number" id="timerMinutes" class="timer-input" min="0" max="999" value="5"
+                                placeholder="5">
                             <span class="timer-unit">min</span>
-                            <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0" placeholder="0">
+                            <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0"
+                                placeholder="0">
                             <span class="timer-unit">seg</span>
                         </div>
                         <label class="timer-toggle">
@@ -283,257 +322,250 @@
                     </div>
                 </div>
             </div>
-
         </div>
-    </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-<script>
-    let stompClient = null;
-    let isRecording = false;
-    let countdownInterval = null;
-    let countdownTotal = 0;
-    let countdownRemaining = 0;
-    let pendingNavUrl = null;
-    let pendingIsLogout = false;
+    <script>
+        let stompClient = null;
+        let isRecording = false;
+        let countdownInterval = null;
+        let countdownTotal = 0;
+        let countdownRemaining = 0;
+        let pendingNavUrl = null;
+        let pendingIsLogout = false;
 
-    function ejecutarTara() {
-        fetch('/sensor/tare', { method: 'POST' })
-        .then(res => {
-            if (res.ok) {
-                console.log("¡Báscula tarada! El dashboard y el CSV se han sincronizado a 0.");
-            } else {
-                console.error("Error al procesar la tara en el servidor.");
-            }
-        })
-        .catch(err => console.error("Error de conexión al enviar tara:", err));
-    }
+        function ejecutarTara() {
+            fetch('/sensor/tare', { method: 'POST' })
+                .then(res => {
+                    if (res.ok) {
+                        console.log("¡Báscula tarada!");
+                    } else {
+                        console.error("Error al procesar la tara.");
+                    }
+                })
+                .catch(err => console.error("Error de conexión:", err));
+        }
 
-    function setGauge(needleId, pctId, val) {
-        const needle = document.getElementById(needleId);
-        const pct    = document.getElementById(pctId);
-        if (!needle || !pct) return;
-        const clamped = Math.max(0, Math.min(100, parseFloat(val) || 0));
-        
-        const deg = (clamped * 1.8) - 90; 
-        needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
-        pct.innerText = Math.round(clamped) + '%';
-    }
+        function setGauge(needleId, pctId, val) {
+            const needle = document.getElementById(needleId);
+            const pct = document.getElementById(pctId);
+            if (!needle || !pct) return;
+            const clamped = Math.max(0, Math.min(100, parseFloat(val) || 0));
 
-    async function updateOtherSensors() {
-        try {
-            const response = await fetch('/sensor');
-            if (!response.ok) return;
-            const data = await response.json();
+            const deg = (clamped * 1.8) - 90;
+            needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+            pct.innerText = Math.round(clamped) + '%';
+        }
 
-            // 1. Orientación Estructural ADXL345
-            if (data.adxl && data.adxl.pitch !== undefined && data.adxl.roll !== undefined) {
-                const p = parseFloat(data.adxl.pitch);
-                const r = parseFloat(data.adxl.roll);
-                document.getElementById('val-pitch').innerText = (!isNaN(p) ? p.toFixed(1) : "0.0") + '°';
-                document.getElementById('val-roll').innerText  = (!isNaN(r) ? r.toFixed(1) : "0.0") + '°';
-            }
-            
-            // 2. Frecuencia Vibración
-            if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined && data.frecuency_sensor.frecuency !== null) {
-                const f = parseFloat(data.frecuency_sensor.frecuency);
-                document.getElementById('val-freq').innerText  = !isNaN(f) ? f.toFixed(1) : "0.0";
-            }
-            
-            // 3. Cálculo Velocidad
-            if (data.speed && data.speed.speedValue !== undefined && data.speed.speedValue !== null) {
-                const speedFloat = parseFloat(data.speed.speedValue);
-                if (!isNaN(speedFloat)) {
-                    document.getElementById('val-speed').innerText = speedFloat.toFixed(1);
+        async function updateOtherSensors() {
+            try {
+                const response = await fetch('/sensor');
+                if (!response.ok) return;
+                const data = await response.json();
+
+                // 1. Orientación Estructural ADXL345
+                if (data.adxl && data.adxl.pitch !== undefined && data.adxl.roll !== undefined) {
+                    const p = parseFloat(data.adxl.pitch);
+                    const r = parseFloat(data.adxl.roll);
+                    document.getElementById('val-pitch').innerText = (!isNaN(p) ? p.toFixed(1) : "0.0") + '°';
+                    document.getElementById('val-roll').innerText = (!isNaN(r) ? r.toFixed(1) : "0.0") + '°';
                 }
-            }
-            
-            // 4. Actuadores (Gauges)
-            if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
-                setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
-            }
-            if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
-                setGauge('dropper-needle', 'dropper-pct', data.dropper_gauge.dropperValue);
-            }
-            
-            // 5. Masa de Celda de Carga Estándar
-            if (data.weight && data.weight.weightValue !== undefined && data.weight.weightValue !== null) {
-                const w = parseFloat(data.weight.weightValue);
-                document.getElementById('val-weight').innerText = !isNaN(w) ? w.toFixed(1) : "0.0";
-            }
 
-            // 6. Lectura asíncrona de Sensor6Data (float)
-            if (data.sensor6 && data.sensor6.weightValue !== undefined && data.sensor6.weightValue !== null) {
-                const s6Weight = parseFloat(data.sensor6.weightValue);
-                document.getElementById('val-sensor6-weight').innerText = !isNaN(s6Weight) ? s6Weight.toFixed(1) : "0.0";
-            }
+                // 2. Frecuencia Vibración
+                if (data.frecuency_sensor && data.frecuency_sensor.frecuency !== undefined) {
+                    const f = parseFloat(data.frecuency_sensor.frecuency);
+                    document.getElementById('val-freq').innerText = !isNaN(f) ? f.toFixed(1) : "0.0";
+                }
 
-            // MAPEO ENCHUFE MOTOR
-            if (data.motor_active_power !== undefined) document.getElementById('val-motor-active-power').innerText = parseFloat(data.motor_active_power).toFixed(1);
-            if (data.motor_apparent_power !== undefined) document.getElementById('val-motor-apparent-power').innerText = parseFloat(data.motor_apparent_power).toFixed(1);
-            if (data.motor_reactive_power !== undefined) document.getElementById('val-motor-reactive-power').innerText = parseFloat(data.motor_reactive_power).toFixed(1);
-            if (data.motor_voltage !== undefined) document.getElementById('val-motor-voltage').innerText = parseFloat(data.motor_voltage).toFixed(1);
-            if (data.motor_current !== undefined) document.getElementById('val-motor-current').innerText = parseFloat(data.motor_current).toFixed(2);
-            if (data.motor_power_factor !== undefined) document.getElementById('val-motor-power-factor').innerText = parseFloat(data.motor_power_factor).toFixed(2);
-            if (data.motor_temperature !== undefined) document.getElementById('val-motor-temperature').innerText = parseFloat(data.motor_temperature).toFixed(1) + '°C';
+                // 3. Cálculo Velocidad
+                if (data.speed && data.speed.speedValue !== undefined) {
+                    const speedFloat = parseFloat(data.speed.speedValue);
+                    document.getElementById('val-speed').innerText = !isNaN(speedFloat) ? speedFloat.toFixed(1) : "0.0";
+                }
 
-            // MAPEO ENCHUFE PLATAFORMA
-            if (data.platform_active_power !== undefined) document.getElementById('val-platform-active-power').innerText = parseFloat(data.platform_active_power).toFixed(1);
-            if (data.platform_apparent_power !== undefined) document.getElementById('val-platform-apparent-power').innerText = parseFloat(data.platform_apparent_power).toFixed(1);
-            if (data.platform_reactive_power !== undefined) document.getElementById('val-platform-reactive-power').innerText = parseFloat(data.platform_reactive_power).toFixed(1);
-            if (data.platform_voltage !== undefined) document.getElementById('val-platform-voltage').innerText = parseFloat(data.platform_voltage).toFixed(1);
-            if (data.platform_current !== undefined) document.getElementById('val-platform-current').innerText = parseFloat(data.platform_current).toFixed(2);
-            if (data.platform_power_factor !== undefined) document.getElementById('val-platform-power-factor').innerText = parseFloat(data.platform_power_factor).toFixed(2);
-            if (data.platform_temperature !== undefined) document.getElementById('val-platform-temperature').innerText = parseFloat(data.platform_temperature).toFixed(1) + '°C';
+                // 4. Actuadores (Gauges)
+                if (data.engine_gauge && data.engine_gauge.gaugeValue !== undefined) {
+                    setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
+                }
 
-            // 7. Red de Caudalímetros
-            if (data.caudales) {
-                for (let i = 1; i <= 3; i++) {
-                    const sensorData = data.caudales[String(i)] || data.caudales[i];
-                    if (sensorData && sensorData.flowRate !== undefined && sensorData.flowRate !== null) {
-                        const elementoHtml = document.getElementById(`flow-${i}`);
-                        if (elementoHtml) {
-                            const flowFloat = parseFloat(sensorData.flowRate);
-                            elementoHtml.innerText = !isNaN(flowFloat) ? flowFloat.toFixed(2) : "0.00"; 
+                // Mapeo dinámico: transforma el rango del sensor (0 a 11) a escala porcentual (0 a 100%)
+                if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
+                    const rawDropper = parseFloat(data.dropper_gauge.dropperValue) || 0;
+                    const mappedPercent = (rawDropper / 11.0) * 100;
+                    setGauge('dropper-needle', 'dropper-pct', mappedPercent);
+                }
+
+                // 5. Masa Neta (Mapeado directo desde data.weight)
+                if (data.weight && data.weight.weightValue !== undefined) {
+                    const w = parseFloat(data.weight.weightValue);
+                    document.getElementById('val-weight').innerText = !isNaN(w) ? w.toFixed(1) : "0.0";
+                }
+
+                // 6. Mapeo Eléctrico Enchufe Motor (Variables directas en la raíz)
+                if (data.motor_active_power !== undefined) document.getElementById('val-motor-active-power').innerText = parseFloat(data.motor_active_power).toFixed(1);
+                if (data.motor_apparent_power !== undefined) document.getElementById('val-motor-apparent-power').innerText = parseFloat(data.motor_apparent_power).toFixed(1);
+                if (data.motor_reactive_power !== undefined) document.getElementById('val-motor-reactive-power').innerText = parseFloat(data.motor_reactive_power).toFixed(1);
+                if (data.motor_voltage !== undefined) document.getElementById('val-motor-voltage').innerText = parseFloat(data.motor_voltage).toFixed(1);
+                if (data.motor_current !== undefined) document.getElementById('val-motor-current').innerText = parseFloat(data.motor_current).toFixed(2);
+                if (data.motor_power_factor !== undefined) document.getElementById('val-motor-power-factor').innerText = parseFloat(data.motor_power_factor).toFixed(2);
+                if (data.motor_temperature !== undefined) document.getElementById('val-motor-temperature').innerText = parseFloat(data.motor_temperature).toFixed(1) + '°C';
+
+                // 7. Mapeo Eléctrico Enchufe Plataforma (Variables directas en la raíz)
+                if (data.platform_active_power !== undefined) document.getElementById('val-platform-active-power').innerText = parseFloat(data.platform_active_power).toFixed(1);
+                if (data.platform_apparent_power !== undefined) document.getElementById('val-platform-apparent-power').innerText = parseFloat(data.platform_apparent_power).toFixed(1);
+                if (data.platform_reactive_power !== undefined) document.getElementById('val-platform-reactive-power').innerText = parseFloat(data.platform_reactive_power).toFixed(1);
+                if (data.platform_voltage !== undefined) document.getElementById('val-platform-voltage').innerText = parseFloat(data.platform_voltage).toFixed(1);
+                if (data.platform_current !== undefined) document.getElementById('val-platform-current').innerText = parseFloat(data.platform_current).toFixed(2);
+                if (data.platform_power_factor !== undefined) document.getElementById('val-platform-power-factor').innerText = parseFloat(data.platform_power_factor).toFixed(2);
+                if (data.platform_temperature !== undefined) document.getElementById('val-platform-temperature').innerText = parseFloat(data.platform_temperature).toFixed(1) + '°C';
+
+                // 8. Caudalímetros
+                if (data.caudales) {
+                    for (let i = 1; i <= 3; i++) {
+                        const sensorData = data.caudales[String(i)] || data.caudales[i];
+                        if (sensorData && sensorData.flowRate !== undefined) {
+                            const elementoHtml = document.getElementById(`flow-${i}`);
+                            if (elementoHtml) {
+                                elementoHtml.innerText = parseFloat(sensorData.flowRate).toFixed(2);
+                            }
                         }
                     }
                 }
+
+            } catch (e) {
+                console.error('Error in UI updates:', e);
             }
-
-        } catch (e) { 
-            console.error('Error fetching general sensors via REST:', e); 
         }
-    }
 
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    }
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
 
-    function startCountdown(totalSeconds) {
-        countdownTotal     = totalSeconds;
-        countdownRemaining = totalSeconds;
-        const wrap = document.getElementById('countdownWrap');
-        const fill = document.getElementById('countdownFill');
-        const text = document.getElementById('countdownText');
-        wrap.classList.add('active');
-        fill.style.width = '100%';
-        text.innerText   = formatTime(countdownRemaining);
+        function startCountdown(totalSeconds) {
+            countdownTotal = totalSeconds;
+            countdownRemaining = totalSeconds;
+            const wrap = document.getElementById('countdownWrap');
+            const fill = document.getElementById('countdownFill');
+            const text = document.getElementById('countdownText');
+            wrap.classList.add('active');
+            fill.style.width = '100%';
+            text.innerText = formatTime(countdownRemaining);
 
-        countdownInterval = setInterval(() => {
-            countdownRemaining--;
-            const pct = (countdownRemaining / countdownTotal) * 100;
-            fill.style.width  = pct + '%';
-            text.innerText    = formatTime(countdownRemaining);
-            if (countdownRemaining <= 0) {
+            countdownInterval = setInterval(() => {
+                countdownRemaining--;
+                const pct = (countdownRemaining / countdownTotal) * 100;
+                fill.style.width = pct + '%';
+                text.innerText = formatTime(countdownRemaining);
+                if (countdownRemaining <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    stopRecording();
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
-                stopRecording();
             }
-        }, 1000);
-    }
-
-    function stopCountdown() {
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
+            document.getElementById('countdownWrap').classList.remove('active');
+            document.getElementById('countdownFill').style.width = '100%';
+            document.getElementById('countdownText').innerText = '00:00';
         }
-        document.getElementById('countdownWrap').classList.remove('active');
-        document.getElementById('countdownFill').style.width = '100%';
-        document.getElementById('countdownText').innerText   = '00:00';
-    }
 
-    function startRecording() {
-        fetch('/export/start', { method: 'POST' }).then(res => {
-            if (!res.ok) return;
-            isRecording = true;
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled  = false;
-            document.getElementById('recordStatus').classList.add('active');
-            document.getElementById('timerMinutes').disabled = true;
-            document.getElementById('timerSeconds').disabled = true;
-            document.getElementById('timerEnabled').disabled = true;
+        function startRecording() {
+            fetch('/export/start', { method: 'POST' }).then(res => {
+                if (!res.ok) return;
+                isRecording = true;
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = false;
+                document.getElementById('recordStatus').classList.add('active');
+                document.getElementById('timerMinutes').disabled = true;
+                document.getElementById('timerSeconds').disabled = true;
+                document.getElementById('timerEnabled').disabled = true;
 
-            const useTimer = document.getElementById('timerEnabled').checked;
-            if (useTimer) {
-                const mins = parseInt(document.getElementById('timerMinutes').value) || 0;
-                const secs = parseInt(document.getElementById('timerSeconds').value) || 0;
-                const total = mins * 60 + secs;
-                if (total > 0) startCountdown(total);
-            }
-        });
-    }
+                const useTimer = document.getElementById('timerEnabled').checked;
+                if (useTimer) {
+                    const mins = parseInt(document.getElementById('timerMinutes').value) || 0;
+                    const secs = parseInt(document.getElementById('timerSeconds').value) || 0;
+                    const total = mins * 60 + secs;
+                    if (total > 0) startCountdown(total);
+                }
+            });
+        }
 
-    function stopRecording(callback) {
-        stopCountdown();
-        isRecording = false;
-        window.location.href = '/export/download';
-        setTimeout(() => {
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled  = true;
-            document.getElementById('recordStatus').classList.remove('active');
-            document.getElementById('timerMinutes').disabled = false;
-            document.getElementById('timerSeconds').disabled = false;
-            document.getElementById('timerEnabled').disabled = false;
-            if (typeof callback === 'function') callback();
-        }, 1500);
-    }
-
-    function showExitModal(url, isLogout) {
-        pendingNavUrl = url;
-        pendingIsLogout = isLogout || false;
-        document.getElementById('exitModal').classList.add('active');
-    }
-
-    document.getElementById('modalConfirmBtn').addEventListener('click', () => {
-        document.getElementById('exitModal').classList.remove('active');
-        if (isRecording) {
+        function stopRecording(callback) {
             stopCountdown();
             isRecording = false;
-            fetch('/export/download').then(() => {
+            window.location.href = '/export/download';
+            setTimeout(() => {
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('recordStatus').classList.remove('active');
+                document.getElementById('timerMinutes').disabled = false;
+                document.getElementById('timerSeconds').disabled = false;
+                document.getElementById('timerEnabled').disabled = false;
+                if (typeof callback === 'function') callback();
+            }, 1500);
+        }
+
+        function showExitModal(url, isLogout) {
+            pendingNavUrl = url;
+            pendingIsLogout = isLogout || false;
+            document.getElementById('exitModal').classList.add('active');
+        }
+
+        document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+            document.getElementById('exitModal').classList.remove('active');
+            if (isRecording) {
+                stopCountdown();
+                isRecording = false;
+                fetch('/export/download').then(() => {
+                    if (pendingIsLogout) document.getElementById('logoutForm').submit();
+                    else if (pendingNavUrl) window.location.href = pendingNavUrl;
+                }).catch(() => {
+                    window.location.href = pendingNavUrl || '/';
+                });
+            } else {
                 if (pendingIsLogout) document.getElementById('logoutForm').submit();
                 else if (pendingNavUrl) window.location.href = pendingNavUrl;
-            }).catch(() => {
-                window.location.href = pendingNavUrl || '/';
-            });
-        } else {
-            if (pendingIsLogout) document.getElementById('logoutForm').submit();
-            else if (pendingNavUrl) window.location.href = pendingNavUrl;
-        }
-    });
+            }
+        });
 
-    document.getElementById('modalCancelBtn').addEventListener('click', () => {
-        document.getElementById('exitModal').classList.remove('active');
-        pendingNavUrl = null;
-    });
+        document.getElementById('modalCancelBtn').addEventListener('click', () => {
+            document.getElementById('exitModal').classList.remove('active');
+            pendingNavUrl = null;
+        });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        if (isRecording) showExitModal(null, true);
-        else document.getElementById('logoutForm').submit();
-    });
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (isRecording) showExitModal(null, true);
+            else document.getElementById('logoutForm').submit();
+        });
 
-    document.getElementById('historyLink').addEventListener('click', (e) => {
-        if (isRecording) {
-            e.preventDefault();
-            showExitModal(e.currentTarget.href, false);
-        }
-    });
+        document.getElementById('historyLink').addEventListener('click', (e) => {
+            if (isRecording) {
+                e.preventDefault();
+                showExitModal(e.currentTarget.href, false);
+            }
+        });
 
-    window.addEventListener('beforeunload', (e) => {
-        if (isRecording) {
-            e.preventDefault();
-            e.returnValue = 'Hay un ensayo en curso. ¿Seguro que quieres salir?';
-        }
-    });
+        window.addEventListener('beforeunload', (e) => {
+            if (isRecording) {
+                e.preventDefault();
+                e.returnValue = 'Hay un ensayo en curso. ¿Seguro que quieres salir?';
+            }
+        });
 
-    window.onload = function () {
-        updateOtherSensors(); 
-        setInterval(updateOtherSensors, 250); 
-    };
-</script>
+        window.onload = function () {
+            updateOtherSensors();
+            setInterval(updateOtherSensors, 250);
+        };
+    </script>
 </body>
+
 </html>

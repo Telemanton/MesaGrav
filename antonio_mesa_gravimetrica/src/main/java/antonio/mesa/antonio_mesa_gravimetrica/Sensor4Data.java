@@ -6,11 +6,11 @@ public class Sensor4Data {
     The Sensor4Data class represents the data structure for the fourth sensor, which measures gauge values.
     The Sensor4Data class is used to encapsulate the gauge intensity data collected.
     */
-    private Double gaugeValue;
+    private float gaugeValue;
 
     public Sensor4Data() {}
 
-    public Double getGaugeValue() { return gaugeValue; }
-    public void setGaugeValue(Double gaugeValue) { this.gaugeValue = gaugeValue; }
+    public float getGaugeValue() { return gaugeValue; }
+    public void setGaugeValue(float gaugeValue) { this.gaugeValue = gaugeValue; }
     
 }

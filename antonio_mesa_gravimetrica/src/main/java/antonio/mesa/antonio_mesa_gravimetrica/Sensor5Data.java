@@ -1,17 +1,14 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
 
-/*
-================================
-Sensor5Data class documentation
-================================
-The Sensor5Data class represents the data structure for the measured voltage provenient from the dropper control circuit.
-The Sensor5Data class is used to encapsulate the dropper value data collected.
-*/
 public class Sensor5Data {
-    private Double dropperValue;
+    private float dropperValue;
 
-    public Sensor5Data() {}
+    // EL METODO TIENE QUE LLAMARSE ASÍ EXACTAMENTE Y SER PUBLIC
+    public float getDropperValue() {
+        return this.dropperValue;
+    }
 
-    public Double getDropperValue() { return dropperValue; }
-    public void setDropperValue(Double dropperValue) { this.dropperValue = dropperValue; }
+    public void setDropperValue(float dropperValue) {
+        this.dropperValue = dropperValue;
+    }
 }
