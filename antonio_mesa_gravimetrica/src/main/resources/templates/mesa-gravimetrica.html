@@ -1,333 +1,392 @@
 <!DOCTYPE html>
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8">
-    <title th:text="#{mesa.title}">Control Panel - Gravimetric Table</title>
+    <head>
+        <meta charset="UTF-8">
+        <title th:text="#{mesa.title}">Control Panel - Gravimetric Table</title>
 
-    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
-    <style>
-        /* Ajustes adicionales para lograr la distribución deseada */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        /* Hacemos que el panel inferior ocupe todo el ancho */
-        .full-width-row {
-            grid-column: 1 / -1;
-            width: 100%;
-        }
-        /* Asegurar que las columnas tengan una estructura limpia */
-        .left-column, .right-column {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-    </style>
-</head>
+       
+        <link rel="stylesheet" th:href="@{/css/styles-mesa.css}">
+    </head>
 
-<body>
+    <body>
 
-    <div class="modal-overlay" id="exitModal">
-        <div class="modal-box">
-            <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <h2 th:text="#{mesa.active.test}">Ensayo en curso</h2>
-            <p>
-                <span th:text="#{mesa.active.test.description}">Se están grabando datos de la mesa gravimétrica en este
-                    instante.</span><br>
-                <strong th:text="#{mesa.active.test.description.bold}">Si sale ahora, detendrá el proceso de adquisición
-                    de datos.</strong>
-            </p>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">
-                    <i class="fas fa-download"></i> <span th:text="#{btn.save.exit}">Guardar y Salir</span>
-                </button>
-                <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">
-                    <i class="fas fa-arrow-left"></i> <span th:text="#{btn.back.session}">Volver al Ensayo</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <header>
-        <div class="menu-container">
-            <div class="logo">
-                <a th:href="@{/home}">
-                    <i class="fas fa-cubes"
-                        style="color: var(--accent-green); font-size: 1.4rem; margin-right: 8px;"></i>
-                    <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;"
-                        th:text="#{mesa.home.title}">Mesa Gravimétrica</span>
-                </a>
-            </div>
-            <div class="user-info">
-                <span
-                    style="font-weight: 600; background: #2a2a2a; padding: 6px 12px; border-radius: 4px; border-left: 3px solid var(--primary-blue);"
-                    th:text="|${currentUser.name} ${currentUser.surname}|">Operador</span>
-
-                <a th:href="@{/historicos-mesagrav}" class="btn-link" id="historyLink"
-                    style="background: rgba(255,255,255,0.05);">
-                    <i class="fas fa-history"></i> <span th:text="#{mesa.history}">Historial</span>
-                </a>
-
-                <form th:action="@{/logout}" method="post" style="display:inline;" id="logoutForm">
-                    <button type="button" class="btn-link" id="logoutBtn" style="color: #ff9800;">
-                        <i class="fas fa-sign-out-alt"></i> <span th:text="#{nav.logout}">Cerrar Sesión</span>
+        <div class="modal-overlay" id="exitModal">
+            <div class="modal-box">
+                <div class="modal-icon"><i
+                        class="fas fa-exclamation-triangle"></i></div>
+                <h2 th:text="#{mesa.active.test}">Ensayo en curso</h2>
+                <p>
+                    <span th:text="#{mesa.active.test.description}">Se están
+                        grabando datos de la mesa gravimétrica en este
+                        instante.</span><br>
+                    <strong th:text="#{mesa.active.test.description.bold}">Si
+                        sale ahora, detendrá el proceso de adquisición
+                        de datos.</strong>
+                </p>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-confirm"
+                        id="modalConfirmBtn">
+                        <i class="fas fa-download"></i> <span
+                            th:text="#{btn.save.exit}">Guardar y Salir</span>
                     </button>
-                </form>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="dashboard-grid">
-
-            <div class="left-column">
-
-                <div class="sensor-card">
-                    <div class="card-header">
-                        <i class="fas fa-compass"></i>
-                        <span th:text="#{sensor.adxl345.orientation}">Inclinación Estructural ADXL345</span>
-                    </div>
-                    <div class="data-row">
-                        <div class="data-item">
-                            <span id="val-pitch" class="data-value">0.0°</span>
-                            <span class="data-label" th:text="#{sensor.adxl345.pitch}">Ángulo Pitch</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-roll" class="data-value">0.0°</span>
-                            <span class="data-label" th:text="#{sensor.adxl345.roll}">Ángulo Roll</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sensor-row-2">
-                    <div class="sensor-card">
-                        <div class="card-header"><i class="fas fa-wave-square"></i> <span
-                                th:text="#{sensor.vibration}">Frecuencia Vibración</span></div>
-                        <div class="big-val-wrap">
-                            <span id="val-freq" class="big-val">0.0</span>
-                            <span class="big-unit">shakes/s</span>
-                        </div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="card-header"><i class="fas fa-tachometer-alt"></i> <span
-                                th:text="#{sensor.speed}">Cálculo Velocidad</span></div>
-                        <div class="big-val-wrap">
-                            <span id="val-speed" class="big-val">0.0</span>
-                            <span class="big-unit">m/s</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="card-header"><i class="fas fa-weight-hanging"></i> <span th:text="#{sensor.weight}">Masa
-                            Netas (Celda de Carga)</span></div>
-                    <div class="big-val-wrap">
-                        <span id="val-weight" class="big-val">0.0</span>
-                        <span class="big-unit">g</span>
-                    </div>
-                    <div class="tara-wrapper">
-                        <button type="button" class="btn-tara" onclick="ejecutarTara()">
-                            <i class="fas fa-balance-scale"></i> <span>Tarar Báscula</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="right-column">
-
-                <div class="sensor-card">
-                    <div class="card-header"><i class="fas fa-bolt"></i> <span>Estado de Actuadores</span></div>
-                    <div class="gauge-flex-wrapper">
-
-                        <div class="gauge-item-container">
-                            <div class="gauge-item-title" th:text="#{gauge.engine}">Motor Excéntrico</div>
-                            <div class="gauge-main-container">
-                                <div class="gauge-arc-visual">
-                                    <div class="gauge-arc-inner"></div>
-                                </div>
-                                <div class="gauge-needle" id="engine-needle"></div>
-                                <div class="gauge-pivot"></div>
-                                <div class="gauge-readout">
-                                    <span class="gauge-pct" id="engine-pct">0%</span>
-                                    <span class="gauge-lbl">Load</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="gauge-item-container">
-                            <div class="gauge-item-title" th:text="#{gauge.hopper}">Tolva de Carga</div>
-                            <div class="gauge-main-container">
-                                <div class="gauge-arc-visual">
-                                    <div class="gauge-arc-inner"></div>
-                                </div>
-                                <div class="gauge-needle" id="dropper-needle"></div>
-                                <div class="gauge-pivot"></div>
-                                <div class="gauge-readout">
-                                    <span class="gauge-pct" id="dropper-pct">0%</span>
-                                    <span class="gauge-lbl">Load</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="card-header"><i class="fas fa-tint"></i> <span th:text="#{sensor.flow}">Red de
-                            Caudalímetros (L/min)</span></div>
-                    <div class="flow-grid">
-                        <div class="mini-card">
-                            <span class="mini-id">Caudal 1</span>
-                            <span id="flow-2" class="mini-value">0.00</span>
-                            <span class="mini-unit">L/min</span>
-                        </div>
-                        <div class="mini-card">
-                            <span class="mini-id">Caudal 2</span>
-                            <span id="flow-1" class="mini-value">0.00</span>
-                            <span class="mini-unit">L/min</span>
-                        </div>
-                        <div class="mini-card">
-                            <span class="mini-id">Caudal 3</span>
-                            <span id="flow-3" class="mini-value">0.00</span>
-                            <span class="mini-unit">L/min</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="card-header">
-                        <i class="fas fa-plug"></i> <span>Analizador Enchufe - Motor</span>
-                    </div>
-                    <div class="data-row" style="margin-bottom: 15px;">
-                        <div class="data-item">
-                            <span id="val-motor-active-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Activa (W)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-motor-apparent-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Aparente (VA)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-motor-reactive-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Reactiva (VAR)</span>
-                        </div>
-                    </div>
-                    <div class="data-row" style="margin-bottom: 15px;">
-                        <div class="data-item">
-                            <span id="val-motor-voltage" class="data-value">0.0</span>
-                            <span class="data-label">Voltaje (V)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-motor-current" class="data-value">0.00</span>
-                            <span class="data-label">Corriente (A)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-motor-power-factor" class="data-value">0.00</span>
-                            <span class="data-label">Factor Potencia</span>
-                        </div>
-                    </div>
-                    <div class="data-row">
-                        <div class="data-item">
-                            <span id="val-motor-temperature" class="data-value">0.0°C</span>
-                            <span class="data-label">Temp. ESP32</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="card-header">
-                        <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
-                    </div>
-                    <div class="data-row" style="margin-bottom: 15px;">
-                        <div class="data-item">
-                            <span id="val-platform-active-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Activa (W)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-platform-apparent-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Aparente (VA)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-platform-reactive-power" class="data-value">0.0</span>
-                            <span class="data-label">P. Reactiva (VAR)</span>
-                        </div>
-                    </div>
-                    <div class="data-row" style="margin-bottom: 15px;">
-                        <div class="data-item">
-                            <span id="val-platform-voltage" class="data-value">0.0</span>
-                            <span class="data-label">Voltaje (V)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-platform-current" class="data-value">0.00</span>
-                            <span class="data-label">Corriente (A)</span>
-                        </div>
-                        <div class="data-item">
-                            <span id="val-platform-power-factor" class="data-value">0.00</span>
-                            <span class="data-label">Factor Potencia</span>
-                        </div>
-                    </div>
-                    <div class="data-row">
-                        <div class="data-item">
-                            <span id="val-platform-temperature" class="data-value">0.0°C</span>
-                            <span class="data-label">Temp. ESP32</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div> </div> <div class="full-width-row">
-            <div class="sensor-card">
-                <div class="recording-panel">
-                    <div class="card-header">
-                        <i class="fas fa-file-csv"></i> <span th:text="#{data.acquisition}">Grabación de Datos (.CSV)</span>
-                    </div>
-
-                    <div class="timer-section">
-                        <label><i class="fas fa-clock" style="margin-right:5px; color: var(--primary-blue);"></i>
-                            <span th:text="#{data.acquisition.timer}">Temporizador</span></label>
-                        <div class="timer-input-wrap">
-                            <input type="number" id="timerMinutes" class="timer-input" min="0" max="999" value="5"
-                                placeholder="5">
-                            <span class="timer-unit">min</span>
-                            <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0"
-                                placeholder="0">
-                            <span class="timer-unit">seg</span>
-                        </div>
-                        <label class="timer-toggle">
-                            <input type="checkbox" id="timerEnabled"> Auto-stop
-                        </label>
-                    </div>
-
-                    <div class="countdown-bar-wrap" id="countdownWrap">
-                        <div class="countdown-track">
-                            <div class="countdown-fill" id="countdownFill"></div>
-                        </div>
-                        <div class="countdown-text" id="countdownText">00:00</div>
-                    </div>
-
-                    <div class="rec-btn-row">
-                        <button id="btnStart" onclick="startRecording()" class="btn btn-start">
-                            <i class="fas fa-play"></i> <span th:text="#{btn.start.recording}">Iniciar Grabación</span>
-                        </button>
-                        <button id="btnStop" onclick="stopRecording()" class="btn btn-stop" disabled>
-                            <i class="fas fa-download"></i> <span th:text="#{btn.stop.download}">Detener y Guardar</span>
-                        </button>
-                    </div>
-
-                    <div id="recordStatus" class="status-rec">
-                        <i class="fas fa-circle blink"></i> <span th:text="#{recordStatus}">SISTEMA GRABANDO TELEMETRÍA</span>
-                    </div>
+                    <button class="modal-btn modal-btn-cancel"
+                        id="modalCancelBtn">
+                        <i class="fas fa-arrow-left"></i> <span
+                            th:text="#{btn.back.session}">Volver al
+                            Ensayo</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-    </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <header>
+            <div class="menu-container">
+                <div class="logo">
+                    <a th:href="@{/home}">
+                        <i class="fas fa-cubes"
+                            style="color: var(--accent-green); font-size: 1.4rem; margin-right: 8px;"></i>
+                        <span
+                            style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;"
+                            th:text="#{mesa.home.title}">Mesa
+                            Gravimétrica</span>
+                    </a>
+                </div>
+                <div class="user-info">
+                    <span
+                        style="font-weight: 600; background: #2a2a2a; padding: 6px 12px; border-radius: 4px; border-left: 3px solid var(--primary-blue);"
+                        th:text="|${currentUser.name} ${currentUser.surname}|">Operador</span>
 
-    <script>
+                    <a th:href="@{/historicos-mesagrav}" class="btn-link"
+                        id="historyLink"
+                        style="background: rgba(255,255,255,0.05);">
+                        <i class="fas fa-history"></i> <span
+                            th:text="#{mesa.history}">Historial</span>
+                    </a>
+
+                    <form th:action="@{/logout}" method="post"
+                        style="display:inline;" id="logoutForm">
+                        <button type="button" class="btn-link" id="logoutBtn"
+                            style="color: #ff9800;">
+                            <i class="fas fa-sign-out-alt"></i> <span
+                                th:text="#{nav.logout}">Cerrar Sesión</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="dashboard-grid">
+
+                <div class="left-column">
+
+                    <div class="sensor-card">
+                        <div class="card-header">
+                            <i class="fas fa-compass"></i>
+                            <span
+                                th:text="#{sensor.adxl345.orientation}">Inclinación
+                                Estructural ADXL345</span>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-item">
+                                <span id="val-pitch"
+                                    class="data-value">0.0°</span>
+                                <span class="data-label"
+                                    th:text="#{sensor.adxl345.pitch}">Ángulo
+                                    Pitch</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-roll"
+                                    class="data-value">0.0°</span>
+                                <span class="data-label"
+                                    th:text="#{sensor.adxl345.roll}">Ángulo
+                                    Roll</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sensor-row-2">
+                        <div class="sensor-card">
+                            <div class="card-header"><i
+                                    class="fas fa-wave-square"></i> <span
+                                    th:text="#{sensor.vibration}">Frecuencia
+                                    Vibración</span></div>
+                            <div class="big-val-wrap">
+                                <span id="val-freq" class="big-val">0.0</span>
+                                <span class="big-unit">shakes/s</span>
+                            </div>
+                        </div>
+                        <div class="sensor-card">
+                            <div class="card-header"><i
+                                    class="fas fa-tachometer-alt"></i> <span
+                                    th:text="#{sensor.speed}">Cálculo
+                                    Velocidad</span></div>
+                            <div class="big-val-wrap">
+                                <span id="val-speed" class="big-val">0.0</span>
+                                <span class="big-unit">m/s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sensor-card">
+                        <div class="card-header"><i
+                                class="fas fa-weight-hanging"></i> <span
+                                th:text="#{sensor.weight}">Masa
+                                Netas (Celda de Carga)</span></div>
+                        <div class="big-val-wrap">
+                            <span id="val-weight" class="big-val">0.0</span>
+                            <span class="big-unit">g</span>
+                        </div>
+                        <div class="tara-wrapper">
+                            <button type="button" class="btn-tara"
+                                onclick="ejecutarTara()">
+                                <i class="fas fa-balance-scale"></i> <span>Tarar
+                                    Báscula</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="sensor-card">
+                        <div class="card-header">
+                            <i class="fas fa-plug"></i> <span>Analizador Enchufe
+                                - Plataforma</span>
+                        </div>
+                        <div class="data-row" style="margin-bottom: 15px;">
+                            <div class="data-item">
+                                <span id="val-platform-active-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Activa (W)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-platform-apparent-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Aparente (VA)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-platform-reactive-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Reactiva
+                                    (VAR)</span>
+                            </div>
+                        </div>
+                        <div class="data-row" style="margin-bottom: 15px;">
+                            <div class="data-item">
+                                <span id="val-platform-voltage"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">Voltaje (V)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-platform-current"
+                                    class="data-value">0.00</span>
+                                <span class="data-label">Corriente (A)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-platform-power-factor"
+                                    class="data-value">0.00</span>
+                                <span class="data-label">Factor Potencia</span>
+                            </div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-item">
+                                <span id="val-platform-temperature"
+                                    class="data-value">0.0°C</span>
+                                <span class="data-label">Temp. ESP32</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="right-column">
+
+                    <div class="sensor-card">
+                        <div class="card-header"><i class="fas fa-bolt"></i>
+                            <span>Estado de Actuadores</span></div>
+                        <div class="gauge-flex-wrapper">
+
+                            <div class="gauge-item-container">
+                                <div class="gauge-item-title"
+                                    th:text="#{gauge.engine}">Motor
+                                    Excéntrico</div>
+                                <div class="gauge-main-container">
+                                    <div class="gauge-arc-visual">
+                                        <div class="gauge-arc-inner"></div>
+                                    </div>
+                                    <div class="gauge-needle"
+                                        id="engine-needle"></div>
+                                    <div class="gauge-pivot"></div>
+                                    <div class="gauge-readout">
+                                        <span class="gauge-pct"
+                                            id="engine-pct">0%</span>
+                                        <span class="gauge-lbl">Load</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="gauge-item-container">
+                                <div class="gauge-item-title"
+                                    th:text="#{gauge.hopper}">Tolva de
+                                    Carga</div>
+                                <div class="gauge-main-container">
+                                    <div class="gauge-arc-visual">
+                                        <div class="gauge-arc-inner"></div>
+                                    </div>
+                                    <div class="gauge-needle"
+                                        id="dropper-needle"></div>
+                                    <div class="gauge-pivot"></div>
+                                    <div class="gauge-readout">
+                                        <span class="gauge-pct"
+                                            id="dropper-pct">0%</span>
+                                        <span class="gauge-lbl">Load</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sensor-card">
+                        <div class="card-header"><i class="fas fa-tint"></i>
+                            <span th:text="#{sensor.flow}">Red de
+                                Caudalímetros (L/min)</span></div>
+                        <div class="flow-grid">
+                            <div class="mini-card">
+                                <span class="mini-id">Caudal 1</span>
+                                <span id="flow-2" class="mini-value">0.00</span>
+                                <span class="mini-unit">L/min</span>
+                            </div>
+                            <div class="mini-card">
+                                <span class="mini-id">Caudal 2</span>
+                                <span id="flow-1" class="mini-value">0.00</span>
+                                <span class="mini-unit">L/min</span>
+                            </div>
+                            <div class="mini-card">
+                                <span class="mini-id">Caudal 3</span>
+                                <span id="flow-3" class="mini-value">0.00</span>
+                                <span class="mini-unit">L/min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sensor-card">
+                        <div class="card-header">
+                            <i class="fas fa-plug"></i> <span>Analizador Enchufe
+                                - Motor</span>
+                        </div>
+                        <div class="data-row" style="margin-bottom: 15px;">
+                            <div class="data-item">
+                                <span id="val-motor-active-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Activa (W)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-motor-apparent-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Aparente (VA)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-motor-reactive-power"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">P. Reactiva
+                                    (VAR)</span>
+                            </div>
+                        </div>
+                        <div class="data-row" style="margin-bottom: 15px;">
+                            <div class="data-item">
+                                <span id="val-motor-voltage"
+                                    class="data-value">0.0</span>
+                                <span class="data-label">Voltaje (V)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-motor-current"
+                                    class="data-value">0.00</span>
+                                <span class="data-label">Corriente (A)</span>
+                            </div>
+                            <div class="data-item">
+                                <span id="val-motor-power-factor"
+                                    class="data-value">0.00</span>
+                                <span class="data-label">Factor Potencia</span>
+                            </div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-item">
+                                <span id="val-motor-temperature"
+                                    class="data-value">0.0°C</span>
+                                <span class="data-label">Temp. ESP32</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> </div> <div class="full-width-row">
+                <div class="sensor-card">
+                    <div class="recording-panel">
+                        <div class="card-header">
+                            <i class="fas fa-file-csv"></i> <span
+                                th:text="#{data.acquisition}">Grabación de Datos
+                                (.CSV)</span>
+                        </div>
+
+                        <div class="timer-section">
+                            <label><i class="fas fa-clock"
+                                    style="margin-right:5px; color: var(--primary-blue);"></i>
+                                <span
+                                    th:text="#{data.acquisition.timer}">Temporizador</span></label>
+                            <div class="timer-input-wrap">
+                                <input type="number" id="timerMinutes"
+                                    class="timer-input" min="0" max="999"
+                                    value="5"
+                                    placeholder="5">
+                                <span class="timer-unit">min</span>
+                                <input type="number" id="timerSeconds"
+                                    class="timer-input" min="0" max="59"
+                                    value="0"
+                                    placeholder="0">
+                                <span class="timer-unit">seg</span>
+                            </div>
+                            <label class="timer-toggle">
+                                <input type="checkbox" id="timerEnabled">
+                                Auto-stop
+                            </label>
+                        </div>
+
+                        <div class="countdown-bar-wrap" id="countdownWrap">
+                            <div class="countdown-track">
+                                <div class="countdown-fill"
+                                    id="countdownFill"></div>
+                            </div>
+                            <div class="countdown-text"
+                                id="countdownText">00:00</div>
+                        </div>
+
+                        <div class="rec-btn-row">
+                            <button id="btnStart" onclick="startRecording()"
+                                class="btn btn-start">
+                                <i class="fas fa-play"></i> <span
+                                    th:text="#{btn.start.recording}">Iniciar
+                                    Grabación</span>
+                            </button>
+                            <button id="btnStop" onclick="stopRecording()"
+                                class="btn btn-stop" disabled>
+                                <i class="fas fa-download"></i> <span
+                                    th:text="#{btn.stop.download}">Detener y
+                                    Guardar</span>
+                            </button>
+                        </div>
+
+                        <div id="recordStatus" class="status-rec">
+                            <i class="fas fa-circle blink"></i> <span
+                                th:text="#{recordStatus}">SISTEMA GRABANDO
+                                TELEMETRÍA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+        <script>
         let stompClient = null;
         let isRecording = false;
         let countdownInterval = null;
@@ -349,15 +408,35 @@
         }
 
         function setGauge(needleId, pctId, val) {
-            const needle = document.getElementById(needleId);
-            const pct = document.getElementById(pctId);
-            if (!needle || !pct) return;
-            const clamped = Math.max(0, Math.min(100, parseFloat(val) || 0));
+    const needle = document.getElementById(needleId);
+    const pct = document.getElementById(pctId);
+    if (!needle || !pct) return;
 
-            const deg = (clamped * 1.8) - 90;
-            needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
-            pct.innerText = Math.round(clamped) + '%';
-        }
+    const valorNumerico = parseFloat(val) || 0;
+    let clamped = 0;
+    let deg = 0;
+
+    if (needleId === 'dropper-needle') {
+        // Limitamos el rango de la tolva estrictamente entre 0 y 11
+        clamped = Math.max(0, Math.min(11, valorNumerico));
+        
+        // Mapeo físico de la aguja: 11 unidades distribuidas en 180 grados
+        deg = (clamped * (180 / 11)) - 90;
+        
+        // Mostramos el valor con 1 decimal exacto y sin el símbolo '%'
+        pct.innerText = clamped.toFixed(1);
+    } else {
+        // Comportamiento estándar para el Motor (0% a 100%)
+        clamped = Math.max(0, Math.min(100, valorNumerico));
+        deg = (clamped * 1.8) - 90;
+        pct.innerText = Math.round(clamped) + '%';
+    }
+
+    // Rotación física de la aguja en el dashboard
+    needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+}
+
+        
 
         async function updateOtherSensors() {
             try {
@@ -390,11 +469,11 @@
                     setGauge('engine-needle', 'engine-pct', data.engine_gauge.gaugeValue);
                 }
 
-                // Mapeo dinámico: transforma el rango del sensor (0 a 11) a escala porcentual (0 a 100%)
+            
                 if (data.dropper_gauge && data.dropper_gauge.dropperValue !== undefined) {
                     const rawDropper = parseFloat(data.dropper_gauge.dropperValue) || 0;
-                    const mappedPercent = (rawDropper / 11.0) * 100;
-                    setGauge('dropper-needle', 'dropper-pct', mappedPercent);
+                    
+                    setGauge('dropper-needle', 'dropper-pct', rawDropper);
                 }
 
                 // 5. Masa Neta (Mapeado directo desde data.weight)
@@ -566,6 +645,6 @@
             setInterval(updateOtherSensors, 250);
         };
     </script>
-</body>
+    </body>
 
 </html>

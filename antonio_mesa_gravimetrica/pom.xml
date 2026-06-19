@@ -22,7 +22,7 @@
         <java.version>21</java.version>
     </properties>
 
-    <!-- Repositorio de Eclipse Paho -->
+    <!-- Eclipse Paho  -->
     <repositories>
         <repository>
             <id>Eclipse Paho Repo</id>
@@ -31,7 +31,7 @@
     </repositories>
 
     <dependencies>
-        <!-- WEB + THYMELEAF (ya tenías) -->
+        <!-- WEB + THYMELEAF -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -41,7 +41,7 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <!-- ← NUEVAS DEPENDENCIAS JPA + POSTGRESQL -->
+        <!-- JPA + POSTGRESQL -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -64,18 +64,13 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- MQTT (ya tenías) -->
+        <!-- MQTT Auxiliar -->
         <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.2.5</version>
         </dependency>
 
-        <!-- WebSocket -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
 
         <!-- Test -->
         <dependency>

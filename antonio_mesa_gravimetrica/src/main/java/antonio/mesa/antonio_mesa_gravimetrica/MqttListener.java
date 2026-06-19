@@ -17,7 +17,7 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class MqttListener {
 
-    private static final String BROKER_URL = "tcp://10.3.141.1:1883";
+    private static final String BROKER_URL = "tcp://localhost:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
     private static final String TOPIC_ADXL = "sensor/adxl345";
@@ -162,12 +162,11 @@ public class MqttListener {
                 }
             });
 
-            // 7. Dropper Gauge (Tasmota JSON)
+            // 7. Dropper Gauge 
             client.subscribe(TOPIC_DROPPER_GAUGE, (topic, message) -> {
                 String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
                 try {
-                    JsonNode rootNode = objectMapper.readTree(payload);
-                    float valor = rootNode.path("ENERGY").path("Power").floatValue();
+                    float valor = Float.parseFloat(payload);
                     
                     Sensor5Data data = new Sensor5Data();
                     data.setDropperValue(valor);

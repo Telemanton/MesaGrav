@@ -57,7 +57,7 @@ public class SecurityConfig {
 SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http // HTTP Protocol configuration
         .authorizeHttpRequests(auth -> auth // auth section means that we are configuring authorization rules for HTTP requests
-            .requestMatchers("/", "/user-logging", "/css/**", "/js/**", "/webjars/**").permitAll()
+            .requestMatchers("/","/images/**", "/user-logging", "/css/**", "/js/**", "/webjars/**").permitAll()
             .anyRequest().authenticated()
         )
         .csrf(csrf -> csrf.disable()) // Disable CSRF protection for simplicity (not recommended for production)
