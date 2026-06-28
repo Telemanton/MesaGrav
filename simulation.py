@@ -64,7 +64,7 @@ try:
 
         # 4. VELOCIDAD CORREGIDA: Envía como texto plano de un número flotante (ej: "45.32")
         # Tu MqttListener de Java lo recibe con Double.parseDouble(payload.trim())
-        velocidad = round(random.uniform(0, 100), 2)
+        velocidad = round(random.uniform(2500.0, 2600.0), 2)
         client.publish(TOPIC_SPEED, str(velocidad))
 
         # 5. PESO Y GAUGES: Se envían como texto plano (String numérico)
@@ -74,11 +74,10 @@ try:
         engine_gauge = round(random.uniform(0, 100), 2)
         client.publish(TOPIC_ENGINE_GAUGE, str(engine_gauge))
 
-        dropper_gauge = round(random.uniform(0, 100), 2)
+        dropper_gauge = round(random.uniform(0, 11), 2)
         client.publish(TOPIC_DROPPER_GAUGE, str(dropper_gauge))
-
-        # Output de traza por consola para verificar el envío
-        print(f"[{time.strftime('%H:%M:%S')}] Telemetría enviada. Velocidad transmitida: {velocidad} m/s")
+        print(velocidad)
+       
         time.sleep(0.25)
 
 except KeyboardInterrupt:

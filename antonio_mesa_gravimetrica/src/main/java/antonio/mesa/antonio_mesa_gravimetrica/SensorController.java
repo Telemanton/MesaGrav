@@ -86,7 +86,7 @@
             Sensor6Data rawWeightData = mqttListener.getLastSensor6Data();
             Sensor6Data processedWeight = new Sensor6Data();
             
-            // Validación de nulidad añadida para evitar crasheos (NullPointerException)
+            
             if (rawWeightData != null && rawWeightData.getWeightValue() != 0.0f) {
                 float netWeight = rawWeightData.getWeightValue() - valorTara;
                 if (netWeight < 0.0f) {
@@ -99,7 +99,11 @@
             
             // Send the real-time calculated net weight instead of raw values to the JS dashboard UI
             response.put("weight", processedWeight);
-            response.put("speed", mqttListener.getLastSensor7Data());
+
+            if(mqttListener.getLastSensor7Data().getSpeedValue() >= 2500.0f){
+                response.put("speed", 0.0f);
+            }else response.put("speed", mqttListener.getLastSensor7Data());
+            
 
             Sensor8Data motorData = (Sensor8Data) mqttListener.getLastSensor8Data();
             if (motorData != null) {

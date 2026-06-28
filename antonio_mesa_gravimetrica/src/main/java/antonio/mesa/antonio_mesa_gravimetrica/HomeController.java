@@ -1,13 +1,5 @@
 package antonio.mesa.antonio_mesa_gravimetrica;
-
-import java.io.ByteArrayInputStream;
-import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,20 +26,14 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class HomeController {
 
-    private final AntonioMesaGravimetricaApplication antonioMesaGravimetricaApplication;
+    private final AppUserService userRepository;
 
-    @Autowired
-    private HistoricoRepository historicoRepository;
+    private final RegistroService registroService;
 
-    @Autowired
-    private AppUserService userRepository;
-
-    @Autowired
-    private RegistroService registroService;
-
-
-    HomeController(AntonioMesaGravimetricaApplication antonioMesaGravimetricaApplication) {
-        this.antonioMesaGravimetricaApplication = antonioMesaGravimetricaApplication;
+    // Dependencies inyection by constructor
+    HomeController(RegistroService registroService, AppUserService userRepository) {
+        this.registroService = registroService;
+        this.userRepository = userRepository;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////          
@@ -390,12 +376,10 @@ public String updatePassword(
         return "redirect:/";
     }
     
-    // CORREGIDO: Pasamos el Name/Username, NO el ID numérico
     boolean exito = userRepository.actualizarPassword(sessionUser.getName(), currentPassword, newPassword);
 
     if (!exito) {
         redirectAttributes.addFlashAttribute("error", "La contraseña actual introducida no es correcta.");
-        // CAMBIO DE SEGURIDAD: Si "/my-profile" te da 404, redirige a la raíz para comprobar el error sin caídas
         return "redirect:/"; 
     }
 
@@ -479,7 +463,7 @@ public String updatePassword(
         }
         model.addAttribute("currentUser", currentUser);
 
-        List<Historico> listaEnsayos = historicoRepository.findAll();
+        List<Historico> listaEnsayos = registroService.find();
 
         model.addAttribute("registros", listaEnsayos);
 
@@ -490,59 +474,21 @@ public String updatePassword(
         }
     }
 
-    @GetMapping(value = "/descargar/{id}", produces = {MediaType.TEXT_HTML_VALUE, "text/csv"})
-    public ResponseEntity<?> descargarArchivo(@PathVariable Long id) {
-        try {
-            // 1. Buscamos el registro en la base de datos
-            Historico h = historicoRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("No encontrado"));
+    @GetMapping(value = "/descargar/{id}")
+public ResponseEntity<byte[]> descargarArchivo(@PathVariable Long id) {
 
-            // 2. Intentamos decodificar el Base64 de forma segura
-            byte[] comprimido;
-            try {
-                comprimido = Base64.getDecoder().decode(h.getDatosCompactados());
-            } catch (IllegalArgumentException e) {
-                System.err.println("[INTEGRIDAD] Base64 corrupto en ID " + id);
-                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-            }
-
-            // 3. Intentamos descomprimir el GZIP
-            byte[] descomprimido;
-            try (GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(comprimido))) {
-                descomprimido = gis.readAllBytes();
-            } catch (ZipException e) {
-                System.err.println("🚨 [INTEGRIDAD] GZIP corrupto/manipulado en ID " + id);
-                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-            }
-
-            // 4. Comprobación del Checksum SHA-256
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashCalculadoBytes = digest.digest(descomprimido);
-
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashCalculadoBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            String checksumCalculado = sb.toString();
-
-            if (!checksumCalculado.equals(h.getChecksum())) {
-                System.err.println("🚨 [SEGURIDAD] El ensayo " + id + " no coincide con su Checksum original.");
-                return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-            }
-
-            // 5. Si todo es legal, enviamos el archivo CSV para descarga automática
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_recuperado_" + id + ".csv")
-                    .contentType(MediaType.parseMediaType("text/csv"))
-                    .body(descomprimido);
-
-        } catch (Exception e) {
-            // Captura cualquier otro imprevisto del servidor
-            System.err.println("❌ Fallo general al descargar el registro " + id);
-            e.printStackTrace();
-            return crearRespuestaConAlertaPantalla(); // Retorna 200 OK con el script
-        }
+    byte[] data = registroService.download(id);
+    
+    if (data == null) {
+        crearRespuestaConAlertaPantalla();
+        return ResponseEntity.notFound().build(); 
     }
+
+    return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"ensayo_recuperado_" + id + ".csv\"")
+            .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+            .body(data);
+}
 
     @DeleteMapping("/borrar/{id}")
     public ResponseEntity<?> eliminarRegistro(@PathVariable Long id, HttpSession session) {
@@ -550,7 +496,7 @@ public String updatePassword(
         if (borradoExitoso) {
             return ResponseEntity.ok().build();
         } else {
-            return crearRespuestaSinPermisos(); // Retorna 200 OK con el script de alerta de acceso denegado
+            return crearRespuestaSinPermisos(); 
         }
     }
 
@@ -559,7 +505,7 @@ User with no privileges for deleting records pop-up
      */
     private ResponseEntity<String> crearRespuestaSinPermisos() {
         String scriptAlerta = "<script type='text/javascript'>"
-                + "alert('⚠️ ¡ACCESO DENEGADO!\\n\\nNo tienes permisos para realizar esta acción.\\nPor favor, contacta al administrador si crees que esto es un error.');"
+                + "alert('¡ACCESO DENEGADO!\\n\\nNo tienes permisos para realizar esta acción.\\nPor favor, contacta al administrador si crees que esto es un error.');"
                 + "window.location.href = window.location.href;" // Recarga la página actual de históricos de forma limpia
                 + "</script>";
 
@@ -568,10 +514,7 @@ User with no privileges for deleting records pop-up
                 .body(scriptAlerta);
     }
 
-    /**
-     * Fuerza al navegador a mantenerse en la página actual y mostrar la alerta
-     * flotante.
-     */
+ 
     private ResponseEntity<String> crearRespuestaConAlertaPantalla() {
         String scriptAlerta = "<script type='text/javascript'>"
                 + "alert('⚠️ ¡AVISO DE SEGURIDAD CRÍTICO!\\n\\nLos datos de este ensayo han sido manipulados o están corruptos.\\nPor favor, consulte de inmediato al administrador del sistema.');"

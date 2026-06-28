@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +32,7 @@ public class DataExportController {
      * Is a service that handles the interaction with the database, 
      * specifically for saving the recorded data in the historical record.
      */
-    @Autowired
-    private RegistroService registroService;
+    private final RegistroService registroService;
 
     private boolean isRecording = false;
     /*
@@ -48,8 +46,9 @@ public class DataExportController {
     // DELTA_T is the time interval in seconds between each recorded snapshot, which is used to calculate the acceleration based on the change in speed over time.
     private final double DELTA_T = 0.25;
 
-    public DataExportController(MqttListener mqttListener) {
+    public DataExportController(MqttListener mqttListener, RegistroService registroService) {
         this.mqttListener = mqttListener;
+        this.registroService = registroService;
     }
 
     @PostMapping("/start")
@@ -89,9 +88,15 @@ public class DataExportController {
         Sensor4Data engine = mqttListener.getLastSensor4Data(); // column 7
         Sensor5Data dropper = mqttListener.getLastSensor5Data(); // column 8
         Sensor6Data weight = mqttListener.getLastSensor6Data(); // column 9
-        Sensor7Data speed = mqttListener.getLastSensor7Data(); // column 10
-
+        
         String[] row = new String[12]; 
+
+        // bug fixed for speed value 2500 value
+        Sensor7Data speed = mqttListener.getLastSensor7Data(); // column 10
+        if(speed.getSpeedValue() >= 2500.0f){
+            row[7] = "0";
+        } else row[7] = formatDecimal(speed.getSpeedValue());
+
         
         row[0] = LocalDateTime.now().format(timeFormatter);
         row[1] = formatDecimal(adxl.getPitch());
@@ -112,10 +117,10 @@ public class DataExportController {
             }
         }
         row[6] = formatDecimal(pesoNetoTarado);
-        row[7] = formatDecimal(speed.getSpeedValue());
+        
         row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 
-        // 2. CORRECCIÓN AQUÍ: Buscamos en el mapa usando el tipo primitivo int/Integer directamente
+     
         for (int i = 1; i <= 3; i++) {
             Sensor3Data f = flows.get(i); // Buscamos usando el número entero directamente
             row[8 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
@@ -142,18 +147,17 @@ public class DataExportController {
         return String.valueOf(value).replace('.', ',');
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////// de aquí hasta arriba congelado
 
     @GetMapping("/download")
     public ResponseEntity<byte[]> stopAndDownload(HttpSession session) {
-        // 1. Detenemos la grabación inmediatamente
+      
         isRecording = false;
         
         if (session.getAttribute("currentUser") == null) return ResponseEntity.status(403).build();
 
-        // 2. Generamos el contenido del CSV primero
+  
         StringBuilder csv = new StringBuilder();
-        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Consumo_Motor_W;Consumo_Total_W;Peso_entrada_g;Velocidad_RPM;Aceleracion_RPM_s2;Caudal_1;Caudal_2;Caudal_3\n");
+        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Consumo_Motor_W;Consumo_Total_W;Peso_entrada_g;Velocidad_cm_s;Aceleracion_cm_s2;Caudal_1;Caudal_2;Caudal_3\n");
         
         String csvFinal;
         synchronized (recordedData) {
@@ -165,16 +169,16 @@ public class DataExportController {
             recordedData.clear();
         }
 
-        // 3. Guardamos EXACTAMENTE lo mismo que se descarga en la BBDD
+  
         try {
-            // Pasamos el csvFinal al servicio para asegurar integridad absoluta
+        
             registroService.guardarEnHistorico(csvFinal);
-            System.out.println("✅ Histórico blindado en BBDD correctamente.");
+            System.out.println(" Histórico blindado en BBDD correctamente.");
         } catch (Exception e) {
-            System.err.println("❌ Error al guardar histórico en BBDD: " + e.getMessage());
+            System.err.println(" Error al guardar histórico en BBDD: " + e.getMessage());
         }
 
-        // 4. Enviamos el archivo al usuario
+    
         byte[] bytes = csvFinal.getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ensayo_mesa_" + System.currentTimeMillis() + ".csv")
