@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
 
@@ -12,12 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,13 +40,11 @@ public class HomeController {
     private HistoricoRepository historicoRepository;
 
     @Autowired
-    private AppUserDAO userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AppUserService userRepository;
 
     @Autowired
     private RegistroService registroService;
+
 
     HomeController(AntonioMesaGravimetricaApplication antonioMesaGravimetricaApplication) {
         this.antonioMesaGravimetricaApplication = antonioMesaGravimetricaApplication;
@@ -110,31 +104,18 @@ public class HomeController {
             HttpServletRequest request,
             HttpSession session) {
 
-        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        AppUser user = userRepository.find(username);
 
-        if (userOpt.isPresent()) {
-            AppUser user = userOpt.get();
+        if (user != null) {
+            
 
-            if (passwordEncoder.matches(password, user.getPasswordHash())) {
-                /**
-                 * Constructs a role name by prefixing the user's role with
-                 * "ROLE_" and converting it to uppercase. This practice follows
-                 * the standard Spring Security role naming convention where
-                 * roles are prefixed with "ROLE_".
-                 *
-                 * Example: If user.getRole().name() returns "ADMIN", the
-                 * resulting roleName will be "ROLE_ADMIN".
-                 */
-                String roleName = "ROLE_" + user.getRole().name();
+            if (userRepository.checkHash(password, user.getPasswordHash())) {
 
-                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        user.getUsername(), null, AuthorityUtils.createAuthorityList(roleName));
-
-                SecurityContext sc = SecurityContextHolder.getContext();
-                sc.setAuthentication(token);
+                SecurityContext sc = userRepository.tokenContext(user);
 
                 session.setAttribute("SPRING_SECURITY_CONTEXT", sc);
                 session.setAttribute("currentUser", user);
+                
 
                 switch (user.getRole()) {
                     case ADMIN:
@@ -215,7 +196,7 @@ public class HomeController {
             return "redirect:/";
         }
 
-        List<AppUser> allUsers = userRepository.findAll();
+        List<AppUser> allUsers = userRepository.findFullUsers();
         model.addAttribute("allUsers", allUsers);
         model.addAttribute("currentUser", currentUser);
         return "admin-users-list";
@@ -252,14 +233,15 @@ public class HomeController {
             return "create-user";
         }
 
-        if (userRepository.findByUsername(userForm.getUsername()).isPresent()) {
+        if (userRepository.find((String)userForm.getUsername()) != null) {
             model.addAttribute("error", "El nombre de usuario ya existe");
             return "create-user";
         }
 
         // Next 2 lines hashes the password and saves the user with hased password inside the database
-        userForm.setPasswordHash(passwordEncoder.encode(userForm.getPassword()));
-        userRepository.save(userForm);
+        String pass = userForm.getPassword();
+        userForm.setPasswordHash(userRepository.hash(pass));
+        userRepository.saveToDatabase(userForm);
 
         redirectAttributes.addFlashAttribute("mensaje", "¡Usuario '" + userForm.getUsername() + "' creado con éxito!");
 
@@ -287,8 +269,8 @@ public class HomeController {
             return "redirect:/";
         }
 
-        try {
-            userRepository.deleteById(id);
+        try { 
+            userRepository.deleteUser(id);
             redirectAttributes.addFlashAttribute("mensaje", "Usuario eliminado correctamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "No se pudo eliminar el usuario.");
@@ -304,10 +286,11 @@ public class HomeController {
             return "redirect:/";
         }
 
-        Optional<AppUser> userToEdit = userRepository.findById(id);
-        if (userToEdit.isPresent()) {
+        AppUser userToEdit = userRepository.find(String.valueOf(id));
 
-            model.addAttribute("userForm", userToEdit.get());
+        if (userToEdit != null) {
+
+            model.addAttribute("userForm", userToEdit);
             return "edit-user";
         }
 
@@ -327,17 +310,18 @@ public class HomeController {
             return "redirect:/";
         }
 
-        Optional<AppUser> existingUserOpt = userRepository.findById(userForm.getId());
+       
+        AppUser existingUserOpt = userRepository.find(String.valueOf(userForm.getId()));
 
-        if (existingUserOpt.isPresent()) {
-            AppUser userDB = existingUserOpt.get();
+        if (existingUserOpt != null) {
+            AppUser userDB = existingUserOpt;
 
             userDB.setName(userForm.getName());
             userDB.setSurname(userForm.getSurname());
             userDB.setEmail(userForm.getEmail());
             userDB.setRole(userForm.getRole());
 
-            userRepository.save(userDB);
+            userRepository.saveToDatabase(userDB);
 
             redirectAttributes.addFlashAttribute("mensaje", "Usuario '" + userDB.getUsername() + "' actualizado.");
         }
@@ -395,46 +379,39 @@ public class HomeController {
 
     // -- My profile update password (POST) ---
     @PostMapping("/my-profile/update-password")
-    public String updatePassword(
-            @RequestParam("currentPassword") String currentPassword,
-            @RequestParam("newPassword") String newPassword,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) { // Permite enviar mensajes temporales en la redirección
+public String updatePassword(
+        @RequestParam("currentPassword") String currentPassword,
+        @RequestParam("newPassword") String newPassword,
+        HttpSession session,
+        RedirectAttributes redirectAttributes) {
 
-        AppUser sessionUser = (AppUser) session.getAttribute("currentUser");
-        if (sessionUser == null) {
-            return "redirect:/";
-        }
-
-        AppUser databaseUser = userRepository.findById(sessionUser.getId()).orElse(null);
-        if (databaseUser == null) {
-            redirectAttributes.addFlashAttribute("error", "Usuario no encontrado en el sistema.");
-            return "redirect:/";
-        }
-
-        boolean matches = passwordEncoder.matches(currentPassword, databaseUser.getPasswordHash());
-        if (!matches) {
-            // Viaja de vuelta a la página del perfil de forma segura
-            redirectAttributes.addFlashAttribute("error", "La contraseña actual introducida no es correcta.");
-            return "redirect:/my-profile"; // Asegúrate de que esta URL coincide con la de tu @GetMapping de perfil
-        }
-
-        String encryptedNewPassword = passwordEncoder.encode(newPassword);
-        databaseUser.setPasswordHash(encryptedNewPassword);
-        userRepository.save(databaseUser);
-
-        session.setAttribute("currentUser", databaseUser); // Guardamos el usuario de BD actualizado
-
-        redirectAttributes.addFlashAttribute("success", "Contraseña actualizada exitosamente.");
-
-        if (sessionUser.getRole() == Role.ADMIN) {
-            return "redirect:/admin-home";
-        } else if (sessionUser.getRole() == Role.KEYUSER) {
-            return "redirect:/keyuser-home";
-        } else {
-            return "redirect:/user-home";
-        }
+    AppUser sessionUser = (AppUser) session.getAttribute("currentUser");
+    if (sessionUser == null) {
+        return "redirect:/";
     }
+    
+    // CORREGIDO: Pasamos el Name/Username, NO el ID numérico
+    boolean exito = userRepository.actualizarPassword(sessionUser.getName(), currentPassword, newPassword);
+
+    if (!exito) {
+        redirectAttributes.addFlashAttribute("error", "La contraseña actual introducida no es correcta.");
+        // CAMBIO DE SEGURIDAD: Si "/my-profile" te da 404, redirige a la raíz para comprobar el error sin caídas
+        return "redirect:/"; 
+    }
+
+    AppUser databaseUser = userRepository.find(sessionUser.getName());
+    session.setAttribute("currentUser", databaseUser); 
+    
+    redirectAttributes.addFlashAttribute("success", "Contraseña actualizada exitosamente.");
+
+    if (databaseUser.getRole() == Role.ADMIN) {
+        return "redirect:/admin-home";
+    } else if (databaseUser.getRole() == Role.KEYUSER) {
+        return "redirect:/keyuser-home";
+    } else {
+        return "redirect:/user-home";
+    }
+}
 
     // --- /home management based on user roles ---
     @GetMapping("/home")

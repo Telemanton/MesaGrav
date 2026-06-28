@@ -5,19 +5,11 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
-/*
-================================
-RegistroService DOCUMENTATION
-================================
 
-
-
-
-*/
 @Service
 public class RegistroService {
 
-    @Autowired // Inyects historicoRepository in order to
+    @Autowired 
     private HistoricoRepository historicoRepository;
 
     public void guardarEnHistorico(String contenidoCsv) throws Exception {

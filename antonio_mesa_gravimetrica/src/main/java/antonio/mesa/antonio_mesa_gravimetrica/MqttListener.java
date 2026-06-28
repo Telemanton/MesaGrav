@@ -40,7 +40,6 @@ public class MqttListener {
     private final AtomicReference<Sensor8Data> lastSensor8_2_Data = new AtomicReference<>(new Sensor8Data());
 
     private final ObjectMapper objectMapper = new ObjectMapper(); 
-    // Aseguramos la inicialización del mapa concurrente antes de usarlo
     private final Map<Integer, Sensor3Data> flowSensorsMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     private MqttClient client;
