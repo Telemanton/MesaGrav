@@ -98,10 +98,45 @@
                     <span id="val-weight" class="big-val">0.0</span>
                     <span class="big-unit">g</span>
                 </div>
-                <div class="tara-wrapper">
-                    <button type="button" class="btn-tara" onclick="ejecutarTara()">
-                        <i class="fas fa-balance-scale"></i> <span>Tarar Báscula</span>
-                    </button>
+    
+            </div>
+            <div class="sensor-card">
+                <div class="card-header">
+                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-platform-active-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Activa (W)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-apparent-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Aparente (VA)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-reactive-power" class="data-value">0.0</span>
+                        <span class="data-label">P. Reactiva (VAR)</span>
+                    </div>
+                </div>
+                <div class="data-row" style="margin-bottom: 15px;">
+                    <div class="data-item">
+                        <span id="val-platform-voltage" class="data-value">0.0</span>
+                        <span class="data-label">Voltaje (V)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-current" class="data-value">0.00</span>
+                        <span class="data-label">Corriente (A)</span>
+                    </div>
+                    <div class="data-item">
+                        <span id="val-platform-power-factor" class="data-value">0.00</span>
+                        <span class="data-label">Factor Potencia</span>
+                    </div>
+                </div>
+                <div class="data-row">
+                    <div class="data-item">
+                        <span id="val-platform-temperature" class="data-value">0.0°C</span>
+                        <span class="data-label">Temp. ESP32</span>
+                    </div>
                 </div>
             </div>
 
@@ -202,52 +237,12 @@
                 </div>
             </div>
 
-            <div class="sensor-card">
-                <div class="card-header">
-                    <i class="fas fa-plug"></i> <span>Analizador Enchufe - Plataforma</span>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-platform-active-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Activa (W)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-apparent-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Aparente (VA)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-reactive-power" class="data-value">0.0</span>
-                        <span class="data-label">P. Reactiva (VAR)</span>
-                    </div>
-                </div>
-                <div class="data-row" style="margin-bottom: 15px;">
-                    <div class="data-item">
-                        <span id="val-platform-voltage" class="data-value">0.0</span>
-                        <span class="data-label">Voltaje (V)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-current" class="data-value">0.00</span>
-                        <span class="data-label">Corriente (A)</span>
-                    </div>
-                    <div class="data-item">
-                        <span id="val-platform-power-factor" class="data-value">0.00</span>
-                        <span class="data-label">Factor Potencia</span>
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="data-item">
-                        <span id="val-platform-temperature" class="data-value">0.0°C</span>
-                        <span class="data-label">Temp. ESP32</span>
-                    </div>
-                </div>
-            </div>
+            
 
         </div>
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 <script>
     let stompClient = null;
@@ -258,17 +253,7 @@
     let pendingNavUrl = null;
     let pendingIsLogout = false;
 
-    function ejecutarTara() {
-        fetch('/sensor/tare', { method: 'POST' })
-        .then(res => {
-            if (res.ok) {
-                console.log("¡Báscula tarada! El dashboard y el CSV se han sincronizado a 0.");
-            } else {
-                console.error("Error al procesar la tara en el servidor.");
-            }
-        })
-        .catch(err => console.error("Error de conexión al enviar tara:", err));
-    }
+    
 
     function setGauge(needleId, pctId, val) {
         const needle = document.getElementById(needleId);
