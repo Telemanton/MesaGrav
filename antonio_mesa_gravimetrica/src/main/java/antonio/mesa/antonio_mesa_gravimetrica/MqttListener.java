@@ -17,7 +17,8 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class MqttListener {
 
-    private static final String BROKER_URL = "tcp://10.3.141.1:1883";
+    private static final String BROKER_URL = "tcp://localhost:1883";
+    //private static final String BROKER_URL = "tcp://10.3.141.1:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
     private static final String TOPIC_ADXL = "sensor/adxl345";
@@ -185,6 +186,7 @@ public class MqttListener {
                     Sensor6Data data = new Sensor6Data();
                     data.setWeightValue(valor);
                     lastSensor6Data.set(data);
+                    System.out.println(valor);
                 } catch (Exception e) {
                     System.err.println("Error parseando Weight: " + e.getMessage());
                 }

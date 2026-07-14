@@ -6,7 +6,7 @@ import math
 import sys
 
 # --- CONFIGURACIÓN DEL BROKER ---
-BROKER = "localhost"  
+BROKER = "10.3.141.1"  
 PORT = 1883
 
 # Tópicos (Deben coincidir exactamente con MqttListener.java)
@@ -64,7 +64,7 @@ try:
 
         # 4. VELOCIDAD CORREGIDA: Envía como texto plano de un número flotante (ej: "45.32")
         # Tu MqttListener de Java lo recibe con Double.parseDouble(payload.trim())
-        velocidad = round(random.uniform(2500.0, 2600.0), 2)
+        velocidad = round(random.uniform(1.0, 2.0), 2)
         client.publish(TOPIC_SPEED, str(velocidad))
 
         # 5. PESO Y GAUGES: Se envían como texto plano (String numérico)

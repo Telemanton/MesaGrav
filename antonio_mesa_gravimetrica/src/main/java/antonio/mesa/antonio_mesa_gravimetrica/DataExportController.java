@@ -105,15 +105,16 @@ public class DataExportController {
         row[4] = formatDecimal(engine.getGaugeValue());
         row[5] = formatDecimal(dropper.getDropperValue());
 
-        float pesoNetoTarado = 0.0f;
-        if (weight != null && weight.getWeightValue() != 0.0f) {
+        float pesoNetoTarado = 0.0000f;
+        if (weight != null && weight.getWeightValue() != 0.0000f) {
             float pesoCrudo = weight.getWeightValue();
+            float fc = SensorController.getFactorConversion();
             
             // Extracting the tare value from the SensorController to calculate the net weight. 
             // If the net weight is negative, it is set to zero.
-            pesoNetoTarado = pesoCrudo - SensorController.getValorTara(); 
-            if (pesoNetoTarado < 0.0f) {
-                pesoNetoTarado = 0.0f;
+            pesoNetoTarado = (pesoCrudo - SensorController.getValorTara()) * fc; 
+            if (pesoNetoTarado < 0.0000f) {
+                pesoNetoTarado = 0.0000f;
             }
         }
         row[6] = formatDecimal(pesoNetoTarado);
@@ -122,7 +123,7 @@ public class DataExportController {
 
      
         for (int i = 1; i <= 3; i++) {
-            Sensor3Data f = flows.get(i); // Buscamos usando el número entero directamente
+            Sensor3Data f = flows.get(i);
             row[8 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
         }
         
