@@ -340,7 +340,7 @@
                         const elementoHtml = document.getElementById(`flow-${i}`);
                         if (elementoHtml) {
                             const flowFloat = parseFloat(sensorData.flowRate);
-                            elementoHtml.innerText = !isNaN(flowFloat) ? flowFloat.toFixed(2) : "0.00"; 
+                            elementoHtml.innerText = !isNaN(flowFloat) ? (flowFloat*0.01666).toFixed(2) : "0.00"; 
                         }
                     }
                 }

@@ -487,7 +487,7 @@
                         if (sensorData && sensorData.flowRate !== undefined) {
                             const elementoHtml = document.getElementById(`flow-${i}`);
                             if (elementoHtml) {
-                                elementoHtml.innerText = parseFloat(sensorData.flowRate).toFixed(2);
+                                elementoHtml.innerText = parseFloat((sensorData.flowRate)*0.01666).toFixed(2);
                             }
                         }
                     }

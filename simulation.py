@@ -6,7 +6,8 @@ import math
 import sys
 
 # --- CONFIGURACIÓN DEL BROKER ---
-BROKER = "10.3.141.1"  
+#BROKER = "10.3.141.1" 
+BROKER = "localhost" 
 PORT = 1883
 
 # Tópicos (Deben coincidir exactamente con MqttListener.java)
@@ -54,7 +55,7 @@ try:
         for i in range(1, 4):  
             caudales_lista.append({
                 "id": i, 
-                "flowRate": round(random.uniform(1.5, 12.0), 2)
+                "flowRate": round(random.uniform(450, 500), 2)
             })
         client.publish(TOPIC_FLOW, json.dumps({"sensores": caudales_lista}))
 

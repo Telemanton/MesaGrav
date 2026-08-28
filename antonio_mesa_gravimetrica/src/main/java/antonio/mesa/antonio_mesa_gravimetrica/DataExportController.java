@@ -85,25 +85,23 @@ public class DataExportController {
         SensorData adxl = mqttListener.getLastSensorData(); // columns 1 and 2
         Sensor2Data freq = mqttListener.getLastSensor2Data(); // column 3
         Map<Integer, Sensor3Data> flows = mqttListener.getAllFlowData(); // columns 4, 5, 6
-        Sensor4Data engine = mqttListener.getLastSensor4Data(); // column 7
-        Sensor5Data dropper = mqttListener.getLastSensor5Data(); // column 8
         Sensor6Data weight = mqttListener.getLastSensor6Data(); // column 9
         
-        String[] row = new String[12]; 
+        String[] row = new String[10]; 
 
         // bug fixed for speed value 2500 value
         Sensor7Data speed = mqttListener.getLastSensor7Data(); // column 10
         if(speed.getSpeedValue() >= 2500.0f){
-            row[7] = "0";
-        } else row[7] = formatDecimal(speed.getSpeedValue());
+            row[5] = "0";
+        } else row[5] = formatDecimal(speed.getSpeedValue());
 
         
         row[0] = LocalDateTime.now().format(timeFormatter);
         row[1] = formatDecimal(adxl.getPitch());
         row[2] = formatDecimal(adxl.getRoll());
         row[3] = formatDecimal(freq.getFrecuency());
-        row[4] = formatDecimal(engine.getGaugeValue());
-        row[5] = formatDecimal(dropper.getDropperValue());
+        //row[4] = formatDecimal(engine.getGaugeValue());
+        //row[5] = formatDecimal(dropper.getDropperValue());
 
         float pesoNetoTarado = 0.0000f;
         if (weight != null && weight.getWeightValue() != 0.0000f) {
@@ -117,14 +115,14 @@ public class DataExportController {
                 pesoNetoTarado = 0.0000f;
             }
         }
-        row[6] = formatDecimal(pesoNetoTarado);
+        row[4] = formatDecimal(pesoNetoTarado);
         
-        row[8] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
+        row[6] = formatDecimal(calculateAcceleration(speed.getSpeedValue()));
 
      
         for (int i = 1; i <= 3; i++) {
             Sensor3Data f = flows.get(i);
-            row[8 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
+            row[6 + i] = (f != null) ? formatDecimal(f.getFlowRate()) : "0,0";
         }
         
         recordedData.add(row);
@@ -135,7 +133,7 @@ public class DataExportController {
             if (recordedData.isEmpty()) return 0.0f;
             try {
                 String[] lastRow = recordedData.get(recordedData.size() - 1);
-                float lastSpeed = Float.parseFloat(lastRow[7].replace(',', '.'));
+                float lastSpeed = Float.parseFloat(lastRow[5].replace(',', '.'));
                 return (float) ((currentSpeed - lastSpeed) / DELTA_T);
             } catch (Exception e) {
                 return 0.0f;
@@ -158,7 +156,7 @@ public class DataExportController {
 
   
         StringBuilder csv = new StringBuilder();
-        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Consumo_Motor_W;Consumo_Total_W;Peso_entrada_g;Velocidad_cm_s;Aceleracion_cm_s2;Caudal_1;Caudal_2;Caudal_3\n");
+        csv.append("Fecha_Hora_MS;Pitch;Roll;Vibracion_Hz;Peso_entrada_g;Velocidad_cm_s;Aceleracion_cm_s2;Caudal_1;Caudal_2;Caudal_3\n");
         
         String csvFinal;
         synchronized (recordedData) {

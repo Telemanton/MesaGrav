@@ -10,16 +10,16 @@
 <body>
 
     <header>
-        <h1>Acerca del Proyecto</h1>
+        <h1>Acerca del Trabajo de Fin de Grado</h1>
     </header>
 
     <main>
 
         <section>
-            <h2>1. Presentación del Autor</h2>
+            <h2>Presentación</h2>
             <p>
-                Este proyecto ha sido diseñado, programado e implementado de forma íntegra por Antonio Garrido Bueno, en calidad de alumno de la <strong>Universidad de Jaén (UJA)</strong>.
-                La realización de esta plataforma surge como respuesta a la necesidad de digitalizar y optimizar los procesos de ensayo y análisis mineralúrgico dentro de los laboratorios de ingeniería, 
+                Este proyecto ha sido diseñado, programado e implementado de forma íntegra por Antonio Garrido Bueno, en calidad de alumno de la <strong>Escuela Politécnica Superior de Linares (Universidad de Jaén)</strong>.
+                La realización de esta plataforma surge como respuesta a la necesidad de digitalizar los procesos de ensayo de la mesa de concentración gravimétrica situada en el laboratorio de Explotación de Minas, 
                 aplicando software industrial moderno con sistemas embebidos para el monitoreo en tiempo real.
             </p>
             <p>
@@ -31,55 +31,53 @@
         <br>
 
         <section>
-            <h2>2. Origen del Proyecto e Idea Inicial</h2>
-            <p>
-                Las mesas gravimétricas son equipos mecánicos críticos en la minería para la separación de minerales por densidades utilizando flujos de agua y vibraciones controladas. Sin embargo, la captura de datos tradicional en estos equipos suele ser analógica o manual, lo que introduce errores humanos, pérdida de precisión y dificultades para realizar un seguimiento histórico de los ensayos de laboratorio.
-            </p>
+            <h2>Origen del Trabajo de Fin de Grado e idea inicial</h2>
             <p>
                 La meta inicial fue clara: <strong>instrumentar la mesa gravimétrica</strong>. 
-                Se propuso diseñar un ecosistema capaz de medir la inclinación estructural (Pitch y Roll), la frecuencia de sacudidas por segundo, la velocidad lineal del trayecto de vibración, el caudal de agua inyectado en la red de lavado y la masa acumulada en tiempo real.
+                Se propuso diseñar un ecosistema capaz de medir la inclinación estructural (Pitch y Roll), el caudal de agua inyectado en la red de lavado, la intensidad de funcionamiento de la máquina y la masa acumulada en tiempo real para la recreación de ensayos y experimentos.
             </p>
         </section>
 
         <br>
 
         <section>
-            <h2>3. Cronología del Desarrollo Paso a Paso</h2>
+            <h2>Cronología del desarrollo paso a paso</h2>
             
             <article>
                 <h3>Fase I: Hardware y Programación del Sistema Embebido (ESP32)</h3>
                 <p>
-                    El núcleo físico del proyecto se construyó sobre una red de microcontroladores <strong>ESP32</strong> debido a su potencia de cómputo y su módulo WiFi nativo. En esta etapa:
+                    El núcleo físico del proyecto se construyó sobre una red de microcontroladores <strong>ESP32</strong> debido a su potencia de cómputo, su módulo WiFi nativo y bajo consumo. En esta etapa:
                 </p>
                 <ul>
-                    <li>Se conectó y calibró un acelerómetro digital <strong>ADXL345</strong> a través del protocolo I2C para capturar la orientación espacial.</li>
-                    <li>Se instalaron sensores de flujo electrónicos y una celda de carga para la masa.</li>
-                    <li>Se implementaron finales de carrera para capturar las señales mecánicas.</li>
-                    <li><strong>Hito Técnico:</strong> Se optimizó el software del ESP32 aplicando algoritmos de <em>Debounce</em> (antirrebote) para eliminar los ruidos elásticos de los finales de carrera mecánicos, consiguiendo lecturas de velocidad puras y constantes.</li>
+                    <li>Se conectó y calibró un acelerómetro digital <strong>ADXL345</strong> para capturar la orientación espacial.</li>
+                    <li>Se instalaron sensores de caudal y así medir el agua entrante en el tablero.</li>
+                    <li>Se implementaron mecanismos y otros sensores para obtener información adicional para análisis como finales de carrera para capturar las señales mecánicas.</li>
+                    <li><strong>Hito Técnico:</strong> Se optimizó el software del ESP32 aplicando algoritmos de <em>Debounce</em> (antirrebote) para eliminar los ruidos elásticos de los finales de carrera mecánicos, consiguiendo lecturas de velocidad, frecuencia y aceleración</li>
                 </ul>
             </article>
 
             <article>
-                <h3>Fase II: Infraestructura de Comunicaciones e IoT (MQTT)</h3>
+                <h3>Fase II: Infraestructura de comunicaciones e IoT</h3>
                 <p>
                     Con el hardware transmitiendo de forma local, el siguiente paso fue enviar los datos hacia el servidor.
                     Para ello se desplegó un broker <strong>Mosquitto MQTT</strong>.
                     Se realizón un estudio de mapa de calor de la señal WiFi en el laboratorio para ubicar 
-                    un punto de acceso para asegurar transmisiones estables y con el mínimo de pérdidas.
+                    un punto de acceso para asegurar transmisiones estables desde los controladores.
                 </p>
             </article>
 
             <article>
-                <h3>Fase III: Desarrollo del Backend de Producción (Spring Boot)</h3>
+                <h3>Fase III: Desarrollo del backend </h3>
                 <p>
-                    Para procesar la telemetría, se construyó una aplicación empresarial con <strong>Spring Boot (Java)</strong>. 
+                    Para procesar la telemetría, se construyó una aplicación con <strong>Spring Boot (Java)</strong>. 
                     Se programó un componente oyente (`MqttListener`) encargado de suscribirse al broker de forma asíncrona, 
-                    capturar las ráfagas de datos entrantes, procesar los strings y mapearlos en objetos de datos organizados. 
+                    capturar las ráfagas de datos entrantes, procesar la información y mapearlos en objetos de datos organizados. 
+                    De esa manera es posible la representación y registro de los ensayos. 
                    </p>
             </article>
 
             <article>
-                <h3>Fase IV: Sincronización en Tiempo Real y Frontend</h3>
+                <h3>Fase IV: Sincronización en tiempo Real y frontend</h3>
                 <ul>
                     <li>Se estructuró un sistema de consultas repetitivas HTTP Polling.</li>
                     <li>Se implementó un diseño amigable y a juego con los colores de la Universidad.</li>
@@ -87,7 +85,7 @@
             </article>
 
             <article>
-                <h3>Fase V: Módulo de Adquisición de Datos e Históricos (.CSV)</h3>
+                <h3>Fase V: Módulo de adquisición de datos e históricos (.CSV)</h3>
                 <p>
                     La última gran fase consistió en dotar a la herramienta de utilidad científica. 
                     Se integró un panel de control con temporizadores automáticos que permite al operador de la Universidad iniciar la grabación de un ensayo. 
@@ -100,25 +98,25 @@
         <br>
 
         <section>
-            <h2>4. Arquitectura Tecnológica del Sistema</h2>
+            <h2>Arquitectura tecnológica del sistema</h2>
             <p>A nivel de software y hardware, el proyecto está compuesto por el siguiente stack:</p>
             <ul>
-                <li><strong>Hardware:</strong> Microcontroladores ESP32, Acelerómetro ADXL345, Sensores mecánicos de fin de carrera y Caudalímetros por pulsos.</li>
-                <li><strong>Protocolos de Red:</strong> MQTT (Broker Mosquitto) para la captura perimetral</li>
+                <li><strong>Hardware:</strong> Microcontroladores ESP32, Acelerómetro ADXL345, sensores mecánicos de fin de carrera, encóders, una célula de carga, enchufes inteligentes y caudalímetros.</li>
+                <li><strong>Protocolos de Red:</strong> MQTT (Broker Mosquitto) para la captura de los datos y HTTP para la representación en el dashboard</li>
                 <li><strong>Core Backend:</strong> Java 17, Spring Boot, Spring Security, Spring Integration MQTT, y JPA / Hibernate.</li>
-                <li><strong>Frontend:</strong> HTML5 semántico, Thymeleaf Engine, Vanilla JavaScript</li>
+                <li><strong>Frontend:</strong> HTML5 semántico, Thymeleaf Engine y JavaScript</li>
             </ul>
         </section>
 
         <br>
 
         <section>
-            <h2>5. Conclusión y Estado Actual</h2>
+            <h2>Conclusión y estado actual</h2>
             <p>
                 El proyecto se encuentra actualmente en un alto estado de madurez de producción, 
                 resolviendo con éxito los problemas iniciales. 
-                Representa una solución de bajo coste, alta precisión y estándar industrial (SCADA) lista para ser utilizada en ensayos metalúrgicos controlados 
-                dentro de nuestra comunidad universitaria.
+                Representa una solución de bajo coste, buena precisión y estándar industrial (SCADA) lista para ser utilizada en ensayos 
+                dentro de nuestra comunidad universitaria, quedando a plena disposición a ampliaciones tanto para la mesa gravimétrica como para el resto de maquinaria del laboratorio.
             </p>
         </section>
 
