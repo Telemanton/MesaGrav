@@ -17,15 +17,15 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class MqttListener {
 
-    private static final String BROKER_URL = "tcp://localhost:1883";
-    //private static final String BROKER_URL = "tcp://10.3.141.1:1883";
+    //private static final String BROKER_URL = "tcp://localhost:1883";
+    private static final String BROKER_URL = "tcp://10.3.141.1:1883";
     private static final String CLIENT_ID = "spring-mqtt-client";
 
     private static final String TOPIC_ADXL = "sensor/adxl345";
     private static final String TOPIC_FRECUENCIA = "sensor/frecuency";
     private static final String TOPIC_FLOW = "sensor/flow";
-    private static final String TOPIC_ENGINE_GAUGE = "sensor/engine_gauge";
-    private static final String TOPIC_DROPPER_GAUGE = "sensor/dropper_gauge";
+    private static final String TOPIC_ENGINE_GAUGE = "tele/tasmota-motor/SENSOR";
+    private static final String TOPIC_DROPPER_GAUGE = "tele/tasmota-platform/SENSOR";
     private static final String TOPIC_MOTOR_ENERGY = "tele/tasmota-motor/SENSOR";
     private static final String TOPIC_PLATFORM_ENERGY = "tele/tasmota-platform/SENSOR";
     private static final String TOPIC_WEIGHT = "sensor/weight";
